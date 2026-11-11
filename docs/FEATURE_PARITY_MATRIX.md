@@ -36,14 +36,14 @@
 | F-026 | 외부 대기·재수용 | 92-column-layout C.queue | 재수용 버튼 | 겹침 없음, 규격 유지 | objects | placement/external-queue | AL07–AL11, AL13 | NOT STARTED | — |
 | F-027 | BEFORE/AFTER·잠금·비교 | 70-scenarios | 잠금, 복제, 비교 | 독립성, 비교 출력 | scenarios | scenarios/* | SV09 | NOT STARTED | — |
 | F-028 | 원자적 적용 트랜잭션 | 70-scenarios R.transaction | 적용 | 실패 시 전체 복원 | 전체 | scenarios/transactions | XL14 | NOT STARTED | — |
-| F-029 | 검증 저장·무변경 생략 | 75 V.atomic/V.write/V.fingerprint | 저장 | SAVED/UNSAVED/ROLLED_BACK | persistence | persistence/storage | SV01–SV03, SV11 | NOT STARTED | — |
-| F-030 | Quota 처리·백업 순환 | 75 V.track/V.restore (BUG-STORAGE-001) | — | 정상본 보존, 3/6개 순환 | layoutBackups | persistence/backups | SV04–SV07, SV12 | NOT STARTED | — |
+| F-029 | 검증 저장·무변경 생략 | 75 V.atomic/V.write/V.fingerprint | 저장 | SAVED/UNSAVED/ROLLED_BACK | persistence | persistence/storage | SV01–SV03, SV11 | IMPLEMENTING | 저장소 단위 검사(SV01–SV03, SV11) — UI 연결 전 |
+| F-030 | Quota 처리·백업 순환 | 75 V.track/V.restore (BUG-STORAGE-001) | — | 정상본 보존, 3/6개 순환 | layoutBackups | persistence/backups | SV04–SV07, SV12 | IMPLEMENTING | Quota 주입 단위 검사(SV04, SV05, SV12) — 백업 순환 전 |
 | F-031 | 저장소 진단·복구 다운로드 | 75 V.measureStorage/storageSnapshot | 저장소 관리 | 크기·단계 표시 | — | persistence/diagnostics | — (Phase 0 배정) | NOT STARTED | — |
 | F-032 | JSON 내보내기·불러오기 | 30-editor-io | 파일 | 2.3.6 무손실 왕복 | Project | exports/json, persistence/migration | SV08, SV10 | NOT STARTED | — |
 | F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | NOT STARTED | — |
 | F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | scenarios/history | UI04 | NOT STARTED | — |
 | F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels | UI06, UI07 | NOT STARTED | — |
-| F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | NOT STARTED | — |
+| F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | IMPLEMENTING | CONFLICT·force 단위 검사 — UI 연결 전 |
 | F-036 | 프로그램 정보·버전 표시 | 99-bootstrap | — | 앱/스키마 버전 분리 | — | main | smoke E2E | IMPLEMENTED | TESTING |
 
 | F-038 | 오프라인·런타임 오류 0 (횡단) | 모든 묶음 공통 | — | 외부 요청 0, 런타임 오류 0 | — | tools/verify, tests/e2e | smoke E2E | IMPLEMENTED | TESTING |
