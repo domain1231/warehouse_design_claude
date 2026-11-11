@@ -1,7 +1,7 @@
 {
  "tool": "golden-master",
  "normalization": 1,
- "baselineCommit": "42403e3a32ec2a7d577f9a89d22e7a4f104e3c73",
+ "baselineCommit": "ff0c766eac0c00a9c50d6413dcc3ad8684e34552",
  "appVersion": "2.4.1",
  "schemaVersion": "2.3.6",
  "build": {
@@ -14,8 +14,8 @@
   "G1": {
    "title": "geometry primitives",
    "file": "G1.json",
-   "bytes": 360578,
-   "sha256": "a2dc516afbacd7ed8599afac660e8e75e9f5b5668b93654727f2f649286e8d9f",
+   "bytes": 328283,
+   "sha256": "3842ea9866a7637cdcf2cced0f184367123597639d23fe94010f191759046da9",
    "records": {
     "pairs": 421
    },

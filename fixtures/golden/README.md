@@ -3,7 +3,7 @@
 기준본 v2.4.1의 관찰 결과를 정규화한 **가상 데이터**입니다. 운영 데이터가 아닙니다. 재구축본이 같은 입력에서 같은 결과를 내는지 비교하는 기준으로 씁니다.
 
 - 생성 도구: 기준본 저장소 `tools/golden-master.cjs` (`docs/GOLDEN_MASTER.md` 참조)
-- 생성 커밋: `domain1231/warehouse_design@42403e3` — 런타임 소스는 v2.4.1(`d7b1e69`)과 동일하며 도구 파일만 추가된 상태
+- 생성 커밋: `domain1231/warehouse_design` chore/golden-master 브랜치(G1 입력 양자화 수정 포함) — 런타임 소스는 v2.4.1(`d7b1e69`)과 동일하며 도구 파일만 추가된 상태
 - 앱 2.4.1 / 스키마 2.3.6, 일반본만 사용, Linux Chrome for Testing 153
 - 결정성: 새 브라우저 컨텍스트에서 3회 독립 실행한 결과의 sha256이 모두 동일
 
