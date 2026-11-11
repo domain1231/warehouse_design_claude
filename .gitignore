@@ -1,0 +1,19 @@
+node_modules/
+dist/
+evidence/
+test-results/
+*.log
+
+# 로컬 보존 영역 — 업로드 금지
+work/
+outputs/
+local-data/
+
+# 운영 데이터 반입 방지: 업무 Excel/CSV/JSON은 fixtures/ 아래 가상 자료만 허용
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+!fixtures/**/*.csv
+!fixtures/**/*.xlsx
+.env*
