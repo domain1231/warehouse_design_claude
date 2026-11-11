@@ -23,9 +23,15 @@
 - `src/persistence/storage.js`: 2-슬롯 + 포인터 원자 저장(D-007), 무변경 생략, 동시 저장 2단계 감지·force 덮어쓰기, 손상 보호, last-good, 기준본 키 읽기 전용(D-006).
 - 단위 검사 37개(압축 6, 저장소 17 포함). UI·앱 연결은 아직 없음.
 
+## Phase 1b-1 결과 (2026-11-11, feature/phase1-project-model)
+- `src/core/project.js`: createProject·validateProject·validateLayout·assertIndependent·parseLocation. 기준본 12단계 체인을 실행 순서대로 펼침(D-008).
+- Golden G5(샘플·빈) 완전 일치. 기준본 대조 V1: 70사례 수락/거부·메시지·보정 결과 sha256 일치(`tests/golden/V1-validation.test.js`, 자료 재생성 `tools/validation-diff.mjs`).
+- 저장소에 validate 연결 시 기준본 저장본 로드·잘못된 프로젝트 저장 차단 확인.
+- D-006 확정: A안(기준본 키 쓰지 않음).
+
 ## 다음 작업
+- Phase 1b-2: 변경분(patch) 실행취소, 저장소·프로젝트 모델을 앱에 연결, 실제 브라우저 E2E(저장·새로고침·Quota 주입·다중 탭).
 - Phase 1b: 프로젝트 모델·validateProject(G5 일치, 기준본 12단계 체인 기준), 변경분(patch) 실행취소, 저장소를 앱에 연결하고 실제 브라우저 E2E(Quota·다중 탭).
-- D-006 미결: 기준본 키 동시 쓰기 여부 사용자 확인.
 0. (완료) Phase 0: 기준본 FUNCTION_CHAIN과 786/88 검사 분류로 `FEATURE_PARITY_MATRIX.md` 세분화, Golden Master 비교 도구(이 저장소 `tools/golden-compare`) 설계.
 2. Phase 1: 프로젝트 모델·스키마 2.3.6 왕복(G5 기준), patch 이력, 저장 어댑터(2-슬롯 + revision 검사).
 3. Phase 2: 기하·공간검사를 G1·G2와 일치시키기.
