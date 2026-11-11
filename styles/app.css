@@ -30,3 +30,16 @@ body {
 .shell h1 { margin: 0 0 4px; font-size: 20px; }
 .shell .versions { color: var(--muted); margin: 0 0 16px; }
 .shell .status { border-left: 3px solid var(--accent); padding-left: 12px; margin: 0; }
+
+.status-badge { margin: 0 0 4px; font-weight: 600; }
+.status-badge[data-state="saved"] { color: #6fcf97; }
+.status-badge[data-state="unsaved"], .status-badge[data-state="saving"] { color: #f2c94c; }
+.status-badge[data-state="error"] { color: #eb5757; }
+.status-detail, .summary, .muted { color: var(--muted); margin: 0 0 12px; font-size: 13px; }
+.notice { border-left: 3px solid #f2c94c; padding: 6px 10px; margin: 0 0 12px; background: rgba(242, 201, 76, 0.08); }
+.field { display: grid; gap: 4px; margin: 0 0 12px; }
+.field input { padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.actions button { padding: 7px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+.actions button:disabled { opacity: 0.45; cursor: default; }
+.actions button[data-testid="save"] { background: var(--accent); border-color: var(--accent); color: #0b1220; }

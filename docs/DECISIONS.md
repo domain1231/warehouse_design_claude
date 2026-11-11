@@ -42,3 +42,12 @@
 - 검증: Golden Master G5(샘플·빈 프로젝트) 완전 일치, 기준본 대조 70사례(수락 10·거부 60)에서 수락/거부·오류 메시지·보정 결과 sha256 일치(`tools/validation-diff.mjs` → `fixtures/legacy/validation-cases.json`).
 - 미이식: 열 우선 모드 배치(`autoPlacementRules.mode === "column"`)의 검사 결과 재계산(W.scan) — Phase 2·6.
 - 참고: 기준본 `tools/function-chain.cjs`는 `const x=S.ensure;S.ensure=p=>` 형태(멤버 화살표 함수 포획)를 놓친다. S.ensure 체인(60→65→70)은 직접 확인했다.
+
+## D-009 실행취소: 변경분(patch) 기록 (2026-11-11, Phase 1b-2)
+- 결정: `src/core/history.js`는 편집 전후 프로젝트의 구조 차이만 기록한다. 되돌리는 범위는 기준본과 같은 프로젝트 전체(재고·배치 이력 기록 포함)이며 persistence만 제외한다. 상한 60단계(기준본과 동일).
+- 이유: 기준본은 편집마다 프로젝트 전체 JSON 문자열을 쌓아 이력이 커질수록 편집 비용과 메모리가 늘었다. 샘플 프로젝트에서 랙 1개 이동 기록은 기준본 방식의 1% 미만이다.
+- 한계: 배열 길이가 바뀌는 편집(객체 추가·삭제)은 그 배열 전체를 한 번 기록한다. 대규모 프로젝트에서 측정 후 필요하면 ID 기반 배열 diff로 개선한다.
+
+## D-010 편집 세션과 자동 저장 (2026-11-11, Phase 1b-2)
+- 결정: `src/core/session.js`가 편집 확정(복사본 수정 → 검증 → 실행취소 기록 → 자동 저장)과 저장 상태(saved/unsaved/saving/error)를 담당한다. 검증 실패 편집은 적용·기록·저장하지 않는다. 저장 실패 시 편집은 메모리에 남고 상태는 error(code: QUOTA/CONFLICT/CORRUPT/VERIFY/…)이다.
+- 기준본과 같이 편집마다 자동 저장한다. 기준본 데이터로 시작하면 안내를 표시하고 첫 저장 전까지 unsaved로 둔다.
