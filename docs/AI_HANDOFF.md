@@ -18,7 +18,14 @@
 - `docs/BASELINE_TEST_MAP.md`: 기준본 14개 묶음 → F-001~F-042 역색인. 자동 검사 없는 기능: F-008, F-012, F-019, F-020.
 - 매트릭스: F-013·F-014 IMPLEMENTING(G1 일치), F-038~F-042 추가.
 
+## Phase 1a 결과 (2026-11-11, feature/phase1-storage)
+- `src/persistence/zip.js`: 기준본 저장 형식(warehouse-backup-zip-v1) 읽기·쓰기, CRC32, 크기 상한. 기준본 저장 원문 바이트 동일 복원, 재구축본 원문을 기준본이 읽음(`tools/legacy-compat.mjs`).
+- `src/persistence/storage.js`: 2-슬롯 + 포인터 원자 저장(D-007), 무변경 생략, 동시 저장 2단계 감지·force 덮어쓰기, 손상 보호, last-good, 기준본 키 읽기 전용(D-006).
+- 단위 검사 37개(압축 6, 저장소 17 포함). UI·앱 연결은 아직 없음.
+
 ## 다음 작업
+- Phase 1b: 프로젝트 모델·validateProject(G5 일치, 기준본 12단계 체인 기준), 변경분(patch) 실행취소, 저장소를 앱에 연결하고 실제 브라우저 E2E(Quota·다중 탭).
+- D-006 미결: 기준본 키 동시 쓰기 여부 사용자 확인.
 0. (완료) Phase 0: 기준본 FUNCTION_CHAIN과 786/88 검사 분류로 `FEATURE_PARITY_MATRIX.md` 세분화, Golden Master 비교 도구(이 저장소 `tools/golden-compare`) 설계.
 2. Phase 1: 프로젝트 모델·스키마 2.3.6 왕복(G5 기준), patch 이력, 저장 어댑터(2-슬롯 + revision 검사).
 3. Phase 2: 기하·공간검사를 G1·G2와 일치시키기.
