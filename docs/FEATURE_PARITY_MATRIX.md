@@ -1,6 +1,7 @@
 # 기능 동등성 매트릭스 (초안)
 
-- 상태: **초안**. 기준본 `docs/FEATURE_MAP.md`와 명세 33장에서 행을 뽑았다. Phase 0에서 기준본 함수 체인 덤프(최종 유효 함수 기준)와 786/88 검사 분류로 행을 세분화한다.
+- 상태: Phase 0. 기준본 `docs/FEATURE_MAP.md`, 명세 33장, 기준본 함수 체인(`docs/FUNCTION_CHAIN.md`, 74개 체인)과 기준본 검사 분류(`docs/BASELINE_TEST_MAP.md`)로 작성했다. 행별 기준본 검사 목록은 BASELINE_TEST_MAP 역색인을 본다.
+- Golden Master(`fixtures/golden`) 일치 여부는 검증 열에 `G1 일치`처럼 기록한다.
 - 기준 위치는 기준본 `src/runtime/` 파일과 공개 함수다. 같은 함수가 여러 파일에서 감싸지므로 "최종 유효 동작"을 기준으로 판정한다.
 - 기준본(v2.4.x)에서 버그를 고치거나 기능을 바꾸면, 같은 시점에 이 매트릭스에 행 또는 테스트 ID를 추가한다. 재구축본이 v2.4.1 시점에 고정되어 이후 수정을 놓치지 않게 하기 위함이다.
 - 구현 상태: NOT STARTED / IMPLEMENTING / IMPLEMENTED / TESTING / VERIFIED / BLOCKED. 기준본에 기능이 있다는 이유로 VERIFIED 처리하지 않는다.
@@ -19,8 +20,8 @@
 | F-010 | 정밀 좌표·스냅·키보드 이동 | 80-precision-labels | 방향키, 스냅 간격 | 1mm 정확 이동 | x/y | geometry/tolerance ✚, cad/snapping | CAD09 | NOT STARTED | — |
 | F-011 | 카메라·휠 확대 | 50-editor M.handleWheel/flushWheel | 휠, 핀치, 패널 스크롤 | 좌표 불변, 패널 스크롤 분리 | viewport | cad/camera | CAD10, CAD11 | NOT STARTED | — |
 | F-012 | 참고 도면·두 점 축척 | 35-reference | 이미지, 두 점+거리 | 축척 계산 | background | cad/reference | CAD12 | NOT STARTED | — |
-| F-013 | 회전 충돌 (SAT) | 10-geometry overlaps | — | 정확한 겹침 판정 | objects | geometry/collision | GEO01, GEO08 | NOT STARTED | — |
-| F-014 | 간격·이격 (다각형 최소거리) | 10-geometry gap, warnings | 간격 설정 | 실제/요구/부족 거리 | settings | geometry/clearance | GEO02–GEO05 | NOT STARTED | — |
+| F-013 | 회전 충돌 (SAT) | 10-geometry overlaps | — | 정확한 겹침 판정, 접촉은 충돌 아님(D-004) | objects | geometry/polygons, geometry/collision | GEO01, GEO08, G1 | IMPLEMENTING | G1 일치(기본연산 421쌍) — 경고 통합 전 |
+| F-014 | 간격·이격 (다각형 최소거리) | 10-geometry gap, warnings | 간격 설정 | 실제/요구/부족 거리 | settings | geometry/collision(gap), geometry/clearance | GEO02–GEO05, G1, G2 | IMPLEMENTING | G1 gap 일치 — 경고(G2) 전 |
 | F-015 | 경계 초과·통로 최소 폭 | 10-geometry warnings | 통로 설정 | 경고·차단 구분 | aisles | geometry/clearance | GEO06, GEO07 | NOT STARTED | — |
 | F-016 | 경고 중복 제거·분류 | 90-auto-layout W.scan (BUG-SCAN-001) | — | 중복 집계 없음 | warnings | warehouse/constraints | GEO09, GEO10 | NOT STARTED | — |
 | F-017 | 원본/설계 규격 | 60-specifications | 규격 편집 | 원본 보존, 차이 표시 | spec | warehouse/racks | — (Phase 0 배정) | NOT STARTED | — |
@@ -44,5 +45,11 @@
 | F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels | UI06, UI07 | NOT STARTED | — |
 | F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | NOT STARTED | — |
 | F-036 | 프로그램 정보·버전 표시 | 99-bootstrap | — | 앱/스키마 버전 분리 | — | main | smoke E2E | IMPLEMENTED | TESTING |
+
+| F-038 | 오프라인·런타임 오류 0 (횡단) | 모든 묶음 공통 | — | 외부 요청 0, 런타임 오류 0 | — | tools/verify, tests/e2e | smoke E2E | IMPLEMENTED | TESTING |
+| F-039 | 휠 감도 설정·저장 | 50-editor M.setWheelMode | 감도 선택 | 프로젝트와 독립 저장, 손상 시 안전 기본값 | 별도 키 | cad/camera | — | NOT STARTED | — |
+| F-040 | 탐색 예산·중단 사유 | 92 C.limits/C.check | — | probe 상한, 사유 표시(D-005 결정적) | autoPlacement | placement/candidates | AL12 | NOT STARTED | — |
+| F-041 | 파생 검사 결과 재계산 | 92 JSON 복원 후 재검사 | JSON 불러오기 | 저장된 집계 불신, 현재 좌표로 재계산 | autoPlacement | placement/diagnostics | — | NOT STARTED | — |
+| F-042 | 모바일 드로어·레이아웃 | shell, 65 | 좁은 화면 | 가로 넘침 없음, 드로어 동작 | — | ui/panels | — | NOT STARTED | — |
 
 ✚ 기반 모듈 구현됨 (`src/geometry/tolerance.js`, `src/core/ids.js`). 기능 행 자체는 아직 NOT STARTED.
