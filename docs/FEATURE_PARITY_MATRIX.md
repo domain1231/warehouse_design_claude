@@ -2,6 +2,7 @@
 
 - 상태: **초안**. 기준본 `docs/FEATURE_MAP.md`와 명세 33장에서 행을 뽑았다. Phase 0에서 기준본 함수 체인 덤프(최종 유효 함수 기준)와 786/88 검사 분류로 행을 세분화한다.
 - 기준 위치는 기준본 `src/runtime/` 파일과 공개 함수다. 같은 함수가 여러 파일에서 감싸지므로 "최종 유효 동작"을 기준으로 판정한다.
+- 기준본(v2.4.x)에서 버그를 고치거나 기능을 바꾸면, 같은 시점에 이 매트릭스에 행 또는 테스트 ID를 추가한다. 재구축본이 v2.4.1 시점에 고정되어 이후 수정을 놓치지 않게 하기 위함이다.
 - 구현 상태: NOT STARTED / IMPLEMENTING / IMPLEMENTED / TESTING / VERIFIED / BLOCKED. 기준본에 기능이 있다는 이유로 VERIFIED 처리하지 않는다.
 
 | ID | 기존 기능 | 기준 위치 | 사용자 입력 | 기대 결과 | 관련 데이터 | 재구축 모듈 | 테스트 ID | 구현 | 검증 |
@@ -41,6 +42,7 @@
 | F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | NOT STARTED | — |
 | F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | scenarios/history | UI04 | NOT STARTED | — |
 | F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels | UI06, UI07 | NOT STARTED | — |
+| F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | NOT STARTED | — |
 | F-036 | 프로그램 정보·버전 표시 | 99-bootstrap | — | 앱/스키마 버전 분리 | — | main | smoke E2E | IMPLEMENTED | TESTING |
 
 ✚ 기반 모듈 구현됨 (`src/geometry/tolerance.js`, `src/core/ids.js`). 기능 행 자체는 아직 NOT STARTED.
