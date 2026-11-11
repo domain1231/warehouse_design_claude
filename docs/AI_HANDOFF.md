@@ -1,10 +1,9 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-11)
-- 단계: 저장소 골격 (Phase 0 준비). PR `chore/scaffold`.
-- 앱 2.5.0-alpha.0 / 스키마 2.3.6. 화면은 버전 표시만 있는 골격이다.
-- 구현된 기반 모듈: `src/core/ids.js`(시드 주입 ID), `src/geometry/tolerance.js`(허용오차 단일 정의).
-- 검사: 단위 14 + 빌드 + 오프라인 검증 + E2E 1. Linux, Node 24.22.2, Chrome for Testing 153에서 PASS. Windows CI는 이 PR의 Actions 결과를 확인한다.
+- 단계: Phase 2(공간검사) 완료. PR `feature/phase2-spatial`(기준: `feature/phase1-session`, 스택 PR #1→#6 위).
+- 앱 2.5.0-alpha.0 / 스키마 2.3.6. 화면은 저장 상태·이름·실행취소·JSON 내보내기만 있고 도면은 없다.
+- 검사: 단위 56 + Golden 110(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 6. Linux, Node 24, Chrome for Testing 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -35,13 +34,17 @@
 - 브라우저 E2E `tests/e2e/storage.test.js` 5개: 새로고침 복원, 실행취소 저장, 기준본 데이터 로드(키 불변), Quota 주입 실패·재시도, 두 탭 충돌·확인 후 덮어쓰기. Linux Chrome for Testing 153. Windows Edge NOT RUN(CI windows-latest는 Chromium).
 - Phase 1 완료 범위: 저장 계층·프로젝트 모델·실행취소·세션. 남은 저장 항목: 백업 순환(3/6개), 저장소 진단, JSON 불러오기 UI → Phase 8·9.
 
+## Phase 2 결과 (2026-11-11, feature/phase2-spatial)
+- `src/geometry/polygons.js`·`collision.js`·`clearance.js`, `src/warehouse/constraints.js`(warnings·scanLayout·layoutSignature), `src/core/format.js`(D-011).
+- 기준본 대조: `tests/golden/G2-spatial.test.js` 11, `S1-spatial.test.js` 22(사례 21 + 목록 일치). 자료 재생성: `BASELINE_REPO=../warehouse_design WAREHOUSE_BROWSER_PATH=<chrome> node tools/spatial-diff.mjs`.
+- 세션 저장 시 BEFORE/AFTER 검사 결과 기록(`storeScanResults`), 같은 배치면 UNCHANGED.
+- 성능: 랙 500 배치 검사 중앙값 약 35ms(Node). 브라우저 측정 NOT RUN.
+- 미이식: 열 우선 배치 확장 검사·결과 재계산(92) → Phase 6.
+
 ## 다음 작업
-- Phase 2: 공간검사(경고 9종, W.scan) 이식 → Golden G2 일치. 이후 열 우선 결과 재계산(92) 연결.
-- Phase 1b-2: 변경분(patch) 실행취소, 저장소·프로젝트 모델을 앱에 연결, 실제 브라우저 E2E(저장·새로고침·Quota 주입·다중 탭).
-- Phase 1b: 프로젝트 모델·validateProject(G5 일치, 기준본 12단계 체인 기준), 변경분(patch) 실행취소, 저장소를 앱에 연결하고 실제 브라우저 E2E(Quota·다중 탭).
-0. (완료) Phase 0: 기준본 FUNCTION_CHAIN과 786/88 검사 분류로 `FEATURE_PARITY_MATRIX.md` 세분화, Golden Master 비교 도구(이 저장소 `tools/golden-compare`) 설계.
-2. Phase 1: 프로젝트 모델·스키마 2.3.6 왕복(G5 기준), patch 이력, 저장 어댑터(2-슬롯 + revision 검사).
-3. Phase 2: 기하·공간검사를 G1·G2와 일치시키기.
+- Phase 3: SVG 도면(카메라·확대/이동·선택·격자·스냅) — 계산은 순수 함수, 좌표 1mm 입력 단위 유지. 휠 감도(F-039) 포함.
+- Phase 6에서 열 우선 확장 검사·결과 재계산(92)을 자동 배치와 함께 이식.
+- 사용자: 스택 PR 순서대로 병합(#1→#7). 기준본 저장소 PR #20→#22.
 
 ## 미결 사항
 - 명세서 원본 전문(`docs/SPEC_v1_0.md`) 반입 여부.
