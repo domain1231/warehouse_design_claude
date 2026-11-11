@@ -8,7 +8,7 @@
 
 | ID | 기존 기능 | 기준 위치 | 사용자 입력 | 기대 결과 | 관련 데이터 | 재구축 모듈 | 테스트 ID | 구현 | 검증 |
 |---|---|---|---|---|---|---|---|---|---|
-| F-001 | 프로젝트 생성·검증 | 00-core makeProject, validateProject | 새 프로젝트 | 스키마 2.3.6 유효 프로젝트 | Project 전체 | core/project | SV10 | NOT STARTED | — |
+| F-001 | 프로젝트 생성·검증 | 00-core makeProject, validateProject | 새 프로젝트 | 스키마 2.3.6 유효 프로젝트 | Project 전체 | core/project | SV10 | IMPLEMENTED | G5 일치, 기준본 대조 V1 70사례 일치 — 열 우선 결과 재계산 제외 |
 | F-002 | Undo/Redo | 00-core commit/undo (전체 JSON 60개) | Ctrl+Z/Y, 버튼 | 원상복원, 이력 필드 보존 | undo/redo | core/history (patch 기반) | CAD08 | NOT STARTED | — |
 | F-003 | 창고 치수 적용·면적 역산 | 70-scenarios R.updateRoomApplyState | 가로·세로·면적 | 경계만 갱신, 랙 불변 | warehouse | warehouse/constraints, ui | UI01–UI05 | NOT STARTED | — |
 | F-004 | SVG 렌더링·통계 | 20-renderer renderScene | — | 미터 좌표 기준 도면 | objects | cad/renderer | CAD10 | NOT STARTED | — |
@@ -24,7 +24,7 @@
 | F-014 | 간격·이격 (다각형 최소거리) | 10-geometry gap, warnings | 간격 설정 | 실제/요구/부족 거리 | settings | geometry/collision(gap), geometry/clearance | GEO02–GEO05, G1, G2 | IMPLEMENTING | G1 gap 일치 — 경고(G2) 전 |
 | F-015 | 경계 초과·통로 최소 폭 | 10-geometry warnings | 통로 설정 | 경고·차단 구분 | aisles | geometry/clearance | GEO06, GEO07 | NOT STARTED | — |
 | F-016 | 경고 중복 제거·분류 | 90-auto-layout W.scan (BUG-SCAN-001) | — | 중복 집계 없음 | warnings | warehouse/constraints | GEO09, GEO10 | NOT STARTED | — |
-| F-017 | 원본/설계 규격 | 60-specifications | 규격 편집 | 원본 보존, 차이 표시 | spec | warehouse/racks | — (Phase 0 배정) | NOT STARTED | — |
+| F-017 | 원본/설계 규격 | 60-specifications | 규격 편집 | 원본 보존, 차이 표시 | spec | warehouse/racks | — (Phase 0 배정) | IMPLEMENTING | 기본값·검증(originalSpec/designSpec) G5·V1 일치 — 편집 UI 전 |
 | F-018 | 랙 상세 인포그래픽 | 65-panels-details | 더블클릭 | 선반별 자재·지표 | shelves | ui/panels | UI08 | NOT STARTED | — |
 | F-019 | ZONE·랙 번호 라벨 | 80-precision-labels | 라벨 설정 | 정방향·외부 표시 | rackLabels | cad/labels | UI09 | NOT STARTED | — |
 | F-020 | 색상 범례·3종 지표 | 75-storage-appearance | 임계값·색상 | 지표 분리 표시 | theme | warehouse/utilization | UI10 | NOT STARTED | — |
