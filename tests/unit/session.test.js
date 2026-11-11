@@ -121,3 +121,20 @@ test('손상된 저장본: 보호하고 교체 확인 없이는 저장하지 않
   assert.equal(storage.data.get('warehouse-layout-v2:pointer'), 'not json');
   assert.equal((await s.save({ replaceCorrupt: true })).state, 'SAVED');
 });
+
+test('저장 시 BEFORE/AFTER 배치 검사 결과를 기록하고, 배치가 같으면 다시 저장하지 않는다(기준본 W.storeResults)', async () => {
+  const storage = memoryStorage();
+  const s = make(storage);
+  await s.init();
+  await s.save();
+  const r = s.state.project.autoPlacement.results;
+  assert.equal(r.after.counts.total, 47);
+  assert.equal(typeof r.after.fingerprint, 'string');
+  const checkedAt = r.after.checkedAt;
+  const again = await s.save();
+  assert.equal(again.state, 'UNCHANGED');
+  await s.edit('랙 이동', (p) => { p.scenarios.after.objects[0].x += 0.5; });
+  assert.notEqual(s.state.project.autoPlacement.results.after.fingerprint, r.after.fingerprint);
+  assert.equal(s.state.project.autoPlacement.results.before.checkedAt, r.before.checkedAt);
+  assert.ok(checkedAt);
+});

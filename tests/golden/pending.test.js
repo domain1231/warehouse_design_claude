@@ -3,7 +3,6 @@ import { test } from 'node:test';
 import { loadScenario } from './compare.js';
 
 const pending = {
-  G2: 'Phase 2 — 공간 경고·W.scan (geometry/clearance, warehouse/constraints)',
   G3: 'Phase 5 — Excel 분석 (excel/*)',
   G4: 'Phase 6 — 자동 배치 (placement/*)',
 };
