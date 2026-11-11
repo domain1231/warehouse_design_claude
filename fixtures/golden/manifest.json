@@ -1,0 +1,81 @@
+{
+ "tool": "golden-master",
+ "normalization": 1,
+ "baselineCommit": "ff0c766eac0c00a9c50d6413dcc3ad8684e34552",
+ "appVersion": "2.4.1",
+ "schemaVersion": "2.3.6",
+ "build": {
+  "file": "warehouse_layout_designer_v2_4_1.html",
+  "sha256": "7211f1312cf1a72e61cbb7a0e0bc8e112653c77d50d95849ed14cb8feac80c82",
+  "sourceDigest": "6a4933cd527b1e13fac49668f032cf7214bd8842e679ae32816b3eac3000dc63"
+ },
+ "browser": "153.0.8010.12",
+ "scenarios": {
+  "G1": {
+   "title": "geometry primitives",
+   "file": "G1.json",
+   "bytes": 328283,
+   "sha256": "3842ea9866a7637cdcf2cced0f184367123597639d23fe94010f191759046da9",
+   "records": {
+    "pairs": 421
+   },
+   "runs": 2,
+   "deterministic": true,
+   "optionalKeysDropped": []
+  },
+  "G2": {
+   "title": "warnings and scan",
+   "file": "G2.json",
+   "bytes": 310873,
+   "sha256": "04655812d5732e2e9865daa46867e96706a82e36010a0af2cb8d0f5514615340",
+   "records": {
+    "cases": 11,
+    "warnings": 73
+   },
+   "runs": 2,
+   "deterministic": true,
+   "optionalKeysDropped": []
+  },
+  "G3": {
+   "title": "Excel analysis",
+   "file": "G3.json",
+   "bytes": 1978725,
+   "sha256": "48e5ad49354af9acc1817eb3ebe231242afa7e75739f112b6b6976ea675c95fe",
+   "records": {
+    "csvRows": 343,
+    "csvRacks": 56,
+    "xlsxRows": 343,
+    "xlsxRacks": 56
+   },
+   "runs": 2,
+   "deterministic": true,
+   "optionalKeysDropped": []
+  },
+  "G4": {
+   "title": "auto placement",
+   "file": "G4.json",
+   "bytes": 2654887,
+   "sha256": "d0fee2aa5500d1da856f84396651192d3b9befa0d8c146e047621adef0354512",
+   "records": {
+    "runs": 10,
+    "candidates": 54,
+    "objects": 3024
+   },
+   "runs": 2,
+   "deterministic": true,
+   "optionalKeysDropped": []
+  },
+  "G5": {
+   "title": "project model",
+   "file": "G5.json",
+   "bytes": 134169,
+   "sha256": "e37c243e11793d82eff516400ee3ead0b7b26b47e8cdd99aa5dfc9811f14d517",
+   "records": {
+    "projects": 2
+   },
+   "runs": 2,
+   "deterministic": true,
+   "optionalKeysDropped": []
+  }
+ }
+}
