@@ -203,6 +203,14 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .excel-config input:not([type=checkbox]), .excel-config select { padding: 3px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--text); font: inherit; font-size: 12px; min-width: 0; }
 .excel-config .triple { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
 .excel-preview-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px; }
+.excel-cands { margin: 8px 0; min-width: 0; }
+.excel-scroll { max-height: 280px; overflow: auto; max-width: 100%; }
+.excel-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+.excel-table th, .excel-table td { padding: 5px; border: 1px solid var(--line); text-align: left; }
+.excel-table button { padding: 3px 6px; }
+.excel-table tr[data-rack] { cursor: pointer; }
+.excel-optrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 6px; font-size: 12px; }
+[data-changes] { white-space: pre-line; }
 .summary-text { white-space: pre-wrap; font-size: 11px; background: var(--bg); padding: 6px; border-radius: 4px; }
 @media (max-width: 900px) { .excel-preview-grid { grid-template-columns: minmax(0, 1fr); } }
 

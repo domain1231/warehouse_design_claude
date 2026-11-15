@@ -5,9 +5,13 @@ import { formatNumber as fmt } from '../core/format.js';
 import { readWorkbook, sheetMatrix, encodeCol } from '../excel/xlsx.js';
 import { FIELDS, detectHeaderRow, autoMap, analyzeSheet } from '../excel/analyze.js';
 import { readExcelConfig } from '../excel/proposal.js';
-import { buildCandidates } from '../autolayout/candidates.js';
+import { buildCandidates, reoptimize, candidateSummary } from '../autolayout/candidates.js';
 import { buildScene } from '../cad/scene.js';
-import { warnings as spatialWarnings } from '../warehouse/constraints.js';
+import { warnings as spatialWarnings, excessText } from '../warehouse/constraints.js';
+import { bounds } from '../geometry/polygons.js';
+
+const ISSUE_NAMES = { boundary: '경계 초과', rackCollision: '랙 충돌', structureCollision: '구조물 충돌', aisle: '통로 기준', gap: '최소 간격', waiting: '배치 대기', column: '열 조건' };
+const COMPARE_HEAD = ['후보 / 적용 선택', '내부 / 기준 충족', '경계 / 대기', '랙 / 구조물 충돌', '통로 / 간격', '수동 변경 / 이동', '순서 차이', '랙 면적 / 창고 면적'];
 
 const MARKUP = `<div class="dialog-head"><h2>Excel 가져오기 · 분석</h2><button type="button" data-close data-testid="excel-close">닫기 ×</button></div>
 <p class="muted">파일은 이 PC·브라우저 안에서만 읽습니다. 선택한 배치(BEFORE 또는 AFTER)만 바꾸고 적용 직전 상태를 자동 백업합니다. 대안 자동 배치 후보는 다음 단계에서 추가됩니다.</p>
@@ -47,8 +51,13 @@ const MARKUP = `<div class="dialog-head"><h2>Excel 가져오기 · 분석</h2><b
 <label>빈 후보 폭·깊이·높이 (m)<span class="triple"><input name="emptyW" type="number" step="0.01" value="1"><input name="emptyD" type="number" step="0.01" value="0.6"><input name="emptyH" type="number" step="0.01" value="2"></span></label>
 <label class="check"><input type="checkbox" name="skip"> 오류 행 제외 허용</label>
 </form>
+<section class="excel-cands" data-testid="excel-cands"><div class="excel-scroll" data-comparison data-testid="excel-comparison"></div>
+<div class="excel-optrow"><label>재최적화 대상<select data-scope data-testid="excel-scope"><option value="all">전체 랙</option><option value="boundary">경계 초과·대기 랙만</option><option value="collision">충돌·통로 침범 랙만</option><option value="new">신규 랙만</option><option value="selected">아래에서 선택한 랙만</option></select></label>
+<button type="button" data-optimize data-testid="excel-optimize">배치 재최적화</button><button type="button" disabled data-previous data-testid="excel-previous">이전 후보로 돌아가기</button></div>
+<p class="muted" data-note data-testid="excel-note" role="status"></p></section>
 <div class="excel-preview-grid"><svg class="group-preview" data-preview data-testid="excel-preview" role="img" aria-label="배치안 미리보기"></svg>
 <div><p class="info" data-pstats data-testid="excel-pstats"></p><p class="muted" data-changes data-testid="excel-changes"></p><div class="excel-issues" data-spatial></div>
+<div class="info" data-detail data-testid="excel-detail" hidden></div><div class="excel-scroll" data-list data-testid="excel-list"></div>
 <label class="check" data-ackrow hidden><input type="checkbox" data-ack data-testid="excel-ack"> 공간 경고를 확인했으며 경고가 있는 배치안을 적용합니다.</label>
 <label class="check"><input type="checkbox" name="recordLayout" data-record> 적용 후 이 배치를 기준일 기록으로 저장</label>
 <button type="button" class="primary" disabled data-apply data-testid="excel-apply">확인 후 적용</button><p class="muted" data-applymsg data-testid="excel-applymsg" role="status"></p></div></div>`;
@@ -115,35 +124,68 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
       const c = readExcelConfig(raw);
       const p = getProject();
       const res = buildCandidates(p, a, c, { nextId, filename: state.filename, sheet: state.sheetName });
-      const cand = res.candidates[res.choice];
-      const pr = { ...res.proposal, layout: cand.layout };
-      const ws = spatialWarnings(pr.layout, p);
-      pr.warnings = ws;
-      state.proposal = pr;
-      state.candidates = res.candidates;
-      state.choice = res.choice;
-      state.proposalProject = p;
-      const key = JSON.stringify([c, ws.map((w) => w.text)]);
-      if (state.ackKey !== key) {
-        $('[data-ack]').checked = false;
-        state.ackKey = key;
-      }
-      $('[data-ackrow]').hidden = !ws.length;
-      $('[data-apply]').textContent = c.target.toUpperCase() + (ws.length ? '에 경고 확인 후 적용' : '에 확인 후 적용');
-      svg.setAttribute('viewBox', `-1.2 -1.2 ${c.width + 2.4} ${c.depth + 2.4}`);
-      svg.innerHTML = buildScene(pr.layout, p, { tool: 'none' }).svg;
-      const racks = (l) => l.objects.filter((o) => o.kind === 'rack').length;
-      const cn = cand.result.counts;
-      $('[data-pstats]').textContent = `선택 후보: ${cand.name} · 내부 정상 ${cn.validInside}/${cn.total} · 대기 ${cn.waiting} | 대상 ${c.target.toUpperCase()} · 기존 ${racks(p.scenarios[c.target])}랙 / Excel 고유 ${a.racks.length}랙 / 적용 후 ${racks(pr.layout)}랙 · 일치 ${pr.changes.updated} / 오류 ${a.issues.filter((i) => i.type === 'error').length} / 경고 ${ws.length}`;
-      $('[data-changes]').textContent = `신규 ${pr.changes.added} / 기존 갱신 ${pr.changes.updated} / 규격 후보 ${pr.changes.dimensions} / 누락 ${pr.changes.missing} / 제거 승인 후보 ${pr.changes.deleted}랙 + 구조물 ${pr.changes.structuresDeleted || 0} / 업데이트 모드 신규 제외 ${pr.changes.skippedNew} · 자재 추가 ${pr.changes.itemsAdded} / 제거 ${pr.changes.itemsRemoved} / 값 변경 ${pr.changes.itemsChanged}`;
-      $('[data-spatial]').innerHTML = ws.map((w) => `<div class="issue-warning">${esc(w.text)}</div>`).join('') || '<p class="info">설정 기준 공간 경고 없음</p>';
+      Object.assign(state, { candidates: res.candidates, choice: res.choice, base: res.proposal, cfg: c, analysisUsed: a, chosen: new Set(), previous: undefined, proposalProject: p });
+      $('[data-previous]').disabled = true;
+      $('[data-note]').textContent = '';
+      $('[data-detail]').hidden = true;
+      showChoice();
     } catch (err) {
+      state.candidates = null;
       $('[data-pstats]').textContent = err.message;
       $('[data-changes]').textContent = '';
       $('[data-spatial]').innerHTML = '';
+      $('[data-comparison]').innerHTML = '';
+      $('[data-list]').innerHTML = '';
+      $('[data-detail]').hidden = true;
       svg.innerHTML = '';
     }
     readiness();
+  }
+  const viewBox = (l, c) => {
+    const bs = l.objects.map(bounds);
+    const x0 = Math.min(-1.2, ...bs.map((b) => b.minX - 1)), y0 = Math.min(-1.2, ...bs.map((b) => b.minY - 1));
+    const x1 = Math.max(c.width + 1.2, ...bs.map((b) => b.maxX + 1)), y1 = Math.max(c.depth + 1.2, ...bs.map((b) => b.maxY + 1));
+    return `${x0} ${y0} ${x1 - x0} ${y1 - y0}`;
+  };
+  /** 선택된 후보를 다시 그린다(후보는 다시 만들지 않는다). 후보·설정이 바뀌면 경고 확인을 해제한다. */
+  function showChoice() {
+    const { cfg: c, analysisUsed: a, base, candidates, choice } = state, p = state.proposalProject;
+    const cand = candidates[choice];
+    const pr = { ...base, layout: cand.layout };
+    const ws = spatialWarnings(pr.layout, p);
+    pr.warnings = ws;
+    state.proposal = pr;
+    const key = JSON.stringify([c, cand.name, ws.map((w) => w.text)]);
+    if (state.ackKey !== key) {
+      $('[data-ack]').checked = false;
+      state.ackKey = key;
+    }
+    $('[data-ackrow]').hidden = !ws.length;
+    $('[data-apply]').textContent = c.target.toUpperCase() + (ws.length ? '에 경고 확인 후 적용' : '에 확인 후 적용');
+    const svg = $('[data-preview]');
+    svg.setAttribute('viewBox', viewBox(pr.layout, c));
+    svg.innerHTML = buildScene(pr.layout, p, { tool: 'none' }).svg;
+    const racks = (l) => l.objects.filter((o) => o.kind === 'rack').length;
+    const cn = cand.result.counts;
+    $('[data-pstats]').textContent = `선택 후보: ${cand.name} · 내부 정상 ${cn.validInside}/${cn.total} · 대기 ${cn.waiting} | 대상 ${c.target.toUpperCase()} · 기존 ${racks(p.scenarios[c.target])}랙 / Excel 고유 ${a.racks.length}랙 / 적용 후 ${racks(pr.layout)}랙 · 일치 ${pr.changes.updated} / 오류 ${a.issues.filter((i) => i.type === 'error').length} / 경고 ${ws.length}`;
+    $('[data-changes]').textContent = `${candidateSummary(cand.result)}\n신규 ${pr.changes.added} / 기존 갱신 ${pr.changes.updated} / 규격 후보 ${pr.changes.dimensions} / 누락 ${pr.changes.missing} / 제거 승인 후보 ${pr.changes.deleted}랙 + 구조물 ${pr.changes.structuresDeleted || 0} / 업데이트 모드 신규 제외 ${pr.changes.skippedNew} · 자재 추가 ${pr.changes.itemsAdded} / 제거 ${pr.changes.itemsRemoved} / 값 변경 ${pr.changes.itemsChanged}`;
+    $('[data-spatial]').innerHTML = ws.map((w) => `<div class="issue-warning">${esc(w.text)}</div>`).join('') || '<p class="info">설정 기준 공간 경고 없음</p>';
+    $('[data-comparison]').innerHTML = `<table class="excel-table"><thead><tr>${COMPARE_HEAD.map((t) => `<th>${t}</th>`).join('')}</tr></thead><tbody>${candidates.map((v, i) => {
+      const s = v.result.counts;
+      return `<tr><td><label><input type="radio" name="excelCandidate" data-cand="${i}" ${i === choice ? 'checked' : ''}>${esc(v.name)}</label></td><td>${s.inside} / ${s.validInside}</td><td>${s.boundary} / ${s.waiting}</td><td>${s.rackCollision} / ${s.structureCollision}</td><td>${s.aisle} / ${s.gap}</td><td>${v.manualMoved} / ${v.moved}</td><td>${v.orderLoss}</td><td>${fmt(v.result.footprint, 3)} / ${fmt(v.result.warehouseArea, 3)}㎡</td></tr>`;
+    }).join('')}</tbody></table>`;
+    $('[data-list]').innerHTML = `<table class="excel-table"><thead><tr><th>랙 / 선택</th><th>위반 유형·방향·초과 거리</th><th>충돌 대상</th><th>상태</th></tr></thead><tbody>${cand.result.rows.map((r) => `<tr tabindex="0" data-rack="${esc(r.id)}"><td><input aria-label="${esc(r.code)} 재최적화 선택" type="checkbox" data-select="${esc(r.id)}" ${state.chosen.has(r.id) ? 'checked' : ''}><button type="button" data-focus="${esc(r.id)}">${esc(r.code)}</button></td><td>${esc(r.issues.map((i) => `${ISSUE_NAMES[i.type]} · ${i.text}`).join(' / ') || '위반 없음')}<br>${esc(excessText(r.excess))}</td><td>${esc([...new Set(r.issues.flatMap((i) => i.targets.map((t) => `${t.code} (${t.id})`)))].join(', ') || '—')}</td><td>${r.issues.length ? (getProject().autoPlacement.reviewNotes?.[getProject().settings.scenario]?.[r.id] === 'review' ? '검토 중' : '미해결') : '해결'}</td></tr>`).join('')}</tbody></table>`;
+    $('[data-detail]').hidden = true;
+  }
+  function focusRack(id) {
+    const cand = state.candidates[state.choice], o = cand.layout.objects.find((x) => x.id === id), r = cand.result.rows.find((x) => x.id === id);
+    if (!o) return;
+    const b = bounds(o);
+    $('[data-preview]').setAttribute('viewBox', `${b.minX - 1} ${b.minY - 1} ${b.maxX - b.minX + 2} ${b.maxY - b.minY + 2}`);
+    const d = $('[data-detail]');
+    d.hidden = false;
+    d.style.whiteSpace = 'pre-line';
+    d.textContent = `미리보기 선택 · ${o.code}\nX ${fmt(o.x, 3)}m / Y ${fmt(o.y, 3)}m · 폭 ${fmt(o.width, 3)} × 깊이 ${fmt(o.depth, 3)}m · ${fmt(o.rotation)}°\n${excessText(r.excess)}\n${r.issues.map((i) => i.text).join('\n') || '위반 없음'}\n프로젝트는 최종 적용 전 변경되지 않습니다.`;
   }
   function readiness() {
     const pr = state.proposal;
@@ -214,6 +256,49 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
   $('[data-ack]').addEventListener('change', readiness);
   $('[data-record]').addEventListener('change', () => preview());
   $('[data-apply]').addEventListener('click', apply);
+  const cands = $('[data-comparison]'), list = $('[data-list]');
+  cands.addEventListener('change', (e) => {
+    const el = e.target.closest('[data-cand]');
+    if (!el || !state.candidates) return;
+    state.choice = Number(el.dataset.cand);
+    showChoice();
+    readiness();
+  });
+  list.addEventListener('change', (e) => {
+    const el = e.target.closest('[data-select]');
+    if (el) el.checked ? state.chosen.add(el.dataset.select) : state.chosen.delete(el.dataset.select);
+  });
+  list.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-focus]') || (e.target.closest('input') ? null : e.target.closest('tr[data-rack]'));
+    if (el) focusRack(el.dataset.focus ?? el.dataset.rack);
+  });
+  list.addEventListener('keydown', (e) => {
+    const tr = e.target.closest('tr[data-rack]');
+    if (e.key === 'Enter' && tr && e.target === tr) { e.preventDefault(); focusRack(tr.dataset.rack); }
+  });
+  $('[data-optimize]').addEventListener('click', () => {
+    if (!state.candidates) return;
+    try {
+      const prior = state.candidates[state.choice];
+      const { candidate, note } = reoptimize(prior, state.cfg, $('[data-scope]').value, { project: state.proposalProject, chosen: state.chosen });
+      state.previous = state.choice;
+      state.candidates.push(candidate);
+      state.choice = state.candidates.length - 1;
+      $('[data-previous]').disabled = false;
+      showChoice();
+      $('[data-note]').textContent = note;
+      readiness();
+    } catch (err) {
+      toast(err.message);
+    }
+  });
+  $('[data-previous]').addEventListener('click', () => {
+    if (state.previous === undefined) return;
+    state.choice = state.previous;
+    showChoice();
+    $('[data-note]').textContent = '이전 후보로 돌아왔습니다.';
+    readiness();
+  });
   form().addEventListener('change', (e) => {
     if (e.target.name === 'target') fillTarget();
     preview();
