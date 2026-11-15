@@ -112,7 +112,7 @@ function download(name, data, type = 'application/json') {
 
 // v2.4.1 화면 골격(기준본 렌더링 DOM의 구조·id·문구, D-032·D-033). 기능 연결은 start()가 하고, 이 함수는 요소를 만들어 참조를 돌려준다.
 // 기존 E2E 호환을 위해 data-testid를 함께 둔다. 기준본에 없는 재구축 요소는 숨기거나 해당 구역 끝에 둔다(9b-2~7에서 정리).
-const SHELL = `<header><div><div class="eyebrow">OPERATIONS / SPACE PLANNING</div><h1>Warehouse Studio <span class="sub">창고 배치 설계</span> <small id="appVersion" data-testid="versions"></small></h1></div><div class="header-actions"><div class="v-save-tools"><button id="vSave" class="primary" type="button" data-testid="save">프로젝트 저장</button><button id="vVersions" type="button" data-testid="versions-open">이전 버전·백업</button><button id="vStorage" type="button" data-testid="storage-open">저장소 관리</button><button id="vOverwrite" type="button" data-testid="overwrite" hidden>이 탭 내용으로 덮어쓰기</button><button id="vReplaceCorrupt" type="button" data-testid="replace-corrupt" hidden>손상 저장본 교체</button></div><span id="saveStatus" class="save" role="status" data-testid="status"></span><button id="undo" type="button" title="Ctrl+Z" data-testid="undo">↶ 취소</button><button id="redo" type="button" title="Ctrl+Y" data-testid="redo">↷ 다시</button><button id="jsonOut" type="button" data-testid="export">JSON 백업</button><label class="filebtn" data-testid="import-json">불러오기<input id="jsonIn" type="file" accept=".json,application/json" hidden data-testid="import-file"></label><button id="aboutBtn" type="button" data-testid="about-open">프로그램 정보</button><button id="helpBtn" type="button" data-testid="help-open">사용 안내</button></div></header>
+const SHELL = `<header><div><div class="eyebrow">OPERATIONS / SPACE PLANNING</div><h1>Warehouse Studio <span class="sub">창고 배치 설계</span> <small id="appVersion" data-testid="versions"></small></h1></div><div class="header-actions"><div class="v-save-tools"><button id="vSave" class="primary" type="button" data-testid="save">프로젝트 저장</button><button id="vVersions" type="button" data-testid="versions-open">이전 버전·백업</button><button id="vStorage" type="button" data-testid="storage-open">저장소 관리</button><button id="vRetry" type="button" data-testid="retry" hidden>현재 프로젝트 다시 저장</button><button id="vRecoverRaw" type="button" data-testid="recover-raw" hidden>보호 원본 JSON</button><button id="vOverwrite" type="button" data-testid="overwrite" hidden>이 탭 내용으로 덮어쓰기</button><button id="vReplaceCorrupt" type="button" data-testid="replace-corrupt" hidden>손상 저장본 교체</button></div><span id="saveStatus" class="save" role="status" data-testid="status"></span><button id="undo" type="button" title="Ctrl+Z" data-testid="undo">↶ 취소</button><button id="redo" type="button" title="Ctrl+Y" data-testid="redo">↷ 다시</button><button id="jsonOut" type="button" data-testid="export">JSON 백업</button><label class="filebtn" data-testid="import-json">불러오기<input id="jsonIn" type="file" accept=".json,application/json" hidden data-testid="import-file"></label><button id="aboutBtn" type="button" data-testid="about-open">프로그램 정보</button><button id="helpBtn" type="button" data-testid="help-open">사용 안내</button></div></header>
 <div id="vSaveDetail" role="status"><span data-testid="status-detail"></span><span class="notice" data-testid="notice"></span><span>이 PC·브라우저 저장 / HTML 덮어쓰기·클라우드 동기화 아님</span></div>
 <div class="banner" id="sampleBanner" data-testid="sample-banner"></div>
 <div class="stats"><div class="stat"><small>전체 창고 면적</small><strong id="kArea" data-testid="k-area">—</strong><span>㎡</span></div><div class="stat"><small>현재 랙 수</small><strong id="kRacks" data-testid="k-racks">—</strong><span>개</span></div><div class="stat"><small>랙 면적 점유율</small><strong id="kFootprint" data-testid="k-footprint">—</strong><span>%</span></div><div class="stat"><small>수량 기준 적재율 · 단위별</small><strong id="kLoad" style="font-size:15px" data-testid="k-load">미확인</strong></div><div class="stat"><small>공간 경고</small><strong id="kWarnings" data-testid="k-warnings">—</strong><span>건</span></div></div>
@@ -148,7 +148,7 @@ function renderShell(root) {
   return {
     status: $('saveStatus'), detail: document.querySelector('[data-testid=status-detail]'), notice: document.querySelector('[data-testid=notice]'), banner: $('sampleBanner'),
     saveBtn: $('vSave'), overwriteBtn: $('vOverwrite'), replaceBtn: $('vReplaceCorrupt'), undoBtn: $('undo'), redoBtn: $('redo'), exportBtn: $('jsonOut'), importInput: $('jsonIn'),
-    versionsBtn: $('vVersions'), storageBtn: $('vStorage'), recoveryBtn: $('rBackupDownload'),
+    versionsBtn: $('vVersions'), storageBtn: $('vStorage'), retryBtn: $('vRetry'), rawBtn: $('vRecoverRaw'), recoveryBtn: $('rBackupDownload'),
     kpi: { area: $('kArea'), racks: $('kRacks'), footprint: $('kFootprint'), load: $('kLoad'), warnings: $('kWarnings') }, wSummary: document.querySelector('[data-testid=w-summary]'), wNote: $('wTopNote'), wAll: $('wAll'), wViolations: $('wViolations'),
     measureResult: $('measureResult'), toolSelect: toolButtons[0], toolPan: toolButtons[1], toolHelp: $('toolHelp'), zoomOut: $('zoomOut'), zoomIn: $('zoomIn'), zoomLabel: $('zoomLabel'), fit: $('fit'), zoom50: $('mZoom50'), zoom200: $('mZoom200'), focus: $('focusSelection'), centerLock: $('mCenterLock'),
     centerBtn: $('mCenter'), resetZoomBtn: $('mResetZoom'), selectAllBtn: $('mSelectAll'), clearSelBtn: $('mClearSelection'), selectRule: $('mSelectRule'), policy: $('collisionPolicy'), gridStep: $('gridStep'), gridOn: $('gridOn'), minGap: $('minGap'),
@@ -215,9 +215,7 @@ async function start() {
   const rackDetail = createRackDetail({
     getProject: () => project(),
     getLayout: () => layout(),
-    readOnly: () => !!historyDate,
     saveOrder: (order) => pref({ rackInfographic: { shelfOrder: order } }),
-    confirmPhysical: (id) => command(PHYSICAL_COMMAND, confirmPhysical(id, new Date().toISOString(), session.nextId()), PHYSICAL_COMMAND).then(() => rackDetail.refresh()),
     download,
     toast: (t) => showToast(t),
   });
@@ -652,6 +650,8 @@ async function start() {
     }
     ui.overwriteBtn.hidden = s.error?.code !== 'CONFLICT';
     ui.replaceBtn.hidden = !s.corrupt;
+    ui.retryBtn.hidden = s.status !== 'error';
+    ui.rawBtn.hidden = !s.corrupt;
     ui.undoBtn.disabled = !s.canUndo || s.status === 'saving';
     ui.redoBtn.disabled = !s.canRedo || s.status === 'saving';
     ui.saveBtn.disabled = s.status === 'saving' || s.status === 'loading';
@@ -665,6 +665,7 @@ async function start() {
     ui.bottomGrip.setAttribute('aria-valuenow', String(pn.bottomHeight));
     ui.bottomToggle.textContent = pn.bottomOpen ? '하단 전체 접기' : '하단 전체 펼치기';
     ui.bottomToggle.setAttribute('aria-expanded', String(pn.bottomOpen));
+    ui.bottomToggle.setAttribute('aria-label', pn.bottomOpen ? '하단 전체 패널 접기' : '이전 개별 상태로 하단 전체 펼치기'); // 기준본 S.panels
     // 기준본 S.panels: 위 줄(재고기록·배치이력)은 panelHeights.upper, 아래 줄(랙 목록·공간검토)은 lower 높이. 접으면 머리글(38px)만 남는다.
     for (const [k, box] of Object.entries(ui.bottomSections)) {
       const open = pn.bottomSections[k], upperRow = k === 'inventory' || k === 'layout', content = box.querySelector('.s-content');
@@ -794,6 +795,8 @@ async function start() {
   });
   ui.versionsBtn.addEventListener('click', () => storageDialogs.openBackups());
   ui.storageBtn.addEventListener('click', () => storageDialogs.openStorage());
+  ui.retryBtn.addEventListener('click', () => (session.state.error?.code === 'CONFLICT' ? ui.overwriteBtn : ui.saveBtn).click()); // 기준본 vRetry: 다른 탭 충돌이면 덮어쓰기 확인, 아니면 저장
+  ui.rawBtn.addEventListener('click', () => storageDialogs.exportProtectedRaw());
   ui.recoveryBtn.addEventListener('click', () => storageDialogs.exportRecovery());
 
   // ── 화면 명령(기준본 fit/zoomIn/zoomOut/mZoom50/mZoom200/mCenterLock/focusSelection) ──
