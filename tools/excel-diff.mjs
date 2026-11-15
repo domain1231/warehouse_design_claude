@@ -59,11 +59,11 @@ for (const c of excelCases) {
 }
 // 배치안(70 EX.proposal → 90 W.base). 사례마다 기준 프로젝트를 다시 불러온다.
 const projectText = fs.readFileSync(new URL('../fixtures/legacy/v2.4.1-primary.project.json', import.meta.url), 'utf8');
-const basic = fs.readFileSync(new URL('synthetic-basic.xlsx', outDir));
+const workbookBytes = (name) => [...fs.readFileSync(new URL(name, outDir))];
 const proposals = [];
 for (const c of proposalCases) {
   const r = await page.evaluate(async ({ c, text, bytes }) => {
-    await EX.readFile(new File([new Uint8Array(bytes)], 'synthetic-basic.xlsx'));
+    await EX.readFile(new File([new Uint8Array(bytes)], c.file ?? 'synthetic-basic.xlsx'));
     if ($('excelDialog').open) $('excelDialog').close();
     P = JSON.parse(text);
     M.ensure(P);
@@ -102,12 +102,17 @@ for (const c of proposalCases) {
       try {
         last = W.base(step.c);
         out.push({ layout: last.layout, changes: last.changes, missing: last.missing.map((o) => o.id), generatedKeys: last.generatedKeys });
+        if (step.build) {
+          // 90 W.build: 후보 0(W.base) + W.pack 재배치 후보, 방식별 점수로 선택(Phase 6a)
+          W.build(step.c);
+          out.push({ choice: W.choice, candidates: W.candidates.map((v) => ({ name: v.name, objects: v.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), counts: v.result.counts, moved: v.moved, manualMoved: v.manualMoved, orderLoss: v.orderLoss })) });
+        }
       } catch (e) {
         out.push({ error: e.message });
       }
     }
     return JSON.parse(JSON.stringify(out));
-  }, { c, text: projectText, bytes: [...basic] });
+  }, { c, text: projectText, bytes: workbookBytes(c.file ?? 'synthetic-basic.xlsx') });
   proposals.push({ name: c.name, steps: r });
 }
 await browser.close();

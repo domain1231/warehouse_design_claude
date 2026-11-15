@@ -3,7 +3,7 @@
 ## 현재 상태 (2026-11-15)
 - 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#16은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 96 + Golden 222(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 39. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 96 + Golden 233(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 40. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -88,8 +88,13 @@
 - 모델 배분: 기준본 추출 Haiku, 대조 사례·판정 Opus, 구현·E2E Sonnet(재시도 없음).
 - NOT RUN: Windows Edge, 실제 마우스.
 
+## Phase 6a 결과 (2026-11-15, feature/phase6a-candidates, PR #17 위에 쌓음)
+- `src/autolayout/candidates.js`(D-021), Excel 대화상자 배치 방식·회전 허용·선택 후보 표시·적용. 대조 X2 19(후보 10사례 추가), E2E excel 3.
+- 모델 배분: 알고리즘 이식·기준본 대조 Opus, 화면 연결·E2E Sonnet.
+
 ## 다음 작업
-- Phase 6: 자동 배치 후보(W.pack 5종·W.build·비교표·후보 선택), 열 우선 생성(92). 세 PR로 나눔: 후보 생성 / 비교표·선택 / 열 우선.
+- Phase 6b: 후보 비교표·직접 선택·부분 재배치 범위(W.comparison·W.list·W.previous 등).
+- Phase 6c: 열 우선 생성(92 C.search·C.enrich 등).
 - Phase 9로 미룬 것: UI 색 직접 입력·프리셋, 복원 미리보기.
 - Phase 6: 자동 배치 후보(W.pack 5종·W.build·비교표·후보 선택), 열 우선 생성(92).
 - 사용자 확인 필요: 실제 업무 Excel을 로컬 빌드로 열고 '매핑 요약 복사' 결과(값 제외)로 매핑 확인.

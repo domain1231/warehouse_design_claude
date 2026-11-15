@@ -92,3 +92,41 @@ test('Excel 적용(Phase 5b): 배치안 미리보기 → 매핑 요약(값 제�
   assert.deepEqual(problems, []);
   await ctx.close();
 });
+
+test('Excel 자동 배치 후보(Phase 6a): 많은 랙을 좁은 창고에 적용하면 선택 후보 이름이 표시·기록되고 모든 랙이 창고 안에 놓인다', async () => {
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 } });
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(e.message));
+  page.on('dialog', (d) => d.accept());
+  await page.goto(fileUrl);
+  await page.waitForFunction(() => window.__warehouseView);
+  await page.locator('[data-testid=excel-open]').click();
+  await page.locator('[data-testid=excel-file]').setInputFiles(path.join(root, 'fixtures/excel/synthetic-many.xlsx'));
+  await page.waitForFunction(() => /유효/.test(document.querySelector('[data-testid=excel-summary]').textContent));
+  const cfg = (n) => page.locator(`[data-testid=excel-config] [name=${n}]`);
+  await cfg('target').selectOption('after');
+  await cfg('mode').selectOption('new');
+  await cfg('building').fill('SYN');
+  await cfg('source').fill('가상 자료');
+  await cfg('keepManual').uncheck();
+  await cfg('preserveStructures').uncheck();
+  await cfg('width').fill('12');
+  await cfg('depth').fill('8');
+  await cfg('depth').dispatchEvent('change');
+  await page.waitForFunction(() => /선택 후보: .* 내부 정상 21\/21/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
+  const name = (await page.locator('[data-testid=excel-pstats]').textContent()).match(/선택 후보: (.+?) · 내부 정상/)[1];
+  assert.notEqual(name, '기존 배치 규칙');
+  if (!(await page.locator('[data-testid=excel-ack]').isHidden())) await page.locator('[data-testid=excel-ack]').check();
+  await page.locator('[data-testid=excel-apply]').click();
+  await page.waitForFunction(() => window.__warehouseSession.state.project.layoutBackups.length === 1 && window.__warehouseSession.state.status === 'saved');
+  const r = await page.evaluate(() => { const p = window.__warehouseSession.state.project; return { w: p.scenarios.after.warehouse, racks: p.scenarios.after.objects.filter((o) => o.kind === 'rack' && o.excel), cand: p.autoPlacement.history.at(-1).candidate }; });
+  assert.equal(r.racks.length, 21);
+  for (const o of r.racks) {
+    const m = Math.max(o.width, o.depth); // 회전 외곽은 느슨하게 확인
+    assert.ok(!o.placementMeta.waiting && o.x >= -m && o.y >= -m && o.x <= r.w.width && o.y <= r.w.height, `${o.code} 창고 밖`);
+  }
+  assert.equal(r.cand, name);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});

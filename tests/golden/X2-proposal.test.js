@@ -8,17 +8,18 @@ import { readWorkbook, sheetMatrix } from '../../src/excel/xlsx.js';
 import { detectHeaderRow, autoMap, analyzeSheet } from '../../src/excel/analyze.js';
 import { buildProposal } from '../../src/excel/proposal.js';
 import { applyExcelProposal } from '../../src/excel/apply.js';
+import { buildCandidates } from '../../src/autolayout/candidates.js';
 import { warnings as spatialWarnings, scanLayout } from '../../src/warehouse/constraints.js';
 import { validateProject } from '../../src/core/project.js';
 import { createIdGenerator } from '../../src/core/ids.js';
 
 const expected = JSON.parse(fs.readFileSync(new URL('../../fixtures/legacy/excel-cases.json', import.meta.url), 'utf8')).proposals;
 const ID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|t-[A-Za-z0-9_-]+-[0-9a-z]{6}/;
-const bytes = fs.readFileSync(new URL('../../fixtures/excel/synthetic-basic.xlsx', import.meta.url));
+const workbook = (name) => fs.readFileSync(new URL('../../fixtures/excel/' + name, import.meta.url));
 const projectText = fs.readFileSync(new URL('../../fixtures/legacy/v2.4.1-primary.project.json', import.meta.url), 'utf8');
 
-async function analysisWith(resolutions) {
-  const wb = await readWorkbook('synthetic-basic.xlsx', bytes);
+async function analysisWith(resolutions, file = 'synthetic-basic.xlsx') {
+  const wb = await readWorkbook(file, workbook(file));
   const sheet = wb.sheets[wb.sheetNames[0]];
   const matrix = sheetMatrix(sheet);
   const headerRow1 = detectHeaderRow(matrix) + 1;
@@ -49,14 +50,18 @@ for (const c of proposalCases) {
         out.push({ applied: r.ok, project: { scenarios, scenarioMeta, locationLayout, layoutBackups, layoutRevisions, importHistory, excelSnapshots, layoutSnapshots, selection: [editing.selectedRackIds, editing.selectionScenario], scenario: settings.scenario, sample: metadata.sample, autoSettings: autoPlacement.settings, autoHistory: autoPlacement.history.map((h) => ({ ...h, fingerprint: h.fingerprint === scanLayout(h.layout, p).fingerprint })) } });
         continue;
       }
-      a = await analysisWith(step.resolutions ?? c.resolutions);
+      a = await analysisWith(step.resolutions ?? c.resolutions, c.file);
       if (step.dropRack) a.racks = a.racks.filter((x) => x.key !== step.dropRack);
       if (step.onlyRacks) a.racks = a.racks.filter((x) => step.onlyRacks.includes(x.key) || x.key === step.dropRack);
       if (step.editItem) a.racks[0].shelves[0].items[0].itemName = '변경된 품목명';
       const missingDelete = new Set(step.deleteMissing ? p.scenarios[step.c.target].objects.filter((o) => o.excel?.key === step.dropRack).map((o) => o.id) : []);
       try {
-        last = buildProposal(p, a, step.c, { nextId, filename: 'synthetic-basic.xlsx', sheet: '자재 목록', missingDelete });
+        last = buildProposal(p, a, step.c, { nextId, filename: c.file ?? 'synthetic-basic.xlsx', sheet: '자재 목록', missingDelete });
         out.push({ layout: last.layout, changes: last.changes, missing: last.missing.map((o) => o.id), generatedKeys: last.generatedKeys });
+        if (step.build) {
+          const b = buildCandidates(p, a, step.c, { nextId, filename: c.file ?? 'synthetic-basic.xlsx', sheet: '자재 목록', missingDelete });
+          out.push({ choice: b.choice, candidates: b.candidates.map((v) => ({ name: v.name, objects: v.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), counts: v.result.counts, moved: v.moved, manualMoved: v.manualMoved, orderLoss: v.orderLoss })) });
+        }
       } catch (e) {
         out.push({ error: e.message });
       }

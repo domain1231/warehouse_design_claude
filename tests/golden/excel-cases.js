@@ -32,12 +32,23 @@ const main = [
   row(14, '7F-B-10-1-2', 'G-601', '빈 행 뒤', [1200, 600, 2500], 450, 100, { rop: '1,200' }),
 ];
 
+// 후보 탐색용 다수 랙(3열 × 7랙, 크기 다양). 가상 자료.
+const many = [HEADER];
+let no = 1;
+for (const [ci, col] of ['A', 'B', 'C'].entries()) {
+  for (let n = 1; n <= 7; n++) {
+    const dims = [800 + ((n * 170 + ci * 90) % 700), 600 + ((n * 310 + ci * 140) % 1250), 2000];
+    many.push(row(no++, `7F-${col}-${n}-1-1`, `M-${col}${n}`, '다수 랙 자재', dims, 400, 100 + n * 10, { level: 1 }));
+  }
+}
+
 export const excelCases = [
   { name: '기본(공유 문자열)', file: 'synthetic-basic.xlsx', aoa: main, sst: true },
   { name: '기본(인라인 문자열)', file: 'synthetic-inline.xlsx', aoa: main, sst: false },
   { name: '규격 충돌 선택 후 재분석', file: 'synthetic-basic.xlsx', aoa: main, sst: true, resolutions: { '7F-A-2': [900, 1850, 2000] } },
   { name: '필수 열 없음·같은 열 중복 매핑', file: 'synthetic-missing.xlsx', aoa: [HEADER.filter((h) => h !== 'Rack 높이 (mm)'), ['1', '7F-A-1-1-1']], sst: true, remap: { itemName: 1 } },
   { name: 'CSV(UTF-8 BOM, 따옴표·쉼표)', file: 'synthetic.csv', csv: '﻿' + [HEADER.map((h) => `"${h}"`).join(','), '1,7F-A-1-1-1,P-001,"부품, 쉼표",S,10,50,"1,250",1,1,800,1850,2000,400,120,,0,1.48,,', '2,7F-A-1-1-2,P-002,"따옴표 ""안""",S,10,50,3,1,1,800,1850,2000,400,380,0.95,0,1.48,,비고'].join('\r\n') + '\r\n' },
+  { name: '다수 랙(후보 탐색용)', file: 'synthetic-many.xlsx', aoa: many, sst: true },
   { name: '머리글 행 자동 탐지 실패(기본 8행)', file: 'synthetic-noheader.xlsx', aoa: [['a', 'b'], [1, 2]], sst: true },
 ];
 
@@ -57,5 +68,16 @@ export const proposalCases = [
   { name: '갱신 모드: 새 랙 제외·누락 삭제 승인·새 Excel 규격 적용', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } } }, 'commit', { c: { mode: 'update', keep: 'reflow', specPolicy: 'source', missingPolicy: 'delete', autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } }, resolutions: { '7F-A-2': [900, 1850, 2000] }, dropRack: '7F-A-1', deleteMissing: true, onlyRacks: ['7F-A-1', '7F-A-2'] }] },
   { name: '적용: 새 배치 → 병합 재적용(배치 기록 포함)', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } } }, 'apply', { c: { mode: 'merge', recordLayout: true, autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } }, resolutions: { '7F-A-2': [900, 1850, 2000] }, dropRack: '7F-A-1' }, 'apply'] },
   { name: '적용: BEFORE 대상 같은 날짜 두 번(스냅숏 교체·백업 재사용)', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { target: 'before' } }, 'apply', { c: { target: 'before', mode: 'merge' } }, 'apply'] },
+  // Phase 6a 자동 배치 후보(W.build). build: true면 W.base 결과 뒤에 후보 목록·선택을 기록한다.
+  { name: '후보: 넓은 창고(후보 0 그대로 선택)', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } }, build: true }] },
+  { name: '후보: 좁은 창고·내부 우선', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { width: 9, depth: 6, autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } }, build: true }] },
+  { name: '후보: 좁은 창고·순서 우선·회전 허용', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { width: 9, depth: 6, autoPlacement: { ...baseConfig.autoPlacement, mode: 'order', allowRotation: true, keepManual: false } }, build: true }] },
+  { name: '후보: 통로 우선·서쪽 진행·남쪽 시작', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { width: 10, depth: 7, columnDirection: 'west', firstRackPosition: 'south', autoPlacement: { ...baseConfig.autoPlacement, mode: 'aisle', keepManual: false } }, build: true }] },
+  { name: '후보: 병합·재배치·수동 랙 보호', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } } }, 'commit', { c: { mode: 'merge', keep: 'reflow', width: 12, depth: 8 }, resolutions: { '7F-A-2': [900, 1850, 2000] }, build: true }] },
+  { name: '후보(다수 랙): 좁은 창고·내부 우선(대기열 발생)', file: 'synthetic-many.xlsx', resolutions: {}, steps: [{ c: { width: 12, depth: 8, autoPlacement: { ...baseConfig.autoPlacement, keepManual: false, preserveStructures: false } }, build: true }] },
+  { name: '후보(다수 랙): 순서 우선·회전 허용', file: 'synthetic-many.xlsx', resolutions: {}, steps: [{ c: { width: 16, depth: 9, autoPlacement: { ...baseConfig.autoPlacement, mode: 'order', allowRotation: true, keepManual: false, preserveStructures: false } }, build: true }] },
+  { name: '후보(다수 랙): 통로 우선·구조물 유지·서쪽·남쪽', file: 'synthetic-many.xlsx', resolutions: {}, steps: [{ c: { width: 24, depth: 14.2, columnDirection: 'west', firstRackPosition: 'south', aisleTarget: 1.5, autoPlacement: { ...baseConfig.autoPlacement, mode: 'aisle', keepManual: false } }, build: true }] },
+  { name: '후보(다수 랙): 열 순서 지정·넓은 간격', file: 'synthetic-many.xlsx', resolutions: {}, steps: [{ c: { width: 20, depth: 10, order: 'C, A, B', columnGap: 1.2, rackGap: 0.4, autoPlacement: { ...baseConfig.autoPlacement, keepManual: false, preserveStructures: false } }, build: true }] },
+  { name: '후보(다수 랙): 아주 좁은 창고(창고 밖 대기열)', file: 'synthetic-many.xlsx', resolutions: {}, steps: [{ c: { width: 6, depth: 4, autoPlacement: { ...baseConfig.autoPlacement, keepManual: false, preserveStructures: false } }, build: true }] },
   { name: '사용자 순서 오류', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { order: 'A' } }] },
 ].map((x) => ({ ...x, steps: x.steps.map((s) => (typeof s === 'string' ? s : { ...s, c: { ...baseConfig, ...s.c } })) }));
