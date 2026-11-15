@@ -1,9 +1,9 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 4b(랙 상세·재고 기록·배치 이력) 완료. PR `feature/phase4b-details`(기준: main). PR #1~#11은 main에 병합됨.
+- 단계: Phase 5a(Excel 읽기·매핑·분석) 완료. PR `feature/phase5-excel`(기준: main). PR #1~#12는 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 88 + Golden 180(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 29. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 92 + Golden 188(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 30. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -68,9 +68,14 @@
 - 기준본 대조 P3 7, E1 37(36사례). E2E `tests/e2e/details.test.js` 3.
 - NOT RUN: Windows Edge, 실제 마우스·터치.
 
+## Phase 5a 결과 (2026-11-15, feature/phase5-excel)
+- `src/excel/xlsx.js`(외부 라이브러리 없는 XLSX·CSV 읽기), `src/excel/analyze.js`, `src/ui/excel-dialog.js`(D-017).
+- 가상 통합 문서 `fixtures/excel/`(기준본 SheetJS로 생성). 대조 `tests/golden/X1-excel.test.js` 8. 재생성: `BASELINE_REPO=../warehouse_design WAREHOUSE_BROWSER_PATH=<chrome> node tools/excel-diff.mjs`.
+- NOT RUN: 실제 업무 Excel(커밋 금지 자료), Windows Edge.
+
 ## 다음 작업
-- Phase 5: Excel 가져오기(시트 읽기·검증·랙/선반/자재 계층 연결·자동 생성 위치), 표시 모드 전환(재고·높이·등록·관리), 랙·ZONE 라벨(F-019), Excel 상태 색.
-- 이후: Phase 6 자동 배치·열 우선(92), Phase 7 이력 조회 모드·시나리오 비교, Phase 8 백업·진단.
+- Phase 5b: 배치 생성(EX.generate, 92 열 우선 생성은 Phase 6과 연계)·제안(EX.proposal + 60·70·90 래퍼: 건물 코드, 기존 랙 매칭, 규격 재가져오기 정책, 누락 랙 정책)·적용(70 R.transaction 원자성, 승인 후보=적용 후보), 표시 모드 전환·Excel 색, 라벨(F-019).
+- 사용자 확인 필요: 실제 업무 Excel 열 이름 목록(값 없이)으로 매핑 확인.
 
 ## 미결 사항
 - 명세서 원본 전문(`docs/SPEC_v1_0.md`) 반입 여부.
