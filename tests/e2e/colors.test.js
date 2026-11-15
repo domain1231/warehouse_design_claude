@@ -129,6 +129,7 @@ test('전체 복원: 확인 후 기본 색·기준·지정색·데이터 기반 
   await page.locator('[data-testid=rack-list] [data-rack]').first().click();
   await page.locator('[data-testid=object-color-apply]').click();
   await saved(page);
+  await page.locator('[data-testid=theme-open]').click();
   await page.locator('[data-testid=reset-scope]').selectOption('all');
   const messages = [];
   page.once('dialog', (d) => { messages.push(d.message()); d.dismiss(); });
@@ -142,6 +143,64 @@ test('전체 복원: 확인 후 기본 색·기준·지정색·데이터 기반 
   const p = await project(page);
   assert.deepEqual([p.settings.high, p.settings.colors.over, p.theme.colorMode, p.theme.objectColors], [90, '#e46775', 'data', { before: {}, after: {} }]);
   assert.equal(await page.locator('[data-testid=color-over]').inputValue(), '#e46775');
+  assert.deepEqual(page.problems, []);
+  await ctx.close();
+});
+
+test('UI 색상: 대화상자에서 적용하면 CSS 변수·도면 색이 바뀌고 실행취소되며, 복원 미리보기가 범위별 변경을 먼저 보여준다', async () => {
+  const { ctx, page } = await open();
+  const cssVar = (n) => page.evaluate((k) => document.documentElement.style.getPropertyValue(k).trim(), n);
+  const floor = () => page.locator('[data-testid=plan] > rect').nth(0).getAttribute('fill');
+  assert.equal(await cssVar('--canvas'), '#101a25');
+  await page.locator('[data-testid=theme-open]').click();
+  assert.match(await page.locator('[data-testid=reset-preview]').textContent(), /변경 0건/);
+  await page.locator('[data-testid=theme-canvas]').fill('#123456');
+  await page.locator('[data-testid=theme-floor]').fill('#223344');
+  await page.locator('[data-testid=theme-apply]').click();
+  await saved(page);
+  assert.equal(await cssVar('--canvas'), '#123456');
+  assert.equal(await floor(), '#223344');
+  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('[data-testid=canvas-wrap]')).backgroundColor), 'rgb(18, 52, 86)');
+  const p = await project(page);
+  assert.deepEqual([p.theme.presetId, p.theme.customColors.canvas], ['custom', '#123456']);
+  // 복원 미리보기: UI 범위는 바뀐 2건을 보여주고, 적재율 범위는 UI 색을 건드리지 않는다.
+  await page.locator('[data-testid=theme-open]').click();
+  const pv = page.locator('[data-testid=reset-preview]');
+  assert.match(await pv.textContent(), /변경 2건/);
+  assert.match(await pv.textContent(), /도면 바탕 #123456 → #101a25/);
+  await page.locator('[data-testid=reset-scope]').selectOption('occupancy');
+  assert.match(await pv.textContent(), /변경 0건/);
+  await page.locator('[data-testid=reset-scope]').selectOption('ui');
+  assert.equal(await cssVar('--canvas'), '#123456'); // 미리보기만으로는 적용되지 않는다
+  await page.locator('[data-testid=reset-colors]').click();
+  await page.waitForFunction(() => document.documentElement.style.getPropertyValue('--canvas').trim() === '#101a25');
+  await saved(page);
+  assert.equal(await floor(), '#152231');
+  await page.locator('[data-testid=undo]').click();
+  await page.waitForFunction(() => document.documentElement.style.getPropertyValue('--canvas').trim() === '#123456');
+  await page.locator('[data-testid=undo]').click();
+  await page.waitForFunction(() => document.documentElement.style.getPropertyValue('--canvas').trim() === '#101a25');
+  assert.equal(await floor(), '#152231');
+  assert.deepEqual(page.problems, []);
+  await ctx.close();
+});
+
+test('가까운 거리 표시: 랙을 선택하면 거리 문구가 나오고 크기 조절 드래그 중에는 사라진다', async () => {
+  const { ctx, page } = await open();
+  const id = await page.evaluate(() => window.__warehouseSession.state.project.scenarios.after.objects.find((o) => o.kind === 'rack').id);
+  assert.equal(await page.locator('[data-testid=plan] [data-distance]').count(), 0);
+  await page.locator(`[data-testid=plan] g[data-id="${id}"]`).first().click({ position: { x: 3, y: 3 } });
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=plan] [data-distance]').length > 0);
+  assert.match(await page.locator('[data-testid=plan] .q-guide text').first().textContent(), /^(겹침 · )?\d+(\.\d+)?m$/);
+  const box = await page.locator('[data-testid=plan] [data-resize=e] rect').nth(1).boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 12, box.y + box.height / 2, { steps: 4 });
+  await page.waitForSelector('[data-testid=resize-live]');
+  assert.equal(await page.locator('[data-testid=plan] [data-distance]').count(), 0);
+  await page.mouse.up();
+  await saved(page);
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=plan] [data-distance]').length > 0);
   assert.deepEqual(page.problems, []);
   await ctx.close();
 });

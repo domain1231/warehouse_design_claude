@@ -7,7 +7,8 @@ import { warnings as spatialWarnings, ratio } from '../warehouse/constraints.js'
 import { aisleClearance } from '../geometry/clearance.js';
 import { HANDLE_DIRECTIONS, handlePoint } from '../warehouse/commands.js';
 import { matchRack } from '../warehouse/racklist.js';
-import { bounds, triangles } from '../geometry/polygons.js';
+import { bounds, triangles, polygon } from '../geometry/polygons.js';
+import { overlaps } from '../geometry/collision.js';
 import { OBJECT_TYPES } from '../core/project.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { rackLabelsSvg, rackFullLabel } from './labels.js';
@@ -15,8 +16,8 @@ import { rackColor, customColor } from '../warehouse/appearance.js';
 
 /** 기준본 V.objectDefault: 랙 외 객체 기본 색. */
 export const OBJECT_COLORS = Object.freeze({ wall: '#9aaec7', column: '#b1c2d5', aisle: '#19423d', work: '#364663', blocked: '#665041', door: '#374b67' });
-/** 기준본 V.themeDefault 중 도면에 쓰는 값. */
-export const THEME_DEFAULT = Object.freeze({ floor: '#152231', selected: '#c4ddff' });
+/** 기준본 V.themeDefault. */
+export const THEME_DEFAULT = Object.freeze({ bg: '#111821', panel: '#182331', card: '#202d3d', line: '#34465a', text: '#e5edf6', muted: '#91a6be', blue: '#80b3f1', selected: '#c4ddff', header: '#162130', canvas: '#101a25', floor: '#152231', control: '#111c29' });
 /** 그리기 순서: 바닥 구역 → 구조물 → 랙. */
 const ORDER = { aisle: 0, work: 1, blocked: 2, wall: 3, column: 4, door: 5, rack: 6 };
 const DASHED = new Set(['aisle', 'blocked', 'work', 'door']);
@@ -62,10 +63,11 @@ function objectShape(o, fill, stroke, sel, aisle, custom) {
  *   guides: 드래그 중 정렬 가이드(commands.alignmentGuides). 선 굵기·글자 크기는 화면 px 기준이라 pixelsPerMeter가 필요하다.
  *   filter: project.panels.view — 검색·필터에 맞지 않는 랙을 흐리게(기준본 match, 불투명도 0.2).
  *   resize: { live: boolean, invalidText?: string } — 객체 1개를 선택 도구로 골랐을 때 8방향 크기 조절 핸들(기준본 65)을 그린다.
+ *   gesture: 진행 중인 제스처 종류(move 외에는 가까운 거리 표시를 숨긴다).
  *   report / mini: 보고서·미니맵용(라벨 배율·최소 모드 처리가 다르다).
  * @returns {{ svg: string, warnings: object[], labelHidden: number }}
  */
-export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20, resize = null, filter = null, report = false, mini = false } = {}) {
+export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20, resize = null, gesture = null, filter = null, report = false, mini = false } = {}) {
   const W = layout.warehouse, st = project.settings;
   const ws = warnings ?? spatialWarnings(layout, project);
   const bad = new Set(ws.flatMap((w) => w.ids));
@@ -119,7 +121,7 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     const { a, b } = marquee;
     s += `<rect id="mSelectionBox" class="m-overlay" pointer-events="none" x="${Math.min(a.x, b.x)}" y="${Math.min(a.y, b.y)}" width="${Math.abs(a.x - b.x)}" height="${Math.abs(a.y - b.y)}" fill="#80b3f1" fill-opacity=".15" stroke="#a8d2ff" stroke-width=".035" stroke-dasharray=".1 .06"/>`;
   }
-  if (guides.length && project.precision?.guides) s += guideSvg(guides, pixelsPerMeter);
+  if (!report && !mini && project.precision?.guides) s += guideSvg(guides, pixelsPerMeter, nearest(layout, selected), !gesture || gesture === 'move');
   if (resize && selected.size === 1 && tool === 'select') {
     const o = layout.objects.find((x) => selected.has(x.id));
     if (o) s += handleSvg(o, pixelsPerMeter, resize);
@@ -127,8 +129,33 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
   return { svg: s, warnings: ws, labelHidden: labels.hidden };
 }
 
-/** 정렬 가이드(기준본 Q.guideSvg 중 가이드 부분). 가까운 랙 거리 표시(Q.nearest)는 아직 옮기지 않았다. */
-function guideSvg(guides, pixelsPerMeter) {
+/** 두 객체 외곽(회전 다각형) 사이 가장 가까운 점 쌍(기준본 Q.closest). 겹치면 거리 0. */
+function closest(a, b) {
+  if (overlaps(a, b)) { const c = [a.x + a.width / 2, a.y + a.depth / 2]; return { distance: 0, a: c, b: c }; }
+  const A = polygon(a), B = polygon(b);
+  const project = (p, s, e) => { const dx = e[0] - s[0], dy = e[1] - s[1], t = Math.max(0, Math.min(1, ((p[0] - s[0]) * dx + (p[1] - s[1]) * dy) / (dx * dx + dy * dy || 1))); return [s[0] + t * dx, s[1] + t * dy]; };
+  let best = { distance: Infinity };
+  for (let i = 0; i < A.length; i++) for (let j = 0; j < B.length; j++) {
+    for (const [p, q] of [[A[i], project(A[i], B[j], B[(j + 1) % B.length])], [project(B[j], A[i], A[(i + 1) % A.length]), B[j]]]) {
+      const d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+      if (d < best.distance) best = { distance: d, a: p, b: q };
+    }
+  }
+  return best;
+}
+
+/** 선택 객체에서 랙·벽·기둥·막힘·문까지 가까운 순 limit개(기준본 Q.nearest). */
+function nearest(layout, selected, limit = 3) {
+  const chosen = layout.objects.filter((o) => selected.has(o.id));
+  if (!chosen.length) return [];
+  const others = layout.objects.filter((o) => !selected.has(o.id) && ['rack', 'wall', 'column', 'blocked', 'door'].includes(o.kind));
+  const rows = [];
+  for (const o of chosen) for (const n of others) rows.push({ ...closest(o, n), source: o, target: n });
+  return rows.sort((a, b) => a.distance - b.distance).slice(0, limit);
+}
+
+/** 정렬 가이드 + 가까운 거리 표시(기준본 Q.guideSvg). */
+function guideSvg(guides, pixelsPerMeter, rows, showDistance) {
   const u = Math.max(0.01, pixelsPerMeter), font = 11 / u;
   let out = '<g class="q-guide" pointer-events="none">';
   for (const g of guides) {
@@ -139,6 +166,11 @@ function guideSvg(guides, pixelsPerMeter) {
       const b = g.bounds;
       out += `<text data-guide="${g.type}" x="${b.cx}" y="${b.maxY + 0.25}" text-anchor="middle" fill="#a9f2dc" font-size="${font}">${esc(g.label)} · 차이 ${fmt(Math.abs(g.delta) * 2, 3)}m</text>`;
     }
+  }
+  if (showDistance) for (const row of rows) {
+    if (row.distance > 5) continue;
+    const [a, b] = [row.a, row.b];
+    out += `<path data-distance="${row.distance}" d="M ${a[0]} ${a[1]} L ${b[0]} ${b[1]}" stroke="#ffd08b" stroke-width="${1 / u}" fill="none"/><text x="${(a[0] + b[0]) / 2 + 4 / u}" y="${(a[1] + b[1]) / 2 - 4 / u}" font-size="${font}" fill="#ffe0a9">${row.distance === 0 ? '겹침 · ' : ''}${fmt(row.distance, 3)}m</text>`;
   }
   return out + '</g>';
 }
