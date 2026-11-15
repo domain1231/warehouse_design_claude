@@ -11,7 +11,7 @@
 | F-001 | 프로젝트 생성·검증 | 00-core makeProject, validateProject | 새 프로젝트 | 스키마 2.3.6 유효 프로젝트 | Project 전체 | core/project | SV10 | IMPLEMENTED | G5 일치, 기준본 대조 V1 70사례 일치 — 열 우선 결과 재계산 제외 |
 | F-002 | Undo/Redo | 00-core commit/undo (전체 JSON 60개) | Ctrl+Z/Y, 버튼 | 원상복원, 이력 필드 보존 | undo/redo | core/history, core/session | CAD08 | IMPLEMENTING | patch 이력 단위 검사(무작위 200단계 왕복), 저장 E2E — 도면 편집 UI 전 |
 | F-003 | 창고 치수 적용·면적 역산 | 70-scenarios R.updateRoomApplyState | 가로·세로·면적 | 경계만 갱신, 랙 불변 | warehouse | warehouse/constraints, ui | UI01–UI05 | NOT STARTED | — |
-| F-004 | SVG 렌더링·통계 | 20-renderer renderScene | — | 미터 좌표 기준 도면 | objects | cad/scene | CAD10, P1 | IMPLEMENTING | 객체 도형·순서·회전·통로 유효 폭 선·다중 선택 상자 기준본 일치(P1). 라벨·Excel 색·필터 흐림·참고 도면 전 |
+| F-004 | SVG 렌더링·통계 | 20-renderer renderScene | — | 미터 좌표 기준 도면 | objects | cad/scene, warehouse/metrics, ui/panels | CAD10, P1, P2, E2E panels | IMPLEMENTING | 도형·겹침 표시(P1), 통계·범례·검색 흐림(P2) 기준본 일치. 라벨·Excel 색·참고 도면 전 |
 | F-005 | 객체 생성·삭제·복제 | 30-editor-io | 도구 선택·클릭 | 객체 추가/삭제 | objects | warehouse/commands | CAD01, E1, E2E edit | IMPLEMENTED | 추가(7종)·삭제·복제·회전·복사/붙여넣기 기준본 일치(E1). 다각형 통로·팔레트 끌어놓기 전 |
 | F-006 | 드래그 이동·그룹 이동 | 50-editor | 마우스 드래그 | 좌표 정확, 상대 위치 유지 | objects | warehouse/commands | CAD02, CAD07, E1, E2E edit | IMPLEMENTED | 단일·그룹 드래그, 스냅·mm 정리, 경고 차단, 포인터 취소, 위치 잠금 기준본 일치(E1). 실제 마우스 NOT RUN |
 | F-007 | 회전 (90°·임의 각도) | 50-editor, 10-geometry polygon | 회전 입력 | 규격 보존, 실제 형상 | rotation | geometry/rotation | CAD03, CAD04 | NOT STARTED | — |
@@ -42,7 +42,7 @@
 | F-032 | JSON 내보내기·불러오기 | 30-editor-io | 파일 | 2.3.6 무손실 왕복 | Project | exports/json, persistence/migration | SV08, SV10 | IMPLEMENTING | 기준본 저장 형식 양방향 호환, JSON 내보내기 버튼 — JSON 불러오기 UI 전 |
 | F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | NOT STARTED | — |
 | F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | scenarios/history | UI04 | NOT STARTED | — |
-| F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels | UI06, UI07 | NOT STARTED | fitScale 유지로 창 크기 변경 시 축척 불변(P1·단위) — 패널 접기 UI 전 |
+| F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels, main | UI06, UI07, E2E panels | IMPLEMENTING | 좌우 패널 접기·저장·축척 불변(E2E) — 하단 패널(재고·배치 이력) 전 |
 | F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | IMPLEMENTED | 단위(2단계 감지·경쟁) + 브라우저 E2E(알림·차단·확인 후 덮어쓰기) |
 | F-036 | 프로그램 정보·버전 표시 | 99-bootstrap | — | 앱/스키마 버전 분리 | — | main | smoke E2E | IMPLEMENTED | TESTING |
 

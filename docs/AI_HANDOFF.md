@@ -1,10 +1,10 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 3b-2(크기 조절·다중 랙 편집·대상 전환) 완료. PR `feature/phase3b2-resize`(기준: main). 스택 PR #1~#9는 2026-11-15 main에 병합됨.
-- 기준본 저장소 PR #20~#22도 2026-11-15 병합(#21은 AI_HANDOFF 충돌을 두 기록 유지로 해결).
-- 앱 2.5.0-alpha.0 / 스키마 2.3.6. 화면: 대상 전환·잠금, 도구(선택·이동·객체 7종), 편집(회전·복제·삭제·정렬·간격·경고 허용·스냅), 도면(크기 조절 핸들), 선택/속성 패널, 다중 랙 편집 대화상자.
-- 검사: 단위 88 + Golden 160(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 21. Linux, Node 24, Chrome 153에서 PASS.
+- 단계: Phase 4a(통계·경고 목록·랙 목록·범례·패널 접기) 완료. PR `feature/phase4-panels`(기준: `feature/phase3b2-resize` = PR #10, 미병합).
+- 스택 PR #1~#9와 기준본 저장소 PR #20~#22는 2026-11-15 병합됨.
+- 앱 2.5.0-alpha.0 / 스키마 2.3.6.
+- 검사: 단위 88 + Golden 170(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 26. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -59,9 +59,15 @@
 - 기준본 대조 E1 34(33사례). E2E `tests/e2e/edit2.test.js` 4: 크기 조절·실행취소, 정렬 대화상자 적용·그룹 회전, 위반 시 적용 잠금, 대상 전환·잠금 해제·복원.
 - NOT RUN: 실제 마우스·터치패드, Windows Edge.
 
+## Phase 4a 결과 (2026-11-15, feature/phase4-panels)
+- `src/warehouse/metrics.js`, `src/warehouse/racklist.js`, `src/ui/panels.js`, 도면 흐림(scene filter), `setView({ panels })`, fitScale 유지 버그 수정(D-015).
+- 기준본 대조 `tests/golden/P2-panels.test.js` 10. E2E `tests/e2e/panels.test.js` 5.
+- NOT RUN: Windows Edge, 실제 마우스·터치.
+
 ## 다음 작업
-- Phase 4: 랙 상세·패널(F-018 더블클릭 상세, F-035 패널 접기, 랙 목록·검색 필터 흐림), 통계(F-004 나머지).
-- 이후: 다각형 통로·팔레트 끌어놓기, 라벨(F-019)·Excel 색은 Excel 단계와 함께. Phase 6 열 우선(92), Phase 8 대량 삭제 백업.
+- Phase 4b: 랙 상세 인포그래픽(F-018, 더블클릭·선반별 자재), 하단 패널(재고 기록·배치 이력 조회, F-034·F-035).
+- 이후: Excel 가져오기(Phase 5, 표시 모드·라벨·Excel 색 포함), Phase 6 자동 배치·열 우선(92), Phase 8 백업·진단.
+- 사용자: PR #10 → Phase 4a PR 순서로 병합.
 
 ## 미결 사항
 - 명세서 원본 전문(`docs/SPEC_v1_0.md`) 반입 여부.

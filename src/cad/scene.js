@@ -6,6 +6,7 @@
 import { warnings as spatialWarnings, ratio } from '../warehouse/constraints.js';
 import { aisleClearance } from '../geometry/clearance.js';
 import { HANDLE_DIRECTIONS, handlePoint } from '../warehouse/commands.js';
+import { matchRack } from '../warehouse/racklist.js';
 import { bounds, triangles } from '../geometry/polygons.js';
 import { OBJECT_TYPES, COLORS_DEFAULT } from '../core/project.js';
 import { formatNumber as fmt } from '../core/format.js';
@@ -61,10 +62,11 @@ function objectShape(o, fill, stroke, sel, aisle) {
  * @param {object} project 설정·테마·간격 기준
  * @param {{ scope?: 'before'|'after', selected?: Set<string>, tool?: string, marquee?: {a,b}|null, warnings?: object[], guides?: object[], pixelsPerMeter?: number }} opt
  *   guides: 드래그 중 정렬 가이드(commands.alignmentGuides). 선 굵기·글자 크기는 화면 px 기준이라 pixelsPerMeter가 필요하다.
+ *   filter: project.panels.view — 검색·필터에 맞지 않는 랙을 흐리게(기준본 match, 불투명도 0.2).
  *   resize: { live: boolean, invalidText?: string } — 객체 1개를 선택 도구로 골랐을 때 8방향 크기 조절 핸들(기준본 65)을 그린다.
  * @returns {{ svg: string, warnings: object[] }}
  */
-export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20, resize = null } = {}) {
+export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20, resize = null, filter = null } = {}) {
   const W = layout.warehouse, st = project.settings;
   const ws = warnings ?? spatialWarnings(layout, project);
   const bad = new Set(ws.flatMap((w) => w.ids));
@@ -82,7 +84,7 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     const sel = selected.has(o.id), cx = o.x + o.width / 2, cy = o.y + o.depth / 2, isRack = o.kind === 'rack';
     const fill = customFill(project, scope, o, isRack ? colors[loadState(o, st)] : OBJECT_COLORS[o.kind]);
     const stroke = bad.has(o.id) ? '#ff7885' : sel ? selColor : isRack ? '#a4c7ed' : '#627d97';
-    s += `<g data-id="${esc(o.id)}" opacity="1" transform="rotate(${o.rotation} ${cx} ${cy})" style="cursor:${cursor}"><title>${esc(o.code + ' · ' + OBJECT_TYPES[o.kind])}</title>${objectShape(o, fill, stroke, sel, aisles.get(o.id))}`;
+    s += `<g data-id="${esc(o.id)}" opacity="${filter && !matchRack(o, filter) ? 0.2 : 1}" transform="rotate(${o.rotation} ${cx} ${cy})" style="cursor:${cursor}"><title>${esc(o.code + ' · ' + OBJECT_TYPES[o.kind])}</title>${objectShape(o, fill, stroke, sel, aisles.get(o.id))}`;
     if (isRack) {
       s += `<path d="M ${o.x + 0.05} ${o.y + 0.12} H ${o.x + o.width - 0.05}" stroke="#d9e8ff" stroke-opacity=".35" stroke-width=".025"/>`;
       if (bad.has(o.id)) s += `<g transform="rotate(${-o.rotation} ${cx} ${cy})" pointer-events="none"><text x="${cx}" y="${cy - 0.12}" fill="#ff7885" font-size=".18">⚠</text></g>`;
