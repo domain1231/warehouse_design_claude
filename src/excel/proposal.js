@@ -43,7 +43,8 @@ export function readExcelConfig(raw) {
   if (['merge', 'update'].includes(c.mode) && !c.keep) throw new Error('기존 객체의 위치 유지 또는 재배치를 선택하세요.');
   return {
     ...c, target: raw.target, missingPolicy: raw.missingPolicy, specPolicy: raw.specPolicy,
-    autoPlacement: { mode: raw.autoMode, keepManual: !!raw.keepManual, allowRotation: !!raw.allowRotation, allowWarnings: !!raw.allowWarnings, preserveStructures: !!raw.preserveStructures },
+    // 92 W.config: 열 줄바꿈·외부 방향, 열 우선이면 구조물 항상 유지
+    autoPlacement: { mode: raw.autoMode, keepManual: !!raw.keepManual, allowRotation: !!raw.allowRotation, allowWarnings: !!raw.allowWarnings, preserveStructures: raw.autoMode === 'column' || !!raw.preserveStructures, allowWrap: !!raw.allowWrap, externalDirection: 'right' },
   };
 }
 
@@ -114,10 +115,11 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
  * @param {{ nextId, filename, sheet, missingDelete?: Set<string> }} ctx
  * @returns {{ layout, changes, missing, config, generatedKeys }}
  */
-export function buildProposal(project, analysis, c, { nextId, filename = '', sheet = '', missingDelete = new Set() }) {
+export function buildProposal(project, analysis, c, { nextId, filename = '', sheet = '', missingDelete = new Set(), onGenerated }) {
   // 70: 기존 랙 매칭·규격·누락
   const old = project.scenarios[c.target];
   const generated = generateRacks(analysis, c, { nextId, filename, sheet });
+  onGenerated?.(generated); // 열 우선 배치: 생성 위치를 따로 두고 좌표를 비운다(기준본 92 EX.generate)
   const priorMap = new Map();
   for (const o of racksOf(old).filter((x) => x.excel)) {
     const key = rackKey(o);

@@ -77,6 +77,12 @@ for (const c of proposalCases) {
         validateProject(P); // 실제 적용처럼 기본값 보정(규격·크기 제한 등)
         continue;
       }
+      if (step === 'clear') {
+        // AFTER 배치의 구조물·랙을 비운다(구조물 없는 창고에서 열 우선 수용 확인용)
+        P.scenarios.after.objects = [];
+        validateProject(P);
+        continue;
+      }
       if (step === 'apply') {
         // 70 EX.apply 본문(wApply) + 90 R.transaction 래퍼. 화면 확인·후보 일치 검사만 대체한다.
         last.warnings = warnings(last.layout);
@@ -105,13 +111,37 @@ for (const c of proposalCases) {
         if (step.build) {
           // 90 W.build: 후보 0(W.base) + W.pack 재배치 후보, 방식별 점수로 선택(Phase 6a)
           W.build(step.c);
-          out.push({ choice: W.choice, candidates: W.candidates.map((v) => ({ name: v.name, objects: v.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), counts: v.result.counts, moved: v.moved, manualMoved: v.manualMoved, orderLoss: v.orderLoss })) });
+          const strip = (col) => col && JSON.parse(JSON.stringify(col, (k, x) => (k === 'elapsedMs' ? undefined : x)));
+          out.push({ choice: W.choice, candidates: W.candidates.map((v) => ({ name: v.name, objects: v.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), counts: v.result.counts, moved: v.moved, manualMoved: v.manualMoved, orderLoss: v.orderLoss, ...(v.result.column ? { columnDistance: v.columnDistance, columnRotations: v.columnRotations, column: strip(v.result.column), reasons: v.result.rows.map((r) => [r.id, r.reason ?? null, r.protected ?? null]) } : {}) })), ...(step.c.autoPlacement.mode === 'column' ? { reference: { name: W.column.reference.name, counts: W.column.reference.result?.counts ?? null }, stopReason: W.column.lastRun.stopReason } : {}) });
           // 재최적화(90 wOptimize 본문을 기준본 W.pack·W.candidate·W.compare로 재현, Phase 6b). 결과 후보를 추가하고 선택한다.
           for (const ro of step.reopt || []) {
             const prior = W.candidates[W.choice], c = step.c;
             W.previewSelected.clear();
             const racks = prior.layout.objects.filter((o) => o.kind === 'rack');
             for (const i of ro.select || []) W.previewSelected.add(racks[i].id);
+            if (c.autoPlacement.mode === 'column') {
+              // 92 C.optimize 계산 부분(기준본 C.* 사용)
+              if (ro.scope === 'selected' && !W.previewSelected.size) {
+                out.push({ reopt: ro.scope, error: '아래 목록에서 랙을 선택하세요.' });
+                continue;
+              }
+              const C = W.column;
+              C.run = C.startRun();
+              const vs = [];
+              for (const [, strategy] of C.strategies(C.options(c).allowWrap)) {
+                if (vs.length >= C.limits.maxCandidates || (vs.length && !C.check())) break;
+                vs.push(C.candidate((ro.scope === 'waiting' ? '외부 재수용' : '재최적화') + ' · ' + strategy, W.pack(prior.layout, { ...c, keep: 'reflow' }, strategy, ro.scope), c, P.scenarios[c.target]));
+                C.run.candidates++;
+              }
+              vs.sort(C.compare);
+              const stop = C.run.stopReason;
+              C.run = null;
+              const next = vs[0];
+              W.candidates.push(next);
+              W.choice = W.candidates.length - 1;
+              out.push({ reopt: ro.scope, name: next.name, safe: C.safe(next), validInside: [prior.result.counts.validInside, next.result.counts.validInside], objects: next.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), stop });
+              continue;
+            }
             if (ro.scope === 'selected' && !W.previewSelected.size) {
               out.push({ reopt: ro.scope, error: '아래 목록에서 재최적화할 랙을 선택하세요.' });
               continue;

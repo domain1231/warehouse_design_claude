@@ -194,3 +194,58 @@ test('Excel 후보 비교·선택·재최적화(Phase 6b): 비교표 선택은 �
   assert.deepEqual(problems, []);
   await ctx.close();
 });
+
+test('Excel 열 우선(Phase 6c): 후보 4개+비교 전용, 그룹 표, 외부 재수용, 열 줄바꿈·회전 재생성, 안전하지 않으면 적용 불가', async () => {
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 } });
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(e.message));
+  page.on('dialog', (d) => d.accept());
+  await page.goto(fileUrl);
+  await page.waitForFunction(() => window.__warehouseView);
+  await page.locator('[data-testid=excel-open]').click();
+  await page.locator('[data-testid=excel-file]').setInputFiles(path.join(root, 'fixtures/excel/synthetic-many.xlsx'));
+  await page.waitForFunction(() => /유효/.test(document.querySelector('[data-testid=excel-summary]').textContent));
+  const cfg = (n) => page.locator(`[data-testid=excel-config] [name=${n}]`);
+  await cfg('target').selectOption('after');
+  await cfg('mode').selectOption('new');
+  await cfg('building').fill('SYN');
+  await cfg('source').fill('가상 자료');
+  await cfg('width').fill('10');
+  await cfg('depth').fill('6');
+  await cfg('autoMode').selectOption('column');
+  await cfg('keepManual').uncheck();
+  const rows = page.locator('[data-testid=excel-comparison] tbody tr');
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 5);
+  assert.match(await rows.first().textContent(), /비교 전용/);
+  assert.equal(await page.locator('[data-testid=excel-comparison] input[data-cand]').count(), 4);
+  const groups = await page.locator('[data-testid=excel-colresults] tbody tr').allTextContents();
+  for (const k of ['A', 'B', 'C']) assert.ok(groups.some((t) => t.includes(k + '열')), k + '열');
+  const outside = await page.locator('[data-testid=excel-colresults] tbody tr td:nth-child(4)').allTextContents();
+  assert.ok(outside.some((t) => Number(t) > 0), '외부 수용 랙 > 0');
+  await page.locator('[data-testid=excel-reaccept]').click();
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 6);
+  assert.match(await rows.nth(5).textContent(), /^\s*외부 재수용/);
+  await cfg('allowWrap').check();
+  await cfg('allowRotation').check();
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 9);
+  assert.equal(await page.locator('[data-testid=excel-comparison] input[data-cand]').count(), 8);
+  const apply = page.locator('[data-testid=excel-apply]');
+  // 구조물(통로)이 있는 AFTER 배치에서는 열 우선 후보가 안전하지 않다(기준본 X2 사례와 같음) → 적용 차단
+  assert.ok(await apply.isDisabled());
+  assert.match(await page.locator('[data-testid=excel-applymsg]').textContent(), /안전·열 조건 실패 · 경고 확인으로 승인할 수 없습니다/);
+  // 빈 AFTER 배치에서는 안전한 후보가 선택되어 적용된다
+  await page.evaluate(() => window.__warehouseSession.edit('시험: AFTER 비우기', (d) => { d.scenarios.after.objects = []; }));
+  await page.locator('[data-testid=excel-config] [name=width]').fill('20');
+  await page.locator('[data-testid=excel-config] [name=depth]').fill('12');
+  await page.locator('[data-testid=excel-config] [name=depth]').dispatchEvent('change');
+  await page.waitForFunction(() => !document.querySelector('[data-testid=excel-apply]').disabled || /내부 정상 21\/21/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
+  if (!(await page.locator('[data-testid=excel-ack]').isHidden())) await page.locator('[data-testid=excel-ack]').check();
+  assert.ok(!(await apply.isDisabled()), await page.locator('[data-testid=excel-applymsg]').textContent());
+  await apply.click();
+  await page.waitForFunction(() => window.__warehouseSession.state.project.layoutBackups.length === 1 && window.__warehouseSession.state.status === 'saved');
+  const r = await page.evaluate(() => { const p = window.__warehouseSession.state.project; return [p.autoPlacement.settings.after.mode, p.scenarios.after.autoPlacementRules.mode, p.scenarios.after.objects.filter((o) => o.kind === 'rack' && !o.placementMeta?.waiting).length]; });
+  assert.deepEqual(r, ['column', 'column', 21]);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});

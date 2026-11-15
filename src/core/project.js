@@ -239,7 +239,7 @@ export function createProject({ sample = true, nextId = createIdGenerator(), tod
 
 // ---------- 검증 ----------
 
-function validateColumnOptions(o) { // 92 C.validateOptions
+export function validateColumnOptions(o) { // 92 C.validateOptions
   if (!isPlain(o)) fail('열 배치 기준 형식 오류');
   const d = { allowWrap: false, keepManual: true, allowRotation: false, externalDirection: 'right', northRotation: 0, columnDirection: 'east', firstRackPosition: 'north', order: '', first: {} };
   for (const k of Object.keys(d)) if (o[k] === undefined) o[k] = d[k];

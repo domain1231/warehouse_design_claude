@@ -7,6 +7,7 @@ import { GEOMETRY_EPS_M as EPS, roundMm } from '../geometry/tolerance.js';
 import { scanLayout } from '../warehouse/constraints.js';
 import { buildProposal } from '../excel/proposal.js';
 import { formatNumber as fmt } from '../core/format.js';
+import { buildColumnCandidates, columnBase } from './column.js';
 
 export const PROBE_LIMIT = 6000;
 const geom = (o) => [o.x, o.y, o.width, o.depth, o.height, o.rotation];
@@ -161,6 +162,7 @@ export const ROTATE_STRATEGY = ['90° 회전 허용', 'rotate'];
  * @returns {{ proposal, candidates, choice }} proposal = buildProposal 결과(후보 0 배치 포함).
  */
 export function buildCandidates(project, analysis, c, opts) {
+  if (c.autoPlacement.mode === 'column') return buildColumnCandidates(project, analysis, c, opts);
   const proposal = buildProposal(project, analysis, c, opts), old = project.scenarios[c.target];
   const candidates = [makeCandidate('기존 배치 규칙', proposal.layout, c, old, project)];
   for (const [name, s] of [...STRATEGIES, ...(c.autoPlacement.allowRotation ? [ROTATE_STRATEGY] : [])]) candidates.push(makeCandidate(name, pack(proposal.layout, c, s, { project }), c, old, project));
@@ -193,4 +195,9 @@ export function reoptimize(prior, c, scope, { project, chosen = new Set() }) {
   const p = prior.result.counts, n = next.result.counts;
   const note = `${worse ? '개선되지 않은 후보입니다. 이전 후보로 돌아갈 수 있습니다.' : '재최적화 후보를 생성했습니다.'} 이전 경계 ${p.boundary} / 현재 ${n.boundary} · 충돌 ${p.rackCollision + p.structureCollision} → ${n.rackCollision + n.structureCollision} · 이동 ${movedCount(next.layout, prior.layout)}랙 · 창고 면적 − 랙 면적 ${fmt(next.result.warehouseArea - next.result.footprint, 3)}㎡ (순 가용 공간 아님)`;
   return { candidate: next, worse, note };
+}
+
+/** 기준본 W.base(92 래퍼 포함): 열 우선이면 columnBase, 아니면 buildProposal. */
+export function baseProposal(project, analysis, c, opts) {
+  return c.autoPlacement.mode === 'column' ? columnBase(project, analysis, c, opts) : buildProposal(project, analysis, c, opts);
 }
