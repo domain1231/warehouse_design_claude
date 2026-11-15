@@ -46,6 +46,17 @@ async function attachFixture(page) {
 test('랙 더블클릭 상세: 선반·자재 카드, 자재 원본 정보, 검색·선반 필터, 방향 설정 저장, CSV 내려받기, 실제 설비 확인', async () => {
   const { ctx, page } = await open();
   const rack = await attachFixture(page);
+  await page.locator(`[data-testid=plan] g[data-id="${rack.id}"]`).first().click();
+  // 인스펙터의 Excel 연결 상세(기준본 exImportDetails, 읽기 전용)
+  const box = page.locator('#exImportDetails');
+  assert.match(await box.locator('h3').textContent(), /Excel 연결 · SYN 7/);
+  assert.deepEqual(await box.locator('[data-extab]').allTextContents(), ['기본정보', '선반정보', '자재정보', '분석정보', '이력']);
+  assert.ok(await box.locator('#exPhysical').isDisabled());
+  await box.locator('[data-extab=shelves]').click();
+  assert.match(await page.locator('#exDetailPane').textContent(), /선반은 수직 계층입니다/);
+  await box.locator('[data-extab=items]').click();
+  assert.match(await page.locator('#exDetailPane').textContent(), /현재고 정보 없음/);
+  await box.locator('[data-extab=basic]').click();
   await page.locator(`[data-testid=plan] g[data-id="${rack.id}"]`).first().dblclick();
   const dialog = page.locator('[data-testid=detail-dialog]');
   await dialog.waitFor({ state: 'visible' });
