@@ -103,6 +103,12 @@ export function warnings(layout, project) {
 
 // ---------- 배치 검사 ----------
 
+// 열 우선 배치 검사(autolayout/column.js가 등록). 모듈 순환 참조를 피하려고 주입한다.
+let columnScanner = null;
+export function registerColumnScanner(fn) {
+  columnScanner = fn;
+}
+
 /** 기준본 W.hash: FNV-1a + djb2 결합 문자열 지문 */
 export function hash(s) {
   let a = 2166136261;
@@ -142,10 +148,13 @@ export function excessText(e) {
 /**
  * 배치 검사 결과 { fingerprint, checkedAt, counts, rows, warnings, footprint, warehouseArea }.
  * counts.validInside: 경계 안이면서 어떤 공간 이슈도 없는 랙 수(수용률의 분자).
- * 열 우선 모드(autoPlacementRules.mode === 'column')의 확장 검사는 Phase 6에서 추가한다.
+ * 열 우선 모드(autoPlacementRules.mode === 'column')는 autolayout/column.js의 열 조건 보강 검사로 넘긴다(기준본 92 W.scan).
  */
 export function scanLayout(layout, project, { now = () => new Date().toISOString() } = {}) {
-  if (layout.autoPlacementRules?.mode === 'column') throw new Error('열 우선 모드 배치 검사는 아직 지원하지 않습니다(Phase 6).');
+  if (layout.autoPlacementRules?.mode === 'column') {
+    if (!columnScanner) throw new Error('열 우선 배치 검사 모듈이 로드되지 않았습니다.');
+    return columnScanner(layout, project, { now });
+  }
   const fingerprint = layoutSignature(layout, project);
   const ws = warnings(layout, project).map((w) => ({ ...w, ids: [...w.ids] }));
   const racks = layout.objects.filter((o) => o.kind === 'rack');
