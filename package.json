@@ -21,7 +21,8 @@
     "verify": "node tools/verify.cjs",
     "test:unit": "node --test \"tests/unit/*.test.js\"",
     "test:e2e": "node --test \"tests/e2e/*.test.js\"",
-    "check": "pnpm run test:unit && pnpm run build && pnpm run verify && pnpm run test:e2e"
+    "check": "pnpm run test:unit && pnpm run test:golden && pnpm run build && pnpm run verify && pnpm run test:e2e",
+    "test:golden": "node --test \"tests/golden/*.test.js\""
   },
   "devDependencies": {
     "esbuild": "0.28.2",
