@@ -3,7 +3,7 @@
 ## 현재 상태 (2026-11-15)
 - 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#21은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 96 + Golden 260(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 47. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 106 + Golden 260(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 52. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -109,8 +109,13 @@
 ## Phase 7b 결과 (2026-11-15, feature/phase7b-history, PR #22 위에 쌓음)
 - 과거 날짜 조회(D-025): records.js 조회 함수, 왼쪽 패널 "과거 조회", 읽기 전용 차단, 배치 기록 '조회'. 대조 `tests/golden/H1-history.test.js` 8, E2E `tests/e2e/history.test.js` 2.
 
+## Phase 8 결과 (2026-11-15, feature/phase8-backups, PR #23 위에 쌓음)
+- `src/persistence/backups.js`, 세션 백업 연결·replaceProject·recoveryText, `src/ui/storage-dialogs.js`(D-026). 단위 backups 5 + session-backups 5, E2E storage2 5.
+- 원격의 `feature/phase8-storage`는 폐기된 이전 브랜치(강제 푸시 금지로 새 이름 사용). 삭제는 사용자 판단.
+
 ## 다음 작업
-- Phase 8: 전체 프로젝트 백업 링(feature/phase8-storage에 모듈 커밋됨)·세션 연결, 저장소 진단, 복구 JSON 내려받기, JSON 불러오기 화면, 저장 실패 문구.
+- Phase 9: 창고 치수 적용·면적 역산(F-003), 임의 각도 회전(F-007), 참고 도면·두 점 축척(F-012), 패널 하단(F-035), 모바일 드로어(F-042), 미뤄 둔 UI(색 직접 입력·미수용 상세·모든 랙 보기).
+- Phase 10: CSV·SVG·PNG·인쇄 내보내기(F-033), 배포 패키지.
 - Phase 9로 미룬 것: UI 색 직접 입력·프리셋, 복원 미리보기.
 - Phase 6: 자동 배치 후보(W.pack 5종·W.build·비교표·후보 선택), 열 우선 생성(92).
 - 사용자 확인 필요: 실제 업무 Excel을 로컬 빌드로 열고 '매핑 요약 복사' 결과(값 제외)로 매핑 확인.

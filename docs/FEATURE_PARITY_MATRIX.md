@@ -37,9 +37,9 @@
 | F-027 | BEFORE/AFTER·잠금·비교 | 70-scenarios | 잠금, 복제, 비교 | 독립성, 비교 출력 | scenarios | warehouse/scenarios, ui/scenario-dialogs | SV09, S2, E2E scenarios | IMPLEMENTED | 잠금(Phase 3b)·복제·백업 복원·비교표·변경 행·CSV 기준본 일치(S2 7사례, D-024) |
 | F-028 | 원자적 적용 트랜잭션 | 70-scenarios R.transaction | 적용 | 실패 시 전체 복원 | 전체 | excel/apply | XL14, X2, unit excel-apply | DONE | R.capture·R.backup·R.transaction·EX.apply(+75·80·90 래퍼) 기준본 일치(X2 적용 2사례: 백업·수정 이력·가져오기 이력·스냅숏·자동 배치 이력). 다른 편집안 변경·검증 실패·참조 공유 시 전체 취소 |
 | F-029 | 검증 저장·무변경 생략 | 75 V.atomic/V.write/V.fingerprint | 저장 | SAVED/UNSAVED/ROLLED_BACK | persistence | persistence/storage, core/session | SV01–SV03, SV11 | IMPLEMENTED | 단위(SV01–SV03, SV11) + 브라우저 E2E(저장·새로고침 복원) |
-| F-030 | Quota 처리·백업 순환 | 75 V.track/V.restore (BUG-STORAGE-001) | — | 정상본 보존, 3/6개 순환 | layoutBackups | persistence/backups | SV04–SV07, SV12 | IMPLEMENTING | Quota 단위·브라우저 E2E(실패 표시·기존본 보존·재시도) — 백업 순환(3/6개) 전 |
-| F-031 | 저장소 진단·복구 다운로드 | 75 V.measureStorage/storageSnapshot | 저장소 관리 | 크기·단계 표시 | — | persistence/diagnostics | — (Phase 0 배정) | NOT STARTED | — |
-| F-032 | JSON 내보내기·불러오기 | 30-editor-io | 파일 | 2.3.6 무손실 왕복 | Project | exports/json, persistence/migration | SV08, SV10 | IMPLEMENTING | 기준본 저장 형식 양방향 호환, JSON 내보내기 버튼 — JSON 불러오기 UI 전 |
+| F-030 | Quota 처리·백업 순환 | 75 V.track/V.restore (BUG-STORAGE-001) | — | 정상본 보존, 3/6개 순환 | layoutBackups | persistence/backups | SV04–SV07, SV12 | IMPLEMENTED | 최신 3개 전체 프로젝트 백업 링·배치 백업 6개 순환·Quota 안내·저장 실패 시 백업 되돌리기(D-026, 단위·E2E) |
+| F-031 | 저장소 진단·복구 다운로드 | 75 V.measureStorage/storageSnapshot | 저장소 관리 | 크기·단계 표시 | — | persistence/diagnostics | — (Phase 0 배정) | IMPLEMENTED | 저장소 관리 대화상자·복구 JSON 내려받기(D-026, E2E storage2) |
+| F-032 | JSON 내보내기·불러오기 | 30-editor-io | 파일 | 2.3.6 무손실 왕복 | Project | exports/json, persistence/migration | SV08, SV10 | IMPLEMENTED | JSON 불러오기(12MB·교체 보호·백업 후 교체·실행취소)·날짜 붙은 내보내기, 기준본 저장 형식 양방향 호환(D-026) |
 | F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | NOT STARTED | — |
 | F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | warehouse/records, ui/records-panel | UI04, P3, E1, E2E details | IMPLEMENTED |재고 기록 조회(범위·검색·null 보존), 배치 이력 기록·복원·비교 기준본 일치 — 과거 날짜 읽기 전용 조회 모드(Phase 7) 전 · 과거 날짜 조회 모드(읽기 전용) 기준본 일치(H1 7사례, D-025) |
 | F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels, main | UI06, UI07, E2E panels | IMPLEMENTING | 좌우 패널 접기·저장·축척 불변(E2E) — 하단 패널(재고·배치 이력) 전 |

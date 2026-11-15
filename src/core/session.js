@@ -8,6 +8,7 @@
 //   saving   저장 진행 중
 //   error    저장 실패. 메모리의 편집은 유지된다. error.code: QUOTA | CONFLICT | CORRUPT | VERIFY | VALIDATION | STORAGE
 // 편집은 검증에 실패하면 적용하지 않는다(프로젝트·이력 불변).
+import { checkpointReason } from '../persistence/backups.js';
 import { createProject, validateProject, assertIndependent } from './project.js';
 import { createHistory } from './history.js';
 import { createIdGenerator } from './ids.js';
@@ -35,7 +36,7 @@ export function storeScanResults(project, { now } = {}) {
   return project;
 }
 
-export function createSession({ store, nextId, today, now = () => new Date().toISOString(), historyLimit = 60, autosave = true }) {
+export function createSession({ store, nextId, today, now = () => new Date().toISOString(), historyLimit = 60, autosave = true, backups = null }) {
   const ids = nextId ?? createIdGenerator();
   const history = createHistory({ limit: historyLimit });
   const listeners = new Set();
@@ -46,6 +47,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     error: null, // { code, stage, message }
     notice: '',
     corrupt: false,
+    lastFailure: null, // 적용 실패(전체 취소) 직전 프로젝트 원문 { reason, text, time } — 복구 JSON 내려받기용(기준본 R.lastFailure)
   };
 
   const emit = () => {
@@ -58,6 +60,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     error: state.error,
     notice: state.notice,
     corrupt: state.corrupt,
+    lastFailure: state.lastFailure,
     canUndo: history.canUndo,
     canRedo: history.canRedo,
   });
@@ -127,12 +130,90 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     const draft = structuredClone(before);
     mutate(draft);
     const next = projectValidator(draft);
+    if (JSON.stringify(next) === JSON.stringify(before)) return { changed: false };
+    const receipt = await checkpointFor(before, next, label); // 실패하면 오류를 던지고 편집을 적용하지 않는다
     if (!history.record(before, next, label)) return { changed: false };
     state.project = next;
     state.status = 'unsaved';
     emit();
-    if (autosave) await save();
+    if (autosave) await saveWithReceipt(receipt);
     return { changed: true };
+  }
+
+  /**
+   * 주요 작업(객체 2개 이상 삭제·BEFORE 변경·복원) 직전 전체 프로젝트 백업(기준본 75 commit 래퍼 + V.checkpoint).
+   * 백업 실패는 편집을 막는다(기준본과 같음). 영수증은 이어지는 저장이 실패하면 백업을 되돌리는 데 쓴다.
+   */
+  async function checkpointFor(before, next, label) {
+    if (!backups) return null;
+    const reason = checkpointReason(before, next, label);
+    if (!reason) return null;
+    try {
+      return (await backups.checkpoint(before, reason)).receipt;
+    } catch (e) {
+      state.error = { code: e.code || 'STORAGE', stage: e.stage, message: '프로젝트 백업 실패 · 편집을 적용하지 않았습니다: ' + e.message };
+      emit();
+      throw new Error(state.error.message);
+    }
+  }
+  async function saveWithReceipt(receipt) {
+    const r = await save();
+    if (receipt && r.state === 'FAILED') {
+      try {
+        backups.rollback(receipt);
+      } catch {
+        // 되돌리기 실패는 저장 오류로 이미 보고됨. 백업 링에는 직전 상태 백업이 하나 더 남을 뿐이다.
+      }
+    }
+    return r;
+  }
+
+  /**
+   * 전체 프로젝트 교체(JSON 불러오기, 기준본 V.install): 검증 → 현재 프로젝트 백업 → 교체(실행취소 가능) → 저장.
+   * 저장에 실패하면 이전 프로젝트로 되돌리고 백업도 되돌린다(전체 교체 취소).
+   * @returns {{ ok: boolean, reason?: string }}
+   */
+  async function replaceProject(data, label) {
+    const before = state.project;
+    let next;
+    try {
+      next = projectValidator(structuredClone(data));
+    } catch (e) {
+      return { ok: false, reason: e.message };
+    }
+    let receipt = null;
+    if (backups) {
+      try {
+        receipt = (await backups.checkpoint(before, label + ' 적용 전')).receipt;
+      } catch (e) {
+        return { ok: false, reason: '현재 프로젝트 백업 실패: ' + e.message };
+      }
+    }
+    const snapshot = history.snapshot();
+    history.record(before, next, label);
+    state.project = next;
+    state.status = 'unsaved';
+    emit();
+    const r = await save();
+    if (r.state === 'FAILED') {
+      history.restore(snapshot);
+      state.project = before;
+      if (receipt) backups.rollback(receipt);
+      emit();
+      return { ok: false, reason: r.error.message };
+    }
+    return { ok: true };
+  }
+
+  /** 검증된 적용 전 복구 JSON(기준본 V.recoveryText). 없거나 검증 실패면 null. */
+  function recoveryText() {
+    if (!state.lastFailure) return null;
+    try {
+      projectValidator(JSON.parse(state.lastFailure.text));
+      return state.lastFailure.text;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -144,9 +225,20 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     if (!state.project) throw new Error('init() 전에는 편집할 수 없습니다.');
     const before = state.project;
     const r = compute(before, { nextId: ids, now });
+    if (r && r.ok === false && r.project === before) {
+      state.lastFailure = { reason: r.reason, text: JSON.stringify(before), time: now() };
+      emit();
+    }
     if (!r || r.project === before) return r;
+    let receipt = null;
     if (r.ok) {
       const next = projectValidator(r.project);
+      if (JSON.stringify(next) === JSON.stringify(before)) return { ...r, changed: false };
+      try {
+        receipt = await checkpointFor(before, next, label);
+      } catch (e) {
+        return { ...r, ok: false, reason: e.message, project: before };
+      }
       if (!history.record(before, next, label)) return { ...r, changed: false };
       state.project = next;
     } else {
@@ -154,7 +246,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     }
     state.status = 'unsaved';
     emit();
-    if (autosave && !state.corrupt) await save();
+    if (autosave && !state.corrupt) await saveWithReceipt(receipt);
     return r;
   }
 
@@ -241,6 +333,8 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     save,
     edit,
     apply,
+    replaceProject,
+    recoveryText,
     undo: () => step('undo'),
     redo: () => step('redo'),
     handleStorageEvent,
