@@ -216,3 +216,8 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 
 /* 라벨은 클릭을 가로채지 않는다(기준본 .v-labels). */
 .v-labels{pointer-events:none}
+
+/* Phase 7a: BEFORE/AFTER 복제·비교·이력 */
+.scenario-dialog .records-table { max-height: 34vh; margin-top: 8px; }
+.scenario-dialog { overflow: auto; }
+.scenario-dialog .detail-controls { margin-top: 8px; }

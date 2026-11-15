@@ -18,6 +18,8 @@ import { createPanels } from './ui/panels.js';
 import { createRackDetail } from './ui/rack-detail.js';
 import { createRecordsPanel } from './ui/records-panel.js';
 import { createExcelDialog } from './ui/excel-dialog.js';
+import { createScenarioDialogs } from './ui/scenario-dialogs.js';
+import { cloneBeforeToAfter, restoreBackup, CLONE_COMMAND, RESTORE_COMMAND } from './warehouse/scenarios.js';
 import { applyExcelProposal, EXCEL_APPLY_COMMAND } from './excel/apply.js';
 import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
 import { saveSnapshot, restoreSnapshot, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
@@ -97,7 +99,10 @@ function renderShell(root) {
   const scenBefore = button('scenario-before', 'BEFORE 개선 전');
   const scenAfter = button('scenario-after', 'AFTER 개선 후');
   const lockBtn = button('before-lock', '');
-  scenarioRow.append(scenBefore, scenAfter, lockBtn);
+  const cloneBtn = button('scenario-clone', 'BEFORE → AFTER 복제', { title: '미리보기와 백업 후 독립 복제' });
+  const compareBtn = button('scenario-compare', '비교');
+  const historyBtn = button('scenario-history', '가져오기 이력');
+  scenarioRow.append(scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn);
   const panelRow = el('div', { class: 'tool-group panel-row', role: 'group', 'aria-label': '패널' });
   const leftToggle = button('toggle-left', '');
   const rightToggle = button('toggle-right', '');
@@ -231,7 +236,7 @@ function renderShell(root) {
     vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: colorMode.querySelector('select'), resetScope: resetScope.querySelector('select'), resetBtn, applyColorsBtn,
     thrLow: thrLow.querySelector('input'), thrHigh: thrHigh.querySelector('input'), colorInputs: Object.fromEntries(colorInputs.map(([k, l]) => [k, l.querySelector('input')])),
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
-    scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
+    scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
@@ -288,6 +293,10 @@ async function start() {
     toast: (t) => showToast(t),
   });
   const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)) });
+  const scenarioDialogs = createScenarioDialogs({
+    getProject: () => project(), toast: (t) => showToast(t), download, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
+    apply: (label, compute) => session.apply(label, compute),
+  });
   const groupDialog = createGroupDialog({
     getProject: () => project(),
     getSelection: () => selectedRackIds(),
@@ -555,6 +564,9 @@ async function start() {
   for (const b of ui.toolButtons) b.addEventListener('click', () => setTool(b.dataset.tool));
   ui.rotateBtn.addEventListener('click', () => rotateSelected());
   ui.excelBtn.addEventListener('click', () => excelDialog.open());
+  ui.cloneBtn.addEventListener('click', () => scenarioDialogs.openClone());
+  ui.compareBtn.addEventListener('click', () => scenarioDialogs.openCompare());
+  ui.historyBtn.addEventListener('click', () => scenarioDialogs.openHistory());
   ui.detailBtn.addEventListener('click', () => rackDetail.open([...selected][0]));
   ui.alignXBtn.addEventListener('click', () => groupDialog.open('left'));
   ui.alignYBtn.addEventListener('click', () => groupDialog.open('top'));

@@ -34,7 +34,7 @@
 | F-024 | 기존 자동 배치 모드 | 90-auto-layout W.fits/scan/pack | 배치 설정 | 기존 후보 재현 | autoPlacement | autolayout/candidates | AL01–AL03, X2 | DONE | 내부·순서·통로 방식 후보 5~6종 생성·점수·선택 기준본 일치(X2 후보 10사례, 대기열 포함) |
 | F-025 | 열 우선 최대 수용 | 92-column-layout C.search | 열 우선 모드 | 열·번호 순서, 부분 수용 | autoPlacement | autolayout/column | AL04–AL06, AL12, AL14, X2 | IMPLEMENTED | 열 우선 후보·외부 대기·열 진단·재최적화 기준본 일치(X2 10사례). 탐색 시간 상한은 제거(D-023, 사용자 확인 필요) |
 | F-026 | 외부 대기·재수용 | 92-column-layout C.queue | 재수용 버튼 | 겹침 없음, 규격 유지 | objects | placement/external-queue | AL07–AL11, AL13 | NOT STARTED | — |
-| F-027 | BEFORE/AFTER·잠금·비교 | 70-scenarios | 잠금, 복제, 비교 | 독립성, 비교 출력 | scenarios | scenarios/* | SV09 | NOT STARTED | — |
+| F-027 | BEFORE/AFTER·잠금·비교 | 70-scenarios | 잠금, 복제, 비교 | 독립성, 비교 출력 | scenarios | warehouse/scenarios, ui/scenario-dialogs | SV09, S2, E2E scenarios | IMPLEMENTING | 잠금(Phase 3b)·복제·백업 복원·비교표·변경 행·CSV 기준본 일치(S2 7사례, D-024). 남음: 과거 조회 모드(7b) |
 | F-028 | 원자적 적용 트랜잭션 | 70-scenarios R.transaction | 적용 | 실패 시 전체 복원 | 전체 | excel/apply | XL14, X2, unit excel-apply | DONE | R.capture·R.backup·R.transaction·EX.apply(+75·80·90 래퍼) 기준본 일치(X2 적용 2사례: 백업·수정 이력·가져오기 이력·스냅숏·자동 배치 이력). 다른 편집안 변경·검증 실패·참조 공유 시 전체 취소 |
 | F-029 | 검증 저장·무변경 생략 | 75 V.atomic/V.write/V.fingerprint | 저장 | SAVED/UNSAVED/ROLLED_BACK | persistence | persistence/storage, core/session | SV01–SV03, SV11 | IMPLEMENTED | 단위(SV01–SV03, SV11) + 브라우저 E2E(저장·새로고침 복원) |
 | F-030 | Quota 처리·백업 순환 | 75 V.track/V.restore (BUG-STORAGE-001) | — | 정상본 보존, 3/6개 순환 | layoutBackups | persistence/backups | SV04–SV07, SV12 | IMPLEMENTING | Quota 단위·브라우저 E2E(실패 표시·기존본 보존·재시도) — 백업 순환(3/6개) 전 |

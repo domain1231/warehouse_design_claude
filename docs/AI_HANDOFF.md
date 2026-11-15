@@ -1,9 +1,9 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#18은 main에 병합됨.
+- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#20은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 96 + Golden 244(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 42. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 96 + Golden 252(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 45. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -102,8 +102,12 @@
 - 결정 필요: 탐색 시간 상한 제거(탐색 예산만 사용)로 대규모 배치에서 기준본과 결과가 다를 수 있음.
 - NOT RUN: 500랙 규모 탐색(기준본 시간 상한 도달 여부), Windows Edge.
 
+## Phase 7a 결과 (2026-11-15, feature/phase7-scenarios)
+- `src/warehouse/scenarios.js`(D-024), `src/ui/scenario-dialogs.js`. 대조 `tests/golden/S2-scenarios.test.js` 8, E2E `tests/e2e/scenarios.test.js` 3.
+- 모델 배분: 계산 이식·기준본 대조 Opus, 화면·E2E Sonnet.
+
 ## 다음 작업
-- Phase 7: BEFORE/AFTER 비교·과거 이력 조회 모드·BEFORE→AFTER 복제.
+- Phase 7b: 과거 날짜 조회 모드(historyDate·읽기 전용 차단·기록 배치 우선/현재 배치+과거 재고).
 - Phase 9로 미룬 것: UI 색 직접 입력·프리셋, 복원 미리보기.
 - Phase 6: 자동 배치 후보(W.pack 5종·W.build·비교표·후보 선택), 열 우선 생성(92).
 - 사용자 확인 필요: 실제 업무 Excel을 로컬 빌드로 열고 '매핑 요약 복사' 결과(값 제외)로 매핑 확인.
