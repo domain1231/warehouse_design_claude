@@ -221,3 +221,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .scenario-dialog .records-table { max-height: 34vh; margin-top: 8px; }
 .scenario-dialog { overflow: auto; }
 .scenario-dialog .detail-controls { margin-top: 8px; }
+
+/* Phase 8: 저장소 대화상자 */
+.storage-dialog { width: min(960px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
+.storage-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.storage-dialog .version-row { padding: 10px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.storage-dialog .version-row button { margin: 4px 4px 0 0; }
+.storage-dialog th { text-align: left; font-weight: 600; padding-right: 12px; }

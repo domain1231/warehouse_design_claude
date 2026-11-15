@@ -21,6 +21,7 @@ import { createRackDetail } from './ui/rack-detail.js';
 import { createRecordsPanel } from './ui/records-panel.js';
 import { createExcelDialog } from './ui/excel-dialog.js';
 import { createScenarioDialogs } from './ui/scenario-dialogs.js';
+import { createStorageDialogs, QUOTA_TEXT } from './ui/storage-dialogs.js';
 import { cloneBeforeToAfter, restoreBackup, CLONE_COMMAND, RESTORE_COMMAND } from './warehouse/scenarios.js';
 import { applyExcelProposal, EXCEL_APPLY_COMMAND } from './excel/apply.js';
 import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
@@ -40,7 +41,7 @@ const STATUS_TEXT = {
   error: '! 저장 실패',
 };
 const ERROR_HINT = {
-  QUOTA: '브라우저 저장 공간이 부족합니다. 편집 내용은 이 탭의 메모리에 남아 있습니다. JSON으로 내보내 보관하세요.',
+  QUOTA: QUOTA_TEXT,
   CONFLICT: '다른 탭 또는 창에서 먼저 저장했습니다. 덮어쓰지 않았습니다.',
   CORRUPT: '기존 저장본을 읽을 수 없어 보호 중입니다.',
   VERIFY: '저장 후 읽기 확인에 실패해 저장하지 않았습니다. 기존 저장본은 그대로입니다.',
@@ -96,7 +97,12 @@ function renderShell(root) {
   const redoBtn = button('redo', '다시 실행');
   const exportBtn = button('export', 'JSON 내보내기');
   const excelBtn = button('excel-open', 'Excel 가져오기');
-  actions.append(saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, excelBtn);
+  const importBtn = button('import-json', 'JSON 불러오기');
+  const importInput = el('input', { type: 'file', accept: '.json,application/json', hidden: '', testid: 'import-file' });
+  const versionsBtn = button('versions-open', '이전 버전·백업');
+  const storageBtn = button('storage-open', '저장소 관리');
+  const recoveryBtn = button('recovery-download', '적용 취소 상태 JSON 백업 다운로드', { hidden: '' });
+  actions.append(saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, importBtn, importInput, versionsBtn, storageBtn, recoveryBtn, excelBtn);
   const scenarioRow = el('div', { class: 'tool-group scenario-row', role: 'group', 'aria-label': '배치 대상' });
   const scenBefore = button('scenario-before', 'BEFORE 개선 전');
   const scenAfter = button('scenario-after', 'AFTER 개선 후');
@@ -239,7 +245,7 @@ function renderShell(root) {
   app.append(header, notice, main, toast);
   root.replaceChildren(app);
   return {
-    name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
+    name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, importBtn, importInput, versionsBtn, storageBtn, recoveryBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     labelMode: labelMode.querySelector('select'), labelLayout: labelLayout.querySelector('select'), labelPadding: labelPadding.querySelector('select'), labelStatus,
     vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: colorMode.querySelector('select'), resetScope: resetScope.querySelector('select'), resetBtn, applyColorsBtn,
@@ -257,6 +263,8 @@ async function start() {
   // 주요 작업 전 전체 프로젝트 백업 링(기준본 V.checkpoint, D-026). 지문은 저장 메타(persistence)를 뺀 프로젝트 JSON.
   const backups = createBackupRing({ storage: window.localStorage, validate: projectValidator, fingerprint: (p) => JSON.stringify({ ...p, persistence: undefined }), nextId: ids });
   const session = createSession({ store, nextId: ids, backups });
+  const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const storageDialogs = createStorageDialogs({ session, store, backups, storage: window.localStorage, validate: projectValidator, schemaVersion: SCHEMA_VERSION, today, toast: (t) => showToast(t), download });
 
   // ── 화면 상태(세션 밖) ──
   let tool = 'select';
@@ -300,7 +308,7 @@ async function start() {
     getProject: () => project(),
     isHistory: () => !!historyDate,
     onView: (date) => { historyMode = 'recorded'; setHistory(date); },
-    today: () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
+    today,
     saveSnapshot: (date, name) => command('현재 배치 기록', saveSnapshot({ id: session.nextId(), date, name, recordedAt: new Date().toISOString() }), SAVE_SNAPSHOT_COMMAND),
     restoreSnapshot: async (id) => {
       const r = await run(RESTORE_SNAPSHOT_COMMAND, (p, ctx) => applyCommand(p, restoreSnapshot(id), { command: RESTORE_SNAPSHOT_COMMAND, selection: [...selected], resetCamera: true, ...ctx }));
@@ -547,9 +555,11 @@ async function start() {
 
   // ── 세션 상태 → 화면 ──
   const paint = (s) => {
+    storageDialogs.observe(s);
+    ui.recoveryBtn.hidden = !s.lastFailure;
     ui.status.textContent = STATUS_TEXT[s.status] ?? s.status;
     ui.status.dataset.state = s.status;
-    ui.detail.textContent = s.error ? `${ERROR_HINT[s.error.code] ?? ''} (${s.error.code}${s.error.stage ? ' / ' + s.error.stage : ''}) ${s.error.message}` : s.project?.persistence?.lastSavedAt ? `마지막 확인 저장: ${new Date(s.project.persistence.lastSavedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · 리비전 ${s.project.persistence.revision}` : '확인된 저장 없음';
+    ui.detail.textContent = s.error ? `${ERROR_HINT[s.error.code] ?? ''} (${s.error.code}${s.error.stage ? ' / ' + s.error.stage : ''}) ${s.error.message}${s.error.code === 'QUOTA' ? ' ' + storageDialogs.riskText() : ''}` : s.project?.persistence?.lastSavedAt ? `마지막 확인 저장: ${new Date(s.project.persistence.lastSavedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · 리비전 ${s.project.persistence.revision}` : '확인된 저장 없음';
     ui.notice.textContent = s.notice;
     ui.notice.hidden = !s.notice;
     if (s.project && document.activeElement !== ui.name) ui.name.value = s.project.metadata.name;
@@ -620,10 +630,18 @@ async function start() {
   ui.liveBtn.addEventListener('click', () => setHistory(''));
   ui.undoBtn.addEventListener('click', () => guard(() => session.undo()));
   ui.redoBtn.addEventListener('click', () => guard(() => session.redo()));
-  ui.exportBtn.addEventListener('click', () => {
-    const p = project();
-    if (p) download(`warehouse_project_v${SCHEMA_VERSION.replaceAll('.', '_')}.json`, JSON.stringify(p, null, 2));
+  ui.exportBtn.addEventListener('click', () => { if (project()) storageDialogs.exportCurrent(); });
+  ui.importBtn.addEventListener('click', () => ui.importInput.click());
+  ui.importInput.addEventListener('change', async () => {
+    const f = ui.importInput.files[0];
+    if (!f) return;
+    ui.importInput.value = '';
+    ui.importInput.disabled = true;
+    try { await storageDialogs.importFile(f); } finally { ui.importInput.disabled = false; }
   });
+  ui.versionsBtn.addEventListener('click', () => storageDialogs.openBackups());
+  ui.storageBtn.addEventListener('click', () => storageDialogs.openStorage());
+  ui.recoveryBtn.addEventListener('click', () => storageDialogs.exportRecovery());
 
   // ── 화면 명령(기준본 fit/zoomIn/zoomOut/mZoom50/mZoom200/mCenterLock/focusSelection) ──
   const W = () => layout().warehouse;
