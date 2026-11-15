@@ -242,5 +242,5 @@ export function createStorageDialogs({ session, store, backups, storage, validat
     await refresh();
   }
 
-  return { observe, riskText, exportCurrent, exportRecovery, importFile, openBackups, openStorage };
+  return { observe, riskText, exportCurrent, exportRecovery, importFile, confirmReplace, install, openBackups, openStorage };
 }
