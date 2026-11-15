@@ -31,6 +31,8 @@ import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
 import { saveSnapshot, restoreSnapshot, historyLayout, historyDates, historyStatusText, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
 import { OBJECT_TYPES } from './core/project.js';
+import { scanLayout } from './warehouse/constraints.js';
+import { candidateSummary } from './autolayout/candidates.js';
 import { rackCsvRows, historyCsvRows, templateCsvRows, reportSvg } from './exports/report.js';
 import { csvEncode } from './warehouse/rackinfo.js';
 import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
@@ -40,8 +42,8 @@ export const SCHEMA_VERSION = __SCHEMA_VERSION__;
 
 const STATUS_TEXT = {
   loading: '불러오는 중',
-  saved: '● 저장됨 · SAVED',
-  unsaved: '○ 저장되지 않은 변경 · UNSAVED',
+  saved: '● 모든 변경사항 저장됨 · SAVED',
+  unsaved: '○ 저장되지 않은 변경사항 · UNSAVED',
   saving: '◌ 저장 중',
   error: '! 저장 실패',
 };
@@ -81,67 +83,50 @@ function download(name, data, type = 'application/json') {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// v2.4.1 화면 골격(기준본 렌더링 DOM의 구조·id·문구, D-032·D-033). 기능 연결은 start()가 하고, 이 함수는 요소를 만들어 참조를 돌려준다.
+// 기존 E2E 호환을 위해 data-testid를 함께 둔다. 기준본에 없는 재구축 요소는 숨기거나 해당 구역 끝에 둔다(9b-2~7에서 정리).
+const SHELL = `<header><div><div class="eyebrow">OPERATIONS / SPACE PLANNING</div><h1>Warehouse Studio <span class="sub">창고 배치 설계</span> <small id="appVersion" data-testid="versions"></small></h1></div><div class="header-actions"><div class="v-save-tools"><button id="vSave" class="primary" type="button" data-testid="save">프로젝트 저장</button><button id="vVersions" type="button" data-testid="versions-open">이전 버전·백업</button><button id="vStorage" type="button" data-testid="storage-open">저장소 관리</button><button id="vOverwrite" type="button" data-testid="overwrite" hidden>이 탭 내용으로 덮어쓰기</button><button id="vReplaceCorrupt" type="button" data-testid="replace-corrupt" hidden>손상 저장본 교체</button></div><span id="saveStatus" class="save" role="status" data-testid="status"></span><button id="undo" type="button" title="Ctrl+Z" data-testid="undo">↶ 취소</button><button id="redo" type="button" title="Ctrl+Y" data-testid="redo">↷ 다시</button><button id="jsonOut" type="button" data-testid="export">JSON 백업</button><label class="filebtn" data-testid="import-json">불러오기<input id="jsonIn" type="file" accept=".json,application/json" hidden data-testid="import-file"></label></div></header>
+<div id="vSaveDetail" role="status"><span data-testid="status-detail"></span><span class="notice" data-testid="notice"></span><span>이 PC·브라우저 저장 / HTML 덮어쓰기·클라우드 동기화 아님</span></div>
+<div class="banner" id="sampleBanner" data-testid="sample-banner"></div>
+<div class="stats"><div class="stat"><small>전체 창고 면적</small><strong id="kArea" data-testid="k-area">—</strong><span>㎡</span></div><div class="stat"><small>현재 랙 수</small><strong id="kRacks" data-testid="k-racks">—</strong><span>개</span></div><div class="stat"><small>랙 면적 점유율</small><strong id="kFootprint" data-testid="k-footprint">—</strong><span>%</span></div><div class="stat"><small>수량 기준 적재율 · 단위별</small><strong id="kLoad" style="font-size:15px" data-testid="k-load">미확인</strong></div><div class="stat"><small>공간 경고</small><strong id="kWarnings" data-testid="k-warnings">—</strong><span>건</span></div></div>
+<div id="wTop" class="w-summary"><span data-testid="w-summary"></span><button id="wAll" type="button">모든 랙 보기</button><button id="wViolations" type="button">위반 목록</button><span id="wTopNote"></span></div>
+<div id="sWork"><main class="app" id="app"><aside class="sidebar left" aria-label="설계 도구"></aside><section class="workspace"><div class="r-toolbar"><span id="rActive" class="r-state"></span><button id="rBefore" type="button" data-testid="scenario-before">BEFORE 보기</button><button id="rAfter" type="button" data-testid="scenario-after">AFTER 편집</button><button id="rClone" type="button" data-testid="scenario-clone">BEFORE → AFTER 복제</button><button id="rLock" type="button" data-testid="before-lock"></button><span id="rLockState"></span><button id="rHistory" type="button" data-testid="scenario-history">가져오기 이력</button><button id="rBackupDownload" type="button" data-testid="recovery-download" hidden>JSON 백업 다운로드</button></div><div class="v-label-controls"><label>랙 텍스트<select id="vLabelMode" data-testid="label-mode"><option value="rack-code">랙 번호만</option><option value="occupancy">랙 번호 + 실제 적재율</option><option value="detail">상세 정보</option><option value="minimal">최소 표시 · 선택 랙</option></select></label><label>색상 표시<select id="vColorMode" data-testid="color-mode"><option value="data">데이터 기반</option><option value="custom">사용자 지정 색상</option></select></label><button id="vThemeOpen" type="button" data-testid="theme-open">색상 설정·기본색 복원</button><small id="vLabelStatus" class="muted" data-testid="label-status"></small><div class="q-label-options"><label>ZONE·번호 배치<select id="qLabelLayout" data-testid="label-layout"><option value="auto">자동 · 좁으면 두 줄</option><option value="stacked">항상 두 줄</option><option value="inline">한 줄</option><option value="minimal">최소 · 선택 랙</option></select></label><label>랙 번호 형식<select id="qNumberPadding" data-testid="label-padding"><option value="0">5</option><option value="2">05</option><option value="3">005</option></select></label></div></div><div class="toolbar"><div class="m-panel-tools"><button id="mLeftPanel" type="button" data-testid="toggle-left"></button><button id="mRightPanel" type="button" data-testid="toggle-right"></button><button id="mBothClose" type="button">양쪽 접기</button><button id="mBothOpen" type="button">양쪽 펼치기</button></div><button id="sBottomToggle" type="button" data-testid="bottom-toggle"></button><button id="bDefaultLayout" type="button" data-testid="bottom-default">기본 레이아웃 복원</button><label class="inline">편집 배치</label><select id="scenario" style="width:145px" data-testid="scenario-select"><option value="before">Before · 현재안</option><option value="after">After · 개선안</option></select><button id="compareBtn" type="button" data-testid="scenario-compare">비교</button><button id="seedAfter" type="button" title="미리보기와 백업 후 독립 복제">BEFORE → AFTER 복제</button><span class="spacer"></span><button id="zoomOut" type="button" aria-label="축소" data-testid="zoom-out">−</button><button id="zoomIn" type="button" aria-label="확대" data-testid="zoom-in">＋</button><button id="fit" type="button" data-testid="fit">전체 보기</button><button id="focusSelection" type="button" data-testid="focus-selection">선택 확대</button><small id="zoomLabel" data-testid="zoom-label">100%</small></div><div class="canvas-wrap" id="canvasWrap" data-testid="canvas-wrap"><svg id="plan" role="img" aria-label="창고 평면도. 도구 선택 후 클릭하여 배치합니다." data-testid="plan"></svg><div class="canvas-hint" id="canvasHint" data-testid="canvas-hint">원점: 좌상단 · X → / Y ↓ · 단위 m</div></div><div class="legend" id="legend" data-testid="legend"></div><div class="toolbar"><button id="rotate" type="button" data-testid="rotate">↻ 90°</button><button id="duplicate" type="button" data-testid="duplicate">복제</button><button id="delete" type="button" class="danger" data-testid="delete">삭제</button><span id="selectionStatus" class="muted" data-testid="selection-status"></span><span class="spacer"></span><button id="svgOut" type="button" data-testid="export-svg">SVG</button><button id="pngOut" type="button" data-testid="export-png">PNG</button><button id="printBtn" type="button" data-testid="export-print">인쇄</button></div></section><aside class="sidebar right" aria-label="선택 정보"><h2>선택 객체 <span class="badge" id="selectedCount">0</span></h2><div id="inspector"></div><h3>공간 지표</h3><div id="spaceMetrics" data-testid="space-metrics"></div></aside></main>
+<button id="sGrip" type="button" aria-label="하단 패널 높이 조절" role="separator" aria-orientation="horizontal" aria-valuemin="160" aria-valuemax="600" title="위아래로 끌어 공통 높이 조절 · 방향키 20px" tabindex="0" data-testid="bottom-grip"></button><div id="sBottom" data-testid="bottom-panel"><div id="bDatebar"><div class="row b-date-row"><strong>재고·배치 조회</strong><div class="sub" id="historyStatus" data-testid="history-status" role="status"></div><button id="liveBtn" class="primary" type="button" data-testid="history-live">현재 편집으로</button><input id="historyDate" type="date" aria-label="조회 날짜" data-testid="history-date"><select id="historyMode" aria-label="배치 이력 모드" data-testid="history-mode"><option value="recorded">해당 날짜 배치 우선</option><option value="current">현재 배치 + 과거 재고</option></select></div><div class="row b-slider-row"><input id="dateSlider" type="range" min="0" max="0" step="1" value="0" aria-label="저장된 날짜 슬라이더" data-testid="history-slider"><span id="bExports"></span></div></div><div id="bTopRow"></div><div id="bLowerRow"></div></div></div>
+<footer>오프라인 전용 · 외부 통신 없음 · 브라우저 로컬 저장 + JSON 백업 권장 · 직사각형 평면 설계 도구이며 하중·법규·피난 동선 검증은 별도로 필요합니다.</footer>
+<div id="toast" class="toast" role="alert" data-testid="toast" hidden></div>`;
+
 function renderShell(root) {
-  const app = el('div', { class: 'app' });
+  const tpl = document.createElement('template');
+  tpl.innerHTML = SHELL;
+  root.prepend(tpl.content);
+  const $ = (id) => document.getElementById(id);
+  const wrap = (text, input) => { const l = el('label', { class: 'field' }, text); l.append(input); return l; };
+  const details = (title, open, id) => { const d = el('details', id ? { id } : {}); if (open) d.open = true; d.append(el('summary', {}, title)); return d; };
+  $('appVersion').textContent = `v${APP_VERSION}`;
+  $('appVersion').title = `앱 v${APP_VERSION} · 프로젝트 스키마 ${SCHEMA_VERSION}`;
 
-  // 머리글: 이름·저장 상태·프로젝트 명령
-  const header = el('header', { class: 'topbar' });
-  const brand = el('div', { class: 'brand' });
-  brand.append(el('h1', {}, 'Warehouse Layout Designer'), el('p', { class: 'versions', testid: 'versions' }, `앱 v${APP_VERSION} · 프로젝트 스키마 ${SCHEMA_VERSION}`));
-  const label = el('label', { class: 'field name-field' }, '프로젝트 이름');
-  const name = el('input', { type: 'text', maxlength: '1000', testid: 'name' });
-  label.append(name);
-  const statusBox = el('div', { class: 'status-box' });
-  const status = el('p', { class: 'status-badge', testid: 'status', role: 'status' });
-  const detail = el('p', { class: 'status-detail', testid: 'status-detail' });
-  statusBox.append(status, detail);
-  const actions = el('div', { class: 'actions' });
-  const saveBtn = button('save', '프로젝트 저장');
-  const overwriteBtn = button('overwrite', '이 탭 내용으로 덮어쓰기', { hidden: '' });
-  const replaceBtn = button('replace-corrupt', '손상 저장본 교체', { hidden: '' });
-  const undoBtn = button('undo', '실행취소');
-  const redoBtn = button('redo', '다시 실행');
-  const exportBtn = button('export', 'JSON 내보내기');
+  // 왼쪽(기준본 sidebar.left): Excel · 01~05 구역. 구역 안 구성은 9b-2에서 기준본과 같게 맞춘다.
+  const left = document.querySelector('.sidebar.left');
+  const excelBox = details('Excel / 로케이션 자동 생성', true, 'excelTools');
   const excelBtn = button('excel-open', 'Excel 가져오기');
-  const importBtn = button('import-json', 'JSON 불러오기');
-  const importInput = el('input', { type: 'file', accept: '.json,application/json', hidden: '', testid: 'import-file' });
-  const versionsBtn = button('versions-open', '이전 버전·백업');
-  const storageBtn = button('storage-open', '저장소 관리');
-  const recoveryBtn = button('recovery-download', '적용 취소 상태 JSON 백업 다운로드', { hidden: '' });
-  actions.append(saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, importBtn, importInput, versionsBtn, storageBtn, recoveryBtn, excelBtn);
-  const scenarioRow = el('div', { class: 'tool-group scenario-row', role: 'group', 'aria-label': '배치 대상' });
-  const scenBefore = button('scenario-before', 'BEFORE 개선 전');
-  const scenAfter = button('scenario-after', 'AFTER 개선 후');
-  const lockBtn = button('before-lock', '');
-  const cloneBtn = button('scenario-clone', 'BEFORE → AFTER 복제', { title: '미리보기와 백업 후 독립 복제' });
-  const compareBtn = button('scenario-compare', '비교');
-  const historyBtn = button('scenario-history', '가져오기 이력');
-  scenarioRow.append(scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn);
-  const panelRow = el('div', { class: 'tool-group panel-row', role: 'group', 'aria-label': '패널' });
-  const leftToggle = button('toggle-left', '');
-  const rightToggle = button('toggle-right', '');
-  panelRow.append(leftToggle, rightToggle);
-  const bottomToggle = button('bottom-toggle', '하단 전체 접기');
-  const bottomDefault = button('bottom-default', '기본 레이아웃 복원');
-  panelRow.append(bottomToggle, bottomDefault);
-  const exportRow = el('div', { class: 'tool-group export-row', role: 'group', 'aria-label': '내보내기' });
-  const exportBtns = Object.fromEntries([['svg', 'SVG'], ['png', 'PNG'], ['print', '인쇄'], ['racks-csv', '랙 목록 CSV'], ['history-csv', '이력 CSV'], ['template-csv', 'CSV 양식'], ['compare-csv', '비교 요약 CSV']].map(([k, t]) => [k, button('export-' + k, t)]));
-  exportRow.append(...Object.values(exportBtns));
-  header.append(brand, label, scenarioRow, panelRow, statusBox, actions);
-  const notice = el('p', { class: 'notice', testid: 'notice' });
+  excelBox.append(excelBtn);
+  const projectBox = details('01 / 프로젝트 · 공간', true);
+  const nameLabel = el('label', {}, '프로젝트명');
+  const name = el('input', { id: 'projectName', maxlength: '1000', testid: 'name' });
+  nameLabel.append(name);
+  const roomBody = el('div', { testid: 'room-section' });
+  projectBox.append(nameLabel, roomBody);
 
-  // 왼쪽: 도구·화면
-  const left = el('aside', { class: 'side left', 'aria-label': '도구와 화면' });
-  const tools = el('div', { class: 'tool-group', role: 'group', 'aria-label': '도구' });
+  const toolBox = details('02 / 배치 도구', true);
+  const tools = el('div', { class: 'tool-group tools', id: 'toolButtons', role: 'group', 'aria-label': '도구' });
   const toolSelect = button('tool-select', '선택', { 'data-tool': 'select' });
   const toolPan = button('tool-pan', '화면 이동', { 'data-tool': 'pan' });
-  tools.append(toolSelect, toolPan);
-  const addTools = el('div', { class: 'tool-group', role: 'group', 'aria-label': '추가 도구' });
   const toolButtons = [toolSelect, toolPan];
+  tools.append(toolSelect, toolPan);
   for (const [kind, text] of ADD_TOOLS) {
     const b = button(`tool-${kind}`, text, { 'data-tool': kind });
     toolButtons.push(b);
-    addTools.append(b);
+    tools.append(b);
   }
   const toolHelp = el('p', { class: 'muted', testid: 'tool-help' });
   const rackBox = el('details', { class: 'box' });
@@ -151,14 +136,13 @@ function renderShell(root) {
   const num = (testid, value, min = '0.05') => el('input', { type: 'number', min, step: '0.1', value, testid });
   const newWidth = num('new-width', String(RACK_DEFAULTS.width)), newDepth = num('new-depth', String(RACK_DEFAULTS.depth)), newHeight = num('new-height', String(RACK_DEFAULTS.height));
   const newUnit = el('input', { value: RACK_DEFAULTS.unit, maxlength: '20', testid: 'new-unit' });
-  const wrap = (text, input) => { const l = el('label', { class: 'field' }, text); l.append(input); return l; };
   rackBox.append(wrap('종류', rackType), wrap('폭 (m)', newWidth), wrap('깊이 (m)', newDepth), wrap('높이 (m)', newHeight), wrap('단위', newUnit));
-  const editRow = el('div', { class: 'tool-group', role: 'group', 'aria-label': '선택 객체 편집' });
-  const rotateBtn = button('rotate', '↻ 90° 회전'), duplicateBtn = button('duplicate', '⧉ 복제'), deleteBtn = button('delete', '✕ 삭제');
-  editRow.append(rotateBtn, duplicateBtn, deleteBtn);
+  toolBox.append(tools, toolHelp, rackBox);
+
+  const precisionBox = details('03 / 정밀 배치', true);
   const groupRow = el('div', { class: 'tool-group', role: 'group', 'aria-label': '여러 랙 정렬' });
-  const alignXBtn = button('align-x', '⇤ 왼쪽 정렬'), alignYBtn = button('align-y', '⤒ 위쪽 정렬'), distributeBtn = button('distribute', '↔ 간격 배치');
-  const distributeGap = el('input', { type: 'number', min: '0', step: '0.001', value: '0.3', testid: 'distribute-gap', 'aria-label': '간격 배치 간격(m)', class: 'mini-input' });
+  const alignXBtn = button('align-x', '좌측 정렬'), alignYBtn = button('align-y', '상단 정렬'), distributeBtn = button('distribute', '가로 배치');
+  const distributeGap = el('input', { type: 'number', min: '0', step: '0.001', value: '0.3', testid: 'distribute-gap', 'aria-label': '간격 배치 간격(m)' });
   groupRow.append(alignXBtn, alignYBtn, distributeBtn, distributeGap);
   const allowLabel = el('label', { class: 'check' });
   const allowWarnings = el('input', { type: 'checkbox', testid: 'allow-warnings' });
@@ -170,113 +154,79 @@ function renderShell(root) {
   for (const v of SNAP_STEPS_M) snapStep.append(el('option', { value: String(v) }, String(v)));
   const keyStep = el('select', { testid: 'key-step' });
   for (const v of SNAP_STEPS_M.filter((x) => x <= 0.1)) keyStep.append(el('option', { value: String(v) }, String(v)));
-  const zoomRow = el('div', { class: 'tool-group', role: 'group', 'aria-label': '확대' });
-  const zoomOut = button('zoom-out', '－', { 'aria-label': '축소' });
-  const zoomLabel = el('output', { class: 'zoom-label', testid: 'zoom-label' });
-  const zoomIn = button('zoom-in', '＋', { 'aria-label': '확대' });
-  const fit = button('fit', '전체 보기');
-  zoomRow.append(zoomOut, zoomLabel, zoomIn, fit);
   const zoomRow2 = el('div', { class: 'tool-group' });
-  const zoom50 = button('zoom-50', '50%');
-  const zoom200 = button('zoom-200', '200%');
-  const focus = button('focus-selection', '선택 영역 보기');
-  zoomRow2.append(zoom50, zoom200, focus);
+  const zoom50 = button('zoom-50', '50%'), zoom200 = button('zoom-200', '200%');
+  zoomRow2.append(zoom50, zoom200);
   const lockLabel = el('label', { class: 'check' });
   const centerLock = el('input', { type: 'checkbox', testid: 'center-lock' });
   lockLabel.append(centerLock, ' 중심 고정');
-  const wheelLabel = el('label', { class: 'field' }, '마우스 휠 확대 감도');
   const wheelSelect = el('select', { testid: 'wheel-sensitivity' });
   for (const [v, t] of Object.entries(WHEEL_LABELS)) wheelSelect.append(el('option', { value: v }, t));
-  wheelLabel.append(wheelSelect);
   const wheelReset = button('wheel-reset', '휠 감도 기본값');
   const wheelStatus = el('p', { class: 'muted', testid: 'wheel-status', role: 'status' });
-  const labelSelect = (testid, text, options) => {
-    const sel = el('select', { testid });
-    for (const [v, t] of options) sel.append(el('option', { value: v }, t));
-    return wrap(text, sel);
-  };
-  const labelMode = labelSelect('label-mode', '랙 텍스트', [['rack-code', '랙 번호만'], ['occupancy', '랙 번호 + 실제 적재율'], ['detail', '상세 정보'], ['minimal', '최소 표시 · 선택 랙']]);
-  const labelLayout = labelSelect('label-layout', 'ZONE·번호 배치', [['auto', '자동 · 좁으면 두 줄'], ['stacked', '항상 두 줄'], ['inline', '한 줄'], ['minimal', '최소 · 선택 랙']]);
-  const labelPadding = labelSelect('label-padding', '랙 번호 형식', [['0', '5'], ['2', '05'], ['3', '005']]);
-  const labelStatus = el('p', { class: 'muted', testid: 'label-status' });
-  const vizMode = labelSelect('viz-mode', '도면 색상 기준', [['inventory', '실제 재고 적재율'], ['height', '높이 활용률'], ['registered', '위치 등록 현황'], ['management', '품목별 관리 지표']]);
-  const heightPolicy = labelSelect('height-policy', '랙 높이 집계 정책', [['weightedMax', '선반별 최대 높이 / 높이 가중평균'], ['meanMax', '선반별 최대 높이 비율 / 단순평균'], ['max', '등록 자재 중 최대 높이 비율']]);
-  const colorMode = labelSelect('color-mode', '색상 표시', [['data', '데이터 기반'], ['custom', '사용자 지정 색상']]);
+  precisionBox.append(groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), zoomRow2, lockLabel, wrap('마우스 휠 확대 감도', wheelSelect), wheelReset, wheelStatus);
+
+  const refBox = details('04 / 참고 도면 배경', false);
+  const refBody = el('div', { testid: 'reference-section' });
+  refBox.append(refBody);
+
+  const colorBox = details('05 / 적재율 색상', false);
+  const select = (testid, text, options) => { const sel = el('select', { testid }); for (const [v, t] of options) sel.append(el('option', { value: v }, t)); return wrap(text, sel); };
+  const vizMode = select('viz-mode', '도면 색상 기준', [['inventory', '실제 재고 적재율'], ['height', '높이 활용률'], ['registered', '위치 등록 현황'], ['management', '품목별 관리 지표']]);
+  const heightPolicy = select('height-policy', '랙 높이 집계 정책', [['weightedMax', '선반별 최대 높이 / 높이 가중평균'], ['meanMax', '선반별 최대 높이 비율 / 단순평균'], ['max', '등록 자재 중 최대 높이 비율']]);
   const thr = (testid, text, min, max) => wrap(text, el('input', { type: 'number', testid, min, max }));
   const thrLow = thr('threshold-low', '보통 시작 (%)', 1, 98), thrHigh = thr('threshold-high', '주의 시작 (%)', 2, 100);
   const colorInputs = Object.entries({ empty: '빈 랙', low: '여유', mid: '보통', high: '주의', over: '초과', unknown: '정보 없음' }).map(([k, t]) => [k, wrap(t, el('input', { type: 'color', testid: 'color-' + k }))]);
   const applyColorsBtn = button('apply-colors', '색상 기준 적용');
-  const themeBtn = button('theme-open', 'UI 색상 · 기본 색상 복원');
-  const histDate = el('input', { type: 'date', testid: 'history-date', 'aria-label': '조회 날짜' });
-  const histSlider = el('input', { type: 'range', min: '0', max: '0', step: '1', value: '0', testid: 'history-slider', 'aria-label': '이력 날짜 선택' });
-  const histMode = el('select', { testid: 'history-mode', 'aria-label': '배치 이력 모드' });
-  histMode.append(el('option', { value: 'recorded' }, '해당 날짜 배치 우선'), el('option', { value: 'current' }, '현재 배치 + 과거 재고'));
-  const liveBtn = button('history-live', '현재 편집으로');
-  const histStatus = el('p', { class: 'muted', testid: 'history-status', role: 'status' });
-  left.append(el('h2', {}, '과거 조회'), wrap('조회 날짜', histDate), histSlider, histMode, liveBtn, histStatus);
-  left.append(el('h2', {}, '색상'), vizMode, heightPolicy, thrLow, thrHigh, ...colorInputs.map((c) => c[1]), applyColorsBtn, colorMode, themeBtn);
-  left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus, el('h2', {}, '라벨'), labelMode, labelLayout, labelPadding, labelStatus);
+  colorBox.append(vizMode, heightPolicy, thrLow, thrHigh, ...colorInputs.map((c) => c[1]), applyColorsBtn);
+  left.append(excelBox, projectBox, toolBox, precisionBox, refBox, colorBox);
 
-  // 가운데: 도면
-  const canvasWrap = el('div', { class: 'canvas-wrap', testid: 'canvas-wrap' });
-  // HTML 파서가 SVG 이름공간을 붙인다(산출물에 외부 URL 문자열을 넣지 않기 위해 createElementNS를 쓰지 않음).
-  canvasWrap.innerHTML = '<svg id="plan" role="img" aria-label="창고 배치 도면" data-testid="plan"></svg>';
-  const plan = canvasWrap.firstElementChild;
-  const hint = el('p', { class: 'canvas-hint', testid: 'canvas-hint' }, '원점: 좌상단 · X → / Y ↓ · 단위 m');
-  const legendBox = el('div', { class: 'legend', testid: 'legend' });
-  canvasWrap.append(hint, legendBox);
-
-  // 오른쪽: 선택·요약
-  const right = el('aside', { class: 'side right', 'aria-label': '선택 정보' });
-  const selStatus = el('p', { class: 'sel-status', testid: 'selection-status' });
-  const selList = el('ul', { class: 'sel-list', testid: 'selection-list' });
-  const selWarn = el('div', { testid: 'selection-warnings' });
+  // 오른쪽(기준본 sidebar.right): 선택 객체·공간 지표
+  const inspectorBox = $('inspector');
   const inspector = el('div', { class: 'inspector', testid: 'inspector' });
-  const summary = el('p', { class: 'summary', testid: 'summary' });
-  const note = el('p', { class: 'muted' }, '재구축 진행 중: 객체 추가·이동·속성 편집까지 포함되었습니다. 크기 조절 핸들·정렬은 다음 단계입니다. 이 PC·브라우저 저장이며 클라우드 동기화가 아닙니다.');
-  const section = (title, testid, open = true) => {
-    const d = el('details', { class: 'side-section', testid });
-    if (open) d.open = true;
+  const selWarn = el('div', { testid: 'selection-warnings' });
+  const detailBtn = button('open-detail', '선반별 자재 상세');
+  inspectorBox.append(inspector, detailBtn, selWarn);
+  const selList = el('ul'); // 기준본에 없는 선택 목록: 화면에는 두지 않는다
+
+  // 하단(기준본 sBottom): 재고기록·배치 이력 / 랙 목록·공간 검토
+  const section = (title, testid, key) => {
+    const d = el('details', { class: 's-section', 'data-section': key, testid });
+    d.open = true;
     d.append(el('summary', {}, title));
-    const body = el('div', { class: 'section-body' });
+    const body = el('div', { class: 's-content' });
     d.append(body);
     return [d, body];
   };
-  const [statsBox, statsBody] = section('배치 통계', 'stats-section');
-  const [warnBox, warnBody] = section('공간 경고', 'warnings-section');
-  const [listBox, listBody] = section('랙 목록', 'racklist-section');
-  const [invBox, invBody] = section('재고 기록', 'inventory-section');
-  const [snapBox, snapBody] = section('배치 이력', 'snapshots-section');
-  // 하단 패널(기준본 65 sBottom): 재고 기록·배치 이력·랙 목록·공간 검토. 구역 키는 project.panels.bottomSections와 같다.
-  const bottomSections = { inventory: invBox, layout: snapBox, racks: listBox, space: warnBox };
-  const bottomGrip = el('div', { class: 'bottom-grip', role: 'separator', 'aria-orientation': 'horizontal', 'aria-label': '하단 패널 높이 조절', 'aria-valuemin': '160', 'aria-valuemax': '600', tabindex: '0', title: '위아래로 끌어 높이 조절 · 방향키 20px', testid: 'bottom-grip' });
-  const bottom = el('section', { class: 'bottom', 'aria-label': '하단 패널', testid: 'bottom-panel' });
-  bottom.append(...Object.values(bottomSections));
-  const detailBtn = button('open-detail', '▤ 랙 상세(더블클릭)');
-  const [roomBox, roomBody] = section('창고 치수', 'room-section');
-  const [refBox, refBody] = section('참고 도면 배경', 'reference-section', false);
-  left.prepend(roomBox, refBox);
-  right.append(el('h2', {}, '선택'), selStatus, selList, detailBtn, selWarn, inspector, statsBox, el('h2', {}, '내보내기'), exportRow, el('h2', {}, '요약'), summary, note);
+  const [invBox, invBody] = section('재고기록', 'inventory-section', 'inventory');
+  const [snapBox, snapBody] = section('배치 이력', 'snapshots-section', 'layout');
+  const [listBox, listBody] = section('랙 목록', 'racklist-section', 'racks');
+  const [warnBox, warnBody] = section('공간 검토', 'warnings-section', 'space');
+  $('bTopRow').append(invBox, snapBox);
+  $('bLowerRow').append(listBox, warnBox);
+  const exportBtns = { svg: $('svgOut'), png: $('pngOut'), print: $('printBtn') };
+  for (const [k, t] of [['racks-csv', '랙 목록 CSV'], ['history-csv', '이력 CSV'], ['template-csv', 'CSV 양식'], ['compare-csv', '비교 요약 CSV']]) $('bExports').append((exportBtns[k] = button('export-' + k, t)));
 
-  const main = el('div', { class: 'workspace' });
-  main.append(left, canvasWrap, right);
-  const toast = el('p', { class: 'toast', testid: 'toast', role: 'alert', hidden: '' });
-  app.append(header, notice, main, bottomGrip, bottom, toast);
-  root.replaceChildren(app);
   return {
-    name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, importBtn, importInput, versionsBtn, storageBtn, recoveryBtn, summary,
-    toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
-    labelMode: labelMode.querySelector('select'), labelLayout: labelLayout.querySelector('select'), labelPadding: labelPadding.querySelector('select'), labelStatus,
-    vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: colorMode.querySelector('select'), themeBtn, applyColorsBtn,
+    name, status: $('saveStatus'), detail: document.querySelector('[data-testid=status-detail]'), notice: document.querySelector('[data-testid=notice]'), banner: $('sampleBanner'),
+    saveBtn: $('vSave'), overwriteBtn: $('vOverwrite'), replaceBtn: $('vReplaceCorrupt'), undoBtn: $('undo'), redoBtn: $('redo'), exportBtn: $('jsonOut'), importInput: $('jsonIn'),
+    versionsBtn: $('vVersions'), storageBtn: $('vStorage'), recoveryBtn: $('rBackupDownload'),
+    kpi: { area: $('kArea'), racks: $('kRacks'), footprint: $('kFootprint'), load: $('kLoad'), warnings: $('kWarnings') }, wSummary: document.querySelector('[data-testid=w-summary]'), wNote: $('wTopNote'), wAll: $('wAll'), wViolations: $('wViolations'),
+    toolSelect, toolPan, toolHelp, zoomOut: $('zoomOut'), zoomIn: $('zoomIn'), zoomLabel: $('zoomLabel'), fit: $('fit'), zoom50, zoom200, focus: $('focusSelection'), centerLock,
+    labelMode: $('vLabelMode'), labelLayout: $('qLabelLayout'), labelPadding: $('qNumberPadding'), labelStatus: $('vLabelStatus'),
+    vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: $('vColorMode'), themeBtn: $('vThemeOpen'), applyColorsBtn,
     thrLow: thrLow.querySelector('input'), thrHigh: thrHigh.querySelector('input'), colorInputs: Object.fromEntries(colorInputs.map(([k, l]) => [k, l.querySelector('input')])),
-    wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
-    scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn, leftToggle, rightToggle, bottomToggle, bottomDefault, bottomGrip, bottom, bottomSections, exportBtns, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
-    roomBody, refBody, histDate, histSlider, histMode, liveBtn, histStatus, toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
+    wheelSelect, wheelReset, wheelStatus, canvasWrap: $('canvasWrap'), plan: $('plan'), hint: $('canvasHint'), selStatus: $('selectionStatus'), selCount: $('selectedCount'), selList, selWarn,
+    scenBefore: $('rBefore'), scenAfter: $('rAfter'), rActive: $('rActive'), lockBtn: $('rLock'), lockState: $('rLockState'), cloneBtn: $('rClone'), seedAfter: $('seedAfter'), scenarioSelect: $('scenario'), compareBtn: $('compareBtn'), historyBtn: $('rHistory'),
+    leftToggle: $('mLeftPanel'), rightToggle: $('mRightPanel'), bothClose: $('mBothClose'), bothOpen: $('mBothOpen'), bottomToggle: $('sBottomToggle'), bottomDefault: $('bDefaultLayout'), bottomGrip: $('sGrip'), bottom: $('sBottom'),
+    bottomSections: { inventory: invBox, layout: snapBox, racks: listBox, space: warnBox }, exportBtns, main: $('app'), metricsBody: $('spaceMetrics'), warnBody, listBody, legendBox: $('legend'), invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
+    roomBody, refBody, histDate: $('historyDate'), histSlider: $('dateSlider'), histMode: $('historyMode'), liveBtn: $('liveBtn'), histStatus: $('historyStatus'), toolButtons, rackType, newWidth, newDepth, newHeight, newUnit,
+    rotateBtn: $('rotate'), duplicateBtn: $('duplicate'), deleteBtn: $('delete'), allowWarnings, snapOn, snapStep, keyStep, inspector, toast: $('toast'),
   };
 }
 
 async function start() {
-  const ui = renderShell(document.getElementById('app'));
+  const ui = renderShell(document.body);
   const printArea = el('div', { id: 'printArea', 'aria-hidden': 'true' });
   document.body.append(printArea);
   const store = createProjectStore({ storage: window.localStorage, validate: projectValidator });
@@ -307,7 +257,7 @@ async function start() {
   let historyDate = ''; // 과거 조회 날짜: 화면 상태이며 프로젝트에 저장하지 않는다(기준본 historyDate 전역).
   let historyMode = 'recorded';
   let histMemo = null;
-  const panels = createPanels({ stats: ui.statsBody, warnings: ui.warnBody, list: ui.listBody, legend: ui.legendBox }, {
+  const panels = createPanels({ kpi: ui.kpi, metrics: ui.metricsBody, warnings: ui.warnBody, list: ui.listBody, legend: ui.legendBox }, {
     onFocus: (ids) => {
       const existing = new Set(layout().objects.map((o) => o.id));
       commitSelection(new Set(ids.filter((id) => existing.has(id))));
@@ -407,6 +357,13 @@ async function start() {
     ui.plan.innerHTML = r.svg;
     ui.labelStatus.textContent = labelStatusText(r.labelHidden);
     if (scaleOnly) return;
+    // 기준본 W.top: 현재(또는 과거 조회) 도면 재검사 한 줄 요약
+    if (!preview) {
+      const chk = scanLayout(l, p);
+      ui.wSummary.textContent = candidateSummary(chk);
+      ui.wSummary.className = chk.rows?.some((x) => x.issues?.length) ? 'w-warning' : '';
+      ui.wNote.textContent = '실제 설치 검토 전 설계안 · ' + (historyDate ? '과거 도면 재검사' : '현재 도면 재검사');
+    }
     renderSelection();
     if (!preview) {
       panels.render({ layout: l, project: p, selected, warnings: r.warnings });
@@ -417,11 +374,15 @@ async function start() {
 
   function renderSelection() {
     const os = layout().objects.filter((o) => selected.has(o.id));
-    ui.selStatus.textContent = os.length ? `${os.length}개 선택` : '선택 없음';
+    // 기준본 50-editor: 랙이 있으면 'N개 랙 · 면적 ㎡', 아니면 'N개 객체 선택'. 배지는 선택 수.
+    const rs = os.filter((o) => o.kind === 'rack');
+    ui.selStatus.textContent = rs.length ? `${rs.length}개 랙 · 면적 ${fmt(rs.reduce((a, o) => a + o.width * o.depth, 0), 3)}㎡` : `${os.length}개 객체 선택`;
+    ui.selCount.textContent = String(os.length);
+    ui.detailBtn.hidden = !(os.length === 1 && rs.length === 1);
     ui.selList.replaceChildren(...os.slice(0, 50).map((o) => el('li', {}, `${o.code} · ${o.kind === 'rack' ? '랙' : o.kind}`)));
     if (os.length > 50) ui.selList.append(el('li', { class: 'muted' }, `외 ${os.length - 50}개`));
     const ws = sceneWarnings.filter((w) => w.ids.some((id) => selected.has(id)));
-    ui.selWarn.innerHTML = !os.length ? '<p class="muted">도면에서 객체를 선택하세요. 좌표는 회전 전 좌상단 기준입니다.</p>'
+    ui.selWarn.innerHTML = !os.length ? '<div class="empty">도면에서 객체를 선택하세요.<br>좌표는 회전 전 좌상단 기준입니다.</div>'
       : ws.length ? `<div class="warnbox">${ws.map((w) => esc(w.text)).join('<br>')}</div>` : '<p class="info">선택 객체에 공간 경고가 없습니다.</p>';
     ui.focus.disabled = !os.length;
     const locked = isLocked(project());
@@ -610,19 +571,43 @@ async function start() {
     wheel.pending = 0;
   };
 
+  // 기준본 S.panels 높이 계산(데스크톱): 작업 영역 높이 = max(화면 남은 높이, 도면 최소 + 하단 전체 높이).
+  function sizeWork() {
+    const pn = project()?.panels;
+    if (!pn) return;
+    const work = document.getElementById('sWork'), ws = document.querySelector('.workspace');
+    const tools = [...ws.children].filter((e) => e.id !== 'canvasWrap').reduce((n, e) => n + e.getBoundingClientRect().height, 0);
+    const mainMin = Math.max(460, Math.ceil(tools + 280));
+    const upper = Math.max(60, Math.min(360, pn.panelHeights.upper)), lower = Math.max(80, Math.min(420, pn.panelHeights.lower));
+    const fullDock = document.getElementById('bDatebar').getBoundingClientRect().height + 2 * 38 + upper + lower + 20;
+    const room = Math.max(700, innerHeight - ws.getBoundingClientRect().top - scrollY - 36);
+    work.style.height = Math.max(room, mainMin + fullDock + 10) + 'px';
+    work.style.gridTemplateRows = pn.bottomOpen ? `minmax(${mainMin}px,1fr) 10px auto` : `minmax(${mainMin}px,1fr)`;
+  }
+  let workFrame = 0;
+  const resizeWork = () => { cancelAnimationFrame(workFrame); workFrame = requestAnimationFrame(sizeWork); };
+  window.addEventListener('resize', resizeWork);
+  new ResizeObserver(resizeWork).observe(document.querySelector('header'));
+
   // ── 세션 상태 → 화면 ──
   const paint = (s) => {
     storageDialogs.observe(s);
     ui.recoveryBtn.hidden = !s.lastFailure;
     ui.status.textContent = STATUS_TEXT[s.status] ?? s.status;
     ui.status.dataset.state = s.status;
-    ui.detail.textContent = s.error ? `${ERROR_HINT[s.error.code] ?? ''} (${s.error.code}${s.error.stage ? ' / ' + s.error.stage : ''}) ${s.error.message}${s.error.code === 'QUOTA' ? ' ' + storageDialogs.riskText() : ''}` : s.project?.persistence?.lastSavedAt ? `마지막 확인 저장: ${new Date(s.project.persistence.lastSavedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · 리비전 ${s.project.persistence.revision}` : '확인된 저장 없음';
-    ui.detail.title = ui.detail.textContent;
-    ui.notice.textContent = s.notice;
-    ui.notice.hidden = !s.notice;
+    // 기준본 V.paint 상세 문구: (오류 · )(안내 · )마지막 확인 저장 시각 · 이 PC·브라우저 저장 …
+    const saved = s.project?.persistence?.lastSavedAt;
+    ui.detail.textContent = (s.error ? `${ERROR_HINT[s.error.code] ?? ''} (${s.error.code}${s.error.stage ? ' / ' + s.error.stage : ''}) ${s.error.message}${s.error.code === 'QUOTA' ? ' ' + storageDialogs.riskText() : ''} · ` : '') + (saved ? `마지막 확인 저장: ${new Date(saved).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · ` : '확인된 저장 시각 없음 · ');
+    ui.notice.textContent = s.notice ? s.notice + ' · ' : '';
+    ui.detail.parentElement.title = ui.detail.parentElement.textContent;
     if (s.project && document.activeElement !== ui.name) ui.name.value = s.project.metadata.name;
-    const racks = (k) => s.project?.scenarios[k].objects.filter((o) => o.kind === 'rack').length ?? 0;
-    ui.summary.textContent = s.project ? `현재 ${s.project.settings.scenario.toUpperCase()} · BEFORE 랙 ${racks('before')}개 · AFTER 랙 ${racks('after')}개 · 출처 ${s.source}` : '';
+    if (s.project) {
+      // 기준본 sampleBanner(20-renderer). Excel 연결 문구는 9b-6에서 맞춘다.
+      ui.banner.textContent = s.project.metadata.sample ? '샘플 도면 · 첨부 평면도 참고. 창고·객체 치수와 위치는 실측값이 아닙니다. 초기 재고는 미입력입니다.' : '사용자 프로젝트 · 치수·위치의 근거는 선택 객체의 정보에서 확인하세요.';
+      const scen = s.project.settings.scenario, locked = s.project.scenarioMeta[scen]?.locked, noBase = !s.project.scenarios.before.objects.some((o) => o.kind === 'rack');
+      ui.rActive.textContent = `${scen.toUpperCase()} · ${locked ? '조회 / 원본 잠금' : '편집'}${noBase ? ' · BEFORE 기준 없음' : ''}`;
+      ui.scenarioSelect.value = scen;
+    }
     ui.overwriteBtn.hidden = s.error?.code !== 'CONFLICT';
     ui.replaceBtn.hidden = !s.corrupt;
     ui.undoBtn.disabled = !s.canUndo || s.status === 'saving';
@@ -634,16 +619,15 @@ async function start() {
     ui.main.classList.toggle('left-closed', !pn.leftOpen);
     ui.main.classList.toggle('right-closed', !pn.rightOpen);
     ui.bottom.hidden = ui.bottomGrip.hidden = !pn.bottomOpen;
-    ui.bottom.style.height = pn.bottomHeight + 'px';
     ui.bottomGrip.setAttribute('aria-valuenow', String(pn.bottomHeight));
     ui.bottomToggle.textContent = pn.bottomOpen ? '하단 전체 접기' : '하단 전체 펼치기';
     ui.bottomToggle.setAttribute('aria-expanded', String(pn.bottomOpen));
     for (const [k, box] of Object.entries(ui.bottomSections)) if (box.open !== pn.bottomSections[k]) box.open = pn.bottomSections[k];
-    ui.leftToggle.textContent = pn.leftOpen ? '◧ 도구 접기' : '◧ 도구 펼치기';
-    ui.rightToggle.textContent = pn.rightOpen ? '◨ 정보 접기' : '◨ 정보 펼치기';
-    ui.scenBefore.classList.toggle('active', s.project.settings.scenario === 'before');
-    ui.scenAfter.classList.toggle('active', s.project.settings.scenario === 'after');
-    ui.lockBtn.textContent = s.project.scenarioMeta.before.locked ? '🔒 BEFORE 잠금 해제' : '🔓 BEFORE 잠그기';
+    ui.leftToggle.textContent = pn.leftOpen ? '접기: 설계 도구' : '펼치기: 설계 도구';
+    ui.rightToggle.textContent = pn.rightOpen ? '접기: 선택 정보' : '펼치기: 선택 정보';
+    sizeWork();
+    ui.lockBtn.textContent = s.project.scenarioMeta.before.locked ? 'BEFORE 잠금 해제' : 'BEFORE 잠그기';
+    ui.lockState.textContent = 'BEFORE ' + (s.project.scenarioMeta.before.locked ? '잠금' : '수정 허용');
     ui.lockBtn.dataset.locked = String(s.project.scenarioMeta.before.locked);
     ui.snapOn.checked = s.project.settings.snap;
     ui.snapStep.value = String(s.project.precision.snapStep);
@@ -749,7 +733,6 @@ async function start() {
     e.preventDefault();
     setBottomHeight(e.key === 'Home' ? 160 : e.key === 'End' ? 600 : panelsOf().bottomHeight + (e.key === 'ArrowUp' ? 20 : -20));
   });
-  ui.importBtn.addEventListener('click', () => ui.importInput.click());
   ui.importInput.addEventListener('change', async () => {
     const f = ui.importInput.files[0];
     if (!f) return;
@@ -767,6 +750,7 @@ async function start() {
   ui.rotateBtn.addEventListener('click', () => rotateSelected());
   ui.excelBtn.addEventListener('click', () => excelDialog.open());
   ui.cloneBtn.addEventListener('click', () => scenarioDialogs.openClone());
+  ui.seedAfter.addEventListener('click', () => scenarioDialogs.openClone());
   ui.compareBtn.addEventListener('click', () => scenarioDialogs.openCompare());
   ui.historyBtn.addEventListener('click', () => scenarioDialogs.openHistory());
   ui.detailBtn.addEventListener('click', () => rackDetail.open([...selected][0]));
@@ -781,6 +765,9 @@ async function start() {
   ui.leftToggle.addEventListener('click', () => pref({ panels: { leftOpen: !project().panels.leftOpen } }));
   ui.rightToggle.addEventListener('click', () => pref({ panels: { rightOpen: !project().panels.rightOpen } }));
   ui.scenBefore.addEventListener('click', () => switchScenario('before'));
+  ui.scenarioSelect.addEventListener('change', () => switchScenario(ui.scenarioSelect.value));
+  ui.bothClose.addEventListener('click', () => pref({ panels: { leftOpen: false, rightOpen: false } }));
+  ui.bothOpen.addEventListener('click', () => pref({ panels: { leftOpen: true, rightOpen: true } }));
   ui.scenAfter.addEventListener('click', () => switchScenario('after'));
   ui.lockBtn.addEventListener('click', () => {
     const locked = project().scenarioMeta.before.locked;
@@ -811,6 +798,16 @@ async function start() {
   ui.zoom50.addEventListener('click', () => { cancelWheel(); commitView({ ...centerView(view, true, W(), size()), zoom: 0.5 }); });
   ui.zoom200.addEventListener('click', () => { cancelWheel(); commitView({ ...centerView(view, true, W(), size()), zoom: 2 }); });
   ui.centerLock.addEventListener('change', () => commitView(ui.centerLock.checked ? { ...view, centerLocked: true, panX: 0, panY: 0 } : { ...view, centerLocked: false }));
+  // 기준본 W.fitAll: 모든 랙의 외곽에 맞춰 보기
+  ui.wAll.addEventListener('click', () => {
+    const box = selectionBox(layout().objects.filter((o) => o.kind === 'rack'));
+    if (box) { cancelWheel(); commitView(focusBox(view, box, W(), size())); }
+  });
+  // 위반 목록 대화상자(기준본 wDialog)는 9b-4. 그 전까지 하단 공간 검토를 연다.
+  ui.wViolations.addEventListener('click', () => {
+    pref({ panels: { bottomOpen: true, bottomSections: { ...project().panels.bottomSections, space: true } } });
+    ui.bottomSections.space.scrollIntoView({ block: 'nearest' });
+  });
   ui.focus.addEventListener('click', () => {
     const box = selectionBox(layout().objects.filter((o) => selected.has(o.id)));
     if (box) commitView(focusBox(view, box, W(), size()));
