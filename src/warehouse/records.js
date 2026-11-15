@@ -77,3 +77,44 @@ export const restoreSnapshot = (snapshotId) => (draft) => {
   }
   draft.scenarios[k] = layout;
 };
+
+/**
+ * 과거 날짜 조회 화면용 배치(기준본 00 display + 40 Excel 스냅숏 + 60 원본 규격 래퍼). 읽기 전용 표시에만 쓴다.
+ * mode 'recorded': 그날 저장한 배치가 있으면 그 배치(layoutRecorded=true), 없으면 현재 배치. 'current': 현재 배치 + 과거 재고.
+ * 그날 재고 기록이 없는 랙은 용량·수량 null(hasRecord=false). Excel 정보는 그날 Excel 스냅숏으로 바꾸고 없으면 null.
+ * date가 비면 현재 대상 배치를 그대로 돌려준다.
+ */
+export function historyLayout(p, date, mode = 'recorded') {
+  const k = p.settings.scenario;
+  if (!date) return p.scenarios[k];
+  const s = mode === 'recorded' ? p.layoutSnapshots.find((x) => x.date === date && x.scenario === k) : null;
+  const base = s ? s.layout : p.scenarios[k];
+  const records = new Map(p.inventoryHistory.filter((x) => x.date === date && x.scenario === k).map((x) => [x.rackId, x]));
+  const snapshot = p.excelSnapshots.find((x) => x.date === date && x.scenario === k), excel = new Map((snapshot?.data || []).map((x) => [x.id, x.excel]));
+  const same = (a, b) => ['width', 'depth', 'height'].every((n) => a[n] === b[n] || (Number.isFinite(a[n]) && Number.isFinite(b[n]) && Math.abs(a[n] - b[n]) < 1e-8));
+  return {
+    ...base,
+    objects: base.objects.map((o) => {
+      let v = o;
+      if (o.kind === 'rack') {
+        const r = records.get(o.id);
+        v = { ...o, ...(r ? { capacity: r.capacity, quantity: r.quantity, unit: r.unit, source: r.source, hasRecord: true } : { capacity: null, quantity: null, hasRecord: false }) };
+      }
+      v = { ...v, excel: excel.get(o.id) || null };
+      if (!v.excel?.originalRackSpecification) return v;
+      const originalSpec = structuredClone(v.excel.originalRackSpecification);
+      return { ...v, originalSpec, designSpec: { width: v.width, depth: v.depth, height: v.height ?? null }, specificationChanged: !same(originalSpec, v) };
+    }),
+    layoutRecorded: !!s,
+  };
+}
+
+/** 이력 날짜 목록(기준본 dateSlider·historyStatus): 재고·Excel 스냅숏 전체 + 현재 대상의 배치 기록 날짜. */
+export const historyDates = (p) => [...new Set([...p.inventoryHistory.map((s) => s.date), ...p.excelSnapshots.map((s) => s.date), ...p.layoutSnapshots.filter((s) => s.scenario === p.settings.scenario).map((s) => s.date)])].sort();
+
+/** 기준본 historyStatus 문구. */
+export function historyStatusText(p, date, layout) {
+  if (!date) return '현재 편집 · 이력 ' + historyDates(p).length + '개 날짜';
+  const n = layout.objects.filter((o) => o.hasRecord).length;
+  return date + ' · 읽기 전용 · ' + (n ? n + '개 랙 기록' : '기록 없음') + ' · ' + (layout.layoutRecorded ? '해당 날짜 저장 배치' : '배치 이력 미적용: 현재 배치 + 과거 재고');
+}

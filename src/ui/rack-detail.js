@@ -14,9 +14,9 @@ const MARKUP = `<div class="dialog-head"><h2 data-title></h2><button type="butto
 <div class="detail-grid"><div class="detail-elevation" data-testid="detail-elevation"></div><div class="detail-item" data-testid="detail-item"></div></div>`;
 
 /**
- * @param {{ getProject: () => object, saveOrder: (order: string) => void, confirmPhysical: (rackId: string) => void, download: (name: string, data: string|Blob, type?: string) => void, toast: (t: string) => void }} deps
+ * @param {{ getProject: () => object, getLayout: () => object, readOnly?: () => boolean, saveOrder: (order: string) => void, confirmPhysical: (rackId: string) => void, download: (name: string, data: string|Blob, type?: string) => void, toast: (t: string) => void }} deps
  */
-export function createRackDetail({ getProject, saveOrder, confirmPhysical, download, toast }) {
+export function createRackDetail({ getProject, getLayout, readOnly = () => false, saveOrder, confirmPhysical, download, toast }) {
   const dialog = document.createElement('dialog');
   dialog.className = 'detail-dialog';
   dialog.dataset.testid = 'detail-dialog';
@@ -25,8 +25,7 @@ export function createRackDetail({ getProject, saveOrder, confirmPhysical, downl
   const $ = (sel) => dialog.querySelector(sel);
   let info = { rackId: null, shelf: '', item: null, search: '' };
   const rack = () => {
-    const p = getProject();
-    return p?.scenarios[p.settings.scenario].objects.find((o) => o.id === info.rackId && o.kind === 'rack');
+    return getProject() && getLayout().objects.find((o) => o.id === info.rackId && o.kind === 'rack');
   };
 
   function render() {
@@ -36,7 +35,7 @@ export function createRackDetail({ getProject, saveOrder, confirmPhysical, downl
     $('[data-title]').textContent = `${o.code} · 선반별 자재`;
     $('[data-order]').value = p.rackInfographic.shelfOrder;
     $('[data-testid=detail-summary]').innerHTML = rackSummary(o).map(([k, v]) => `<span>${esc(k)}: ${esc(v)}</span>`).join('') + (o.specificationChanged ? `<div class="warnbox">${esc(specWarning(o))}</div>` : '');
-    $('[data-physical]').disabled = p.settings.scenario === 'before' && p.scenarioMeta.before.locked;
+    $('[data-physical]').disabled = p.settings.scenario === 'before' && p.scenarioMeta.before.locked || readOnly();
     const box = $('.detail-elevation');
     box.innerHTML = rackInfoSvg(o, { shelfOrder: p.rackInfographic.shelfOrder, info });
     const chosen = rackItems(o).find((i) => i.location === info.item);

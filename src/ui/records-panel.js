@@ -8,7 +8,7 @@ const opts = (list) => list.map(([v, t]) => `<option value="${v}">${t}</option>`
  * @param {{ inventory: HTMLElement, layouts: HTMLElement }} roots
  * @param {{ getProject, today: () => string, saveSnapshot: (date, name) => void, restoreSnapshot: (id) => void, toast }} deps
  */
-export function createRecordsPanel(roots, { getProject, today, saveSnapshot, restoreSnapshot, toast }) {
+export function createRecordsPanel(roots, { getProject, today, saveSnapshot, restoreSnapshot, toast, isHistory = () => false, onView = () => {} }) {
   roots.inventory.innerHTML = `<div class="list-filters">
 <input type="search" data-q placeholder="날짜·랙·출처 검색" data-testid="inv-query" aria-label="재고 기록 검색">
 <input type="date" data-date data-testid="inv-date" aria-label="날짜">
@@ -50,10 +50,10 @@ export function createRecordsPanel(roots, { getProject, today, saveSnapshot, res
     const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE_LAYOUT));
     layPage = Math.min(layPage, pages - 1);
     const locked = p.settings.scenario === 'before' && p.scenarioMeta.before.locked;
-    lay('[data-save]').disabled = locked;
+    lay('[data-save]').disabled = locked || isHistory();
     if (!lay('[data-sname]').value) lay('[data-sname]').placeholder = p.metadata.name;
     lay('[data-lrows]').innerHTML = rows.length
-      ? `<table><tr><th>날짜 · 기록 시각</th><th>이름 / 편집안</th><th>객체</th><th>작업</th></tr>${rows.slice(layPage * PAGE_SIZE_LAYOUT, (layPage + 1) * PAGE_SIZE_LAYOUT).map((s) => `<tr><td>${esc(s.date)}<br><span class="muted">${esc(s.recordedAt ? new Date(s.recordedAt).toLocaleString('ko-KR') : '시각 미기록')}</span></td><td>${esc(s.name || '이름 미기록')}<br>${esc(s.scenario)}</td><td>${s.layout.objects.length}</td><td><button type="button" data-restore="${esc(s.id)}" ${locked || s.scenario !== p.settings.scenario ? 'disabled' : ''}>복원</button> <button type="button" data-compare="${esc(s.id)}">비교</button></td></tr>`).join('')}</table>`
+      ? `<table><tr><th>날짜 · 기록 시각</th><th>이름 / 편집안</th><th>객체</th><th>작업</th></tr>${rows.slice(layPage * PAGE_SIZE_LAYOUT, (layPage + 1) * PAGE_SIZE_LAYOUT).map((s) => `<tr><td>${esc(s.date)}<br><span class="muted">${esc(s.recordedAt ? new Date(s.recordedAt).toLocaleString('ko-KR') : '시각 미기록')}</span></td><td>${esc(s.name || '이름 미기록')}<br>${esc(s.scenario)}</td><td>${s.layout.objects.length}</td><td><button type="button" data-restore="${esc(s.id)}" ${locked || s.scenario !== p.settings.scenario ? 'disabled' : ''}>복원</button> <button type="button" data-compare="${esc(s.id)}">비교</button> <button type="button" data-view="${esc(s.id)}">조회</button></td></tr>`).join('')}</table>`
       : '<p class="muted">기록 없음</p>';
     lay('[data-lpage]').textContent = `${rows.length}건 · ${layPage + 1}/${pages}쪽`;
     lay('[data-lprev]').disabled = !layPage;
@@ -69,6 +69,7 @@ export function createRecordsPanel(roots, { getProject, today, saveSnapshot, res
   lay('[data-lnext]').addEventListener('click', () => { layPage++; renderLayouts(); });
   lay('[data-save]').addEventListener('click', () => {
     const p = getProject();
+    if (isHistory()) return toast('현재 편집으로 돌아온 후 기록하세요.');
     const date = lay('[data-sdate]').value, name = lay('[data-sname]').value.trim() || p.metadata.name;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !name) return toast('유효한 날짜와 배치 이름을 입력하세요.');
     if (p.layoutSnapshots.some((s) => s.date === date && s.scenario === p.settings.scenario) && !confirm('같은 날짜·편집안 배치이력을 현재 배치로 교체합니까?')) return;
@@ -80,6 +81,12 @@ export function createRecordsPanel(roots, { getProject, today, saveSnapshot, res
     if (r) {
       const s = p.layoutSnapshots.find((x) => x.id === r.dataset.restore);
       if (s && confirm(`${s.date} / ${s.name}의 객체 구성·좌표·설계 치수를 현재 ${p.settings.scenario} 편집안에 복원합니까? 같은 ID 랙의 현재 수량·자재 연결, 날짜별 이력과 다른 편집안은 유지됩니다. 현재에 없는 과거 랙은 수량·자재 연결 미확인으로 추가됩니다. 실행 취소할 수 있습니다.`)) restoreSnapshot(s.id);
+      return;
+    }
+    const v = e.target.closest('[data-view]');
+    if (v) {
+      const s = p.layoutSnapshots.find((x) => x.id === v.dataset.view);
+      if (s) onView(s.date);
       return;
     }
     const c = e.target.closest('[data-compare]');
