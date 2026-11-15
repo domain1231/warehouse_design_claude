@@ -19,8 +19,15 @@ if (externalRef.test(html)) failures.push('외부 파일 참조(src/href)가 있
 if (/\bimport\s*\(|\bimportScripts\s*\(/.test(html)) failures.push('동적 import 또는 importScripts가 있습니다.');
 // XML 이름공간 식별자는 네트워크 요청이 아니므로 허용한다(내려받는 SVG 파일에 필요, D-016).
 const NAMESPACES = new Set(['http://www.w3.org/2000/svg']);
+// 문서용 URL(D-035): 오픈소스 라이선스 원문과 사용자가 직접 누르는 배포 안내 링크. 불러오는 자원이 아니므로 정확히 이 문자열만 허용한다.
+const DOC_URLS = new Set([
+  'http://www.apache.org/licenses/',
+  'http://www.apache.org/licenses/LICENSE-2.0',
+  'https://docs.sheetjs.com/docs/getting-started/installation/standalone/',
+  'https://github.com/domain1231/warehouse_design_claude/releases',
+]);
 for (const match of html.matchAll(/https?:\/\/[^\s"'<>)]+/g)) {
-  if (!NAMESPACES.has(match[0])) failures.push(`네트워크 URL이 포함되어 있습니다: ${match[0]}`);
+  if (!NAMESPACES.has(match[0]) && !DOC_URLS.has(match[0])) failures.push(`네트워크 URL이 포함되어 있습니다: ${match[0]}`);
 }
 
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);

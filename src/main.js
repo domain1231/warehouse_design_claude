@@ -27,6 +27,7 @@ import { parseInventoryCsv, importInventory, inventorySnapshotExists, saveInvent
 import { createRackDetail } from './ui/rack-detail.js';
 import { createRecordsPanel } from './ui/records-panel.js';
 import { createExcelDialog } from './ui/excel-dialog.js';
+import { createInfoDialogs } from './ui/info-dialogs.js';
 import { createScenarioDialogs } from './ui/scenario-dialogs.js';
 import { createThemeDialog, applyTheme } from './ui/theme-dialog.js';
 import { createStorageDialogs, QUOTA_TEXT } from './ui/storage-dialogs.js';
@@ -40,11 +41,31 @@ import { scanLayout } from './warehouse/constraints.js';
 import { violationListHtml } from './warehouse/violations.js';
 import { candidateSummary } from './autolayout/candidates.js';
 import { rackCsvRows, historyCsvRows, templateCsvRows, reportSvg } from './exports/report.js';
+import { legend } from './warehouse/racklist.js';
 import { csvEncode, rackItems } from './warehouse/rackinfo.js';
 import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
 
 export const APP_VERSION = __APP_VERSION__;
 export const SCHEMA_VERSION = __SCHEMA_VERSION__;
+const REFERENCE_IMAGE = __REFERENCE_IMAGE__; // 기준본의 명시적 가상 참고 이미지(src/assets/reference.png)를 빌드 때 data: URI로 넣는다.
+
+/** SVG 문자열을 같은 크기의 PNG Blob으로 바꾼다(보고서·전후 비교 공용). */
+async function pngBlob(svg) {
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+  try {
+    const img = new Image();
+    await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = () => reject(new Error('SVG 이미지 변환 실패')); img.src = url; });
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    c.getContext('2d').drawImage(img, 0, 0);
+    const blob = await new Promise((resolve) => c.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('PNG 변환 실패');
+    return blob;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 const STATUS_TEXT = {
   loading: '불러오는 중',
@@ -91,7 +112,7 @@ function download(name, data, type = 'application/json') {
 
 // v2.4.1 화면 골격(기준본 렌더링 DOM의 구조·id·문구, D-032·D-033). 기능 연결은 start()가 하고, 이 함수는 요소를 만들어 참조를 돌려준다.
 // 기존 E2E 호환을 위해 data-testid를 함께 둔다. 기준본에 없는 재구축 요소는 숨기거나 해당 구역 끝에 둔다(9b-2~7에서 정리).
-const SHELL = `<header><div><div class="eyebrow">OPERATIONS / SPACE PLANNING</div><h1>Warehouse Studio <span class="sub">창고 배치 설계</span> <small id="appVersion" data-testid="versions"></small></h1></div><div class="header-actions"><div class="v-save-tools"><button id="vSave" class="primary" type="button" data-testid="save">프로젝트 저장</button><button id="vVersions" type="button" data-testid="versions-open">이전 버전·백업</button><button id="vStorage" type="button" data-testid="storage-open">저장소 관리</button><button id="vOverwrite" type="button" data-testid="overwrite" hidden>이 탭 내용으로 덮어쓰기</button><button id="vReplaceCorrupt" type="button" data-testid="replace-corrupt" hidden>손상 저장본 교체</button></div><span id="saveStatus" class="save" role="status" data-testid="status"></span><button id="undo" type="button" title="Ctrl+Z" data-testid="undo">↶ 취소</button><button id="redo" type="button" title="Ctrl+Y" data-testid="redo">↷ 다시</button><button id="jsonOut" type="button" data-testid="export">JSON 백업</button><label class="filebtn" data-testid="import-json">불러오기<input id="jsonIn" type="file" accept=".json,application/json" hidden data-testid="import-file"></label></div></header>
+const SHELL = `<header><div><div class="eyebrow">OPERATIONS / SPACE PLANNING</div><h1>Warehouse Studio <span class="sub">창고 배치 설계</span> <small id="appVersion" data-testid="versions"></small></h1></div><div class="header-actions"><div class="v-save-tools"><button id="vSave" class="primary" type="button" data-testid="save">프로젝트 저장</button><button id="vVersions" type="button" data-testid="versions-open">이전 버전·백업</button><button id="vStorage" type="button" data-testid="storage-open">저장소 관리</button><button id="vOverwrite" type="button" data-testid="overwrite" hidden>이 탭 내용으로 덮어쓰기</button><button id="vReplaceCorrupt" type="button" data-testid="replace-corrupt" hidden>손상 저장본 교체</button></div><span id="saveStatus" class="save" role="status" data-testid="status"></span><button id="undo" type="button" title="Ctrl+Z" data-testid="undo">↶ 취소</button><button id="redo" type="button" title="Ctrl+Y" data-testid="redo">↷ 다시</button><button id="jsonOut" type="button" data-testid="export">JSON 백업</button><label class="filebtn" data-testid="import-json">불러오기<input id="jsonIn" type="file" accept=".json,application/json" hidden data-testid="import-file"></label><button id="aboutBtn" type="button" data-testid="about-open">프로그램 정보</button><button id="helpBtn" type="button" data-testid="help-open">사용 안내</button></div></header>
 <div id="vSaveDetail" role="status"><span data-testid="status-detail"></span><span class="notice" data-testid="notice"></span><span>이 PC·브라우저 저장 / HTML 덮어쓰기·클라우드 동기화 아님</span></div>
 <div class="banner" id="sampleBanner" data-testid="sample-banner"></div>
 <div class="stats"><div class="stat"><small>전체 창고 면적</small><strong id="kArea" data-testid="k-area">—</strong><span>㎡</span></div><div class="stat"><small>현재 랙 수</small><strong id="kRacks" data-testid="k-racks">—</strong><span>개</span></div><div class="stat"><small>랙 면적 점유율</small><strong id="kFootprint" data-testid="k-footprint">—</strong><span>%</span></div><div class="stat"><small>수량 기준 적재율 · 단위별</small><strong id="kLoad" style="font-size:15px" data-testid="k-load">미확인</strong></div><div class="stat"><small>공간 경고</small><strong id="kWarnings" data-testid="k-warnings">—</strong><span>건</span></div></div>
@@ -229,9 +250,10 @@ async function start() {
   });
   const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => historyBlocked() || session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)) });
   const scenarioDialogs = createScenarioDialogs({
-    getProject: () => project(), toast: (t) => showToast(t), download, jsonName: () => `warehouse_project_v${SCHEMA_VERSION.replaceAll('.', '_')}_${today()}.json`, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
+    getProject: () => project(), toast: (t) => showToast(t), download, pngBlob, openHistoryPanel: () => pref({ panels: { bottomOpen: true, bottomSections: { ...panelsOf().bottomSections, layout: true }, layoutPreset: 'custom' } }), jsonName: () => `warehouse_project_v${SCHEMA_VERSION.replaceAll('.', '_')}_${today()}.json`, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
     apply: (label, compute) => historyBlocked() || session.apply(label, compute),
   });
+  createInfoDialogs({ appVersion: APP_VERSION, schemaVersion: SCHEMA_VERSION });
   const groupDialog = createGroupDialog({
     getProject: () => project(),
     getSelection: () => selectedRackIds(),
@@ -382,6 +404,7 @@ async function start() {
     isHistory: () => !!historyDate,
     applyRoom: (r) => run('치수 적용', (p, ctx) => applyRoom(p, r, ctx)),
     setBackground: (label, mutate) => command(label, (d, l) => mutate(d.settings.background, l.warehouse)),
+    useReference: () => command('첨부 도면 사용', (d, l) => Object.assign(d.settings.background, { data: REFERENCE_IMAGE, show: true, x: 0, y: 0, width: l.warehouse.width, height: l.warehouse.height })),
     startCalibration: () => { calibration = []; setTool('calibrate'); },
     toast: (t) => showToast(t),
   });
@@ -597,8 +620,9 @@ async function start() {
     ui.detail.parentElement.title = ui.detail.parentElement.textContent;
     if (s.project && document.activeElement !== ui.name) ui.name.value = s.project.metadata.name;
     if (s.project) {
-      // 기준본 sampleBanner(20-renderer). Excel 연결 문구는 9b-6에서 맞춘다.
-      ui.banner.textContent = s.project.metadata.sample ? '샘플 도면 · 첨부 평면도 참고. 창고·객체 치수와 위치는 실측값이 아닙니다. 초기 재고는 미입력입니다.' : '사용자 프로젝트 · 치수·위치의 근거는 선택 객체의 정보에서 확인하세요.';
+      // 기준본 sampleBanner(20-renderer) + Excel 연결 문구(40-excel).
+      const scenLayout = s.project.scenarios[s.project.settings.scenario];
+      ui.banner.textContent = scenLayout.objects.some((o) => o.excel) ? 'Excel 연결 · 치수는 원본 기준 / 자동 생성 위치는 실측 아님 · ' + legend(s.project.settings).title + ' · 재고 수량과 높이 비율 분리' : s.project.metadata.sample ? '샘플 도면 · 첨부 평면도 참고. 창고·객체 치수와 위치는 실측값이 아닙니다. 초기 재고는 미입력입니다.' : '사용자 프로젝트 · 치수·위치의 근거는 선택 객체의 정보에서 확인하세요.';
       const scen = s.project.settings.scenario, locked = s.project.scenarioMeta[scen]?.locked, noBase = !s.project.scenarios.before.objects.some((o) => o.kind === 'rack');
       ui.rActive.textContent = `${scen.toUpperCase()} · ${locked ? '조회 / 원본 잠금' : '편집'}${noBase ? ' · BEFORE 기준 없음' : ''}`;
       ui.scenarioSelect.value = scen;
@@ -609,6 +633,7 @@ async function start() {
     ui.redoBtn.disabled = !s.canRedo || s.status === 'saving';
     ui.saveBtn.disabled = s.status === 'saving' || s.status === 'loading';
     if (!s.project) return;
+    scenarioDialogs.renderHistory();
     ui.allowWarnings.checked = s.project.editing.allowWarnings;
     const pn = s.project.panels;
     ui.main.classList.toggle('left-closed', !pn.leftOpen);
@@ -703,23 +728,11 @@ async function start() {
   const report = () => reportSvg(project(), { layout: layout(), historyDate, today: today() });
   ui.exportBtns.svg.addEventListener('click', () => download('warehouse_layout.svg', report(), 'image/svg+xml;charset=utf-8'));
   ui.exportBtns.png.addEventListener('click', async () => {
-    let url = '';
     try {
-      url = URL.createObjectURL(new Blob([report()], { type: 'image/svg+xml' }));
-      const img = new Image();
-      await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = () => reject(new Error('SVG 이미지 변환 실패')); img.src = url; });
-      const c = document.createElement('canvas');
-      c.width = img.width;
-      c.height = img.height;
-      c.getContext('2d').drawImage(img, 0, 0);
-      const blob = await new Promise((resolve) => c.toBlob(resolve, 'image/png'));
-      if (!blob) throw new Error('PNG 변환 실패');
-      download('warehouse_layout.png', blob);
+      download('warehouse_layout.png', await pngBlob(report()));
       showToast('PNG 보고서를 저장했습니다.');
     } catch (e) {
       showToast('PNG 출력 실패: ' + e.message + ' · SVG 출력을 이용하세요.');
-    } finally {
-      if (url) URL.revokeObjectURL(url);
     }
   });
   ui.exportBtns.print.addEventListener('click', () => { printArea.innerHTML = report(); window.print(); });
