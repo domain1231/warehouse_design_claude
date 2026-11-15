@@ -78,3 +78,22 @@ button[data-testid="save"] { background: var(--accent); border-color: var(--acce
   .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(320px, 1fr) auto; }
   .side.left, .side.right { border: 0; border-bottom: 1px solid var(--line); }
 }
+
+/* Phase 3b: 편집 */
+.box { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin: 0 0 10px; }
+.box summary { cursor: pointer; font-size: 13px; margin-bottom: 6px; }
+.inspector .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.inspector label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); min-width: 0; }
+.inspector .full { grid-column: 1 / -1; }
+.inspector input, .inspector select, .inspector textarea {
+  width: 100%; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px;
+  background: var(--bg); color: var(--text); font: inherit; font-size: 12px;
+}
+.inspector input:disabled, .inspector select:disabled, .inspector textarea:disabled { opacity: 0.6; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 4px; background: var(--card); border: 1px solid var(--line); font-size: 12px; }
+.info-line { margin: 0 0 8px; font-size: 12px; }
+.toast {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); max-width: min(560px, calc(100vw - 32px));
+  margin: 0; padding: 8px 14px; border-radius: 6px; background: #3a1e25; border: 1px solid var(--warn); color: var(--text); font-size: 13px; z-index: 10;
+}
+.toast[hidden] { display: none; }

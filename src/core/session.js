@@ -10,6 +10,7 @@
 // 편집은 검증에 실패하면 적용하지 않는다(프로젝트·이력 불변).
 import { createProject, validateProject, assertIndependent } from './project.js';
 import { createHistory } from './history.js';
+import { createIdGenerator } from './ids.js';
 import { scanLayout, layoutSignature } from '../warehouse/constraints.js';
 
 export function projectValidator(p) {
@@ -34,7 +35,8 @@ export function storeScanResults(project, { now } = {}) {
   return project;
 }
 
-export function createSession({ store, nextId, today, historyLimit = 60, autosave = true }) {
+export function createSession({ store, nextId, today, now = () => new Date().toISOString(), historyLimit = 60, autosave = true }) {
+  const ids = nextId ?? createIdGenerator();
   const history = createHistory({ limit: historyLimit });
   const listeners = new Set();
   const state = {
@@ -68,12 +70,12 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
       state.status = r.source === 'legacy' ? 'unsaved' : 'saved';
       if (r.source === 'legacy') state.notice = '기준본(v2.4.1) 저장 데이터를 불러왔습니다. 저장하면 새 저장 영역에 기록하며 기준본 데이터는 그대로 둡니다.';
     } else if (r.status === 'empty') {
-      state.project = projectValidator(createProject({ sample: true, nextId, today }));
+      state.project = projectValidator(createProject({ sample: true, nextId: ids, today }));
       state.source = 'new';
       state.status = 'unsaved';
     } else {
       // 손상: 기존 저장본은 보호하고 빈 프로젝트로 시작한다. 저장은 명시적 교체 확인 후에만 가능하다.
-      state.project = projectValidator(createProject({ sample: false, nextId, today }));
+      state.project = projectValidator(createProject({ sample: false, nextId: ids, today }));
       state.source = 'corrupt';
       state.corrupt = true;
       state.status = 'error';
@@ -133,6 +135,29 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
     return { changed: true };
   }
 
+  /**
+   * 편집 명령 실행. compute(project, { nextId, now })는 src/warehouse/commands.js의 applyCommand/applyMove 결과를 돌려준다.
+   * 성공: 실행취소에 기록하고 저장. 실패: 기준본처럼 실패 명령 기록(commandHistory)만 남기고 저장(실행취소 기록 없음).
+   * @returns 명령 결과({ ok, reason?, ... })
+   */
+  async function apply(label, compute) {
+    if (!state.project) throw new Error('init() 전에는 편집할 수 없습니다.');
+    const before = state.project;
+    const r = compute(before, { nextId: ids, now });
+    if (!r || r.project === before) return r;
+    if (r.ok) {
+      const next = projectValidator(r.project);
+      if (!history.record(before, next, label)) return { ...r, changed: false };
+      state.project = next;
+    } else {
+      state.project = projectValidator(r.project);
+    }
+    state.status = 'unsaved';
+    emit();
+    if (autosave && !state.corrupt) await save();
+    return r;
+  }
+
   async function step(kind) {
     const snapshot = history.snapshot();
     const draft = structuredClone(state.project);
@@ -151,11 +176,11 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
   }
 
   /**
-   * 화면 상태(카메라 viewport, 선택)를 바꾼다. 기준본처럼 프로젝트에 저장하지만 실행취소 기록에는 넣지 않는다.
+   * 화면·편집 환경 상태(카메라 viewport, 선택, 경고 허용, 스냅·정밀 간격)를 바꾼다. 기준본처럼 프로젝트에 저장하지만 실행취소 기록에는 넣지 않는다.
    * 확대·이동 중 매 프레임 저장하지 않도록 delay(ms) 뒤에 한 번 저장한다. delay가 0이면 바로 저장한다.
    * viewport 값은 스키마 범위(배율 0.05–30, 이동 ±5000m, fitScale 0.001–100000)로 제한한다.
    */
-  function setView({ viewport, selection } = {}, { delay = 250 } = {}) {
+  function setView({ viewport, selection, allowWarnings, snap, precision } = {}, { delay = 250 } = {}) {
     if (!state.project) throw new Error('init() 전에는 화면 상태를 바꿀 수 없습니다.');
     const next = { ...state.project };
     if (viewport) {
@@ -165,7 +190,15 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
       if (Number.isFinite(viewport.fitScale) && viewport.fitScale > 0) next.viewport.fitScale = Math.max(1e-3, Math.min(1e5, viewport.fitScale));
     }
     if (selection) next.editing = { ...state.project.editing, selectedRackIds: [...selection], selectionScenario: state.project.settings.scenario };
-    if (JSON.stringify([next.viewport, next.editing]) === JSON.stringify([state.project.viewport, state.project.editing])) return { changed: false };
+    // 편집 환경 설정(기준본은 실행취소 없이 바로 저장): 경고 허용 정책, 스냅, 정밀 이동 간격
+    if (typeof allowWarnings === 'boolean') {
+      next.editing = { ...(next.editing ?? state.project.editing), allowWarnings };
+      next.settings = { ...state.project.settings, policy: allowWarnings ? 'warn' : 'block' };
+    }
+    if (typeof snap === 'boolean') next.settings = { ...(next.settings ?? state.project.settings), snap };
+    if (precision) next.precision = { ...state.project.precision, ...precision };
+    if (allowWarnings !== undefined || snap !== undefined || precision) projectValidator(structuredClone(next));
+    if (JSON.stringify([next.viewport, next.editing, next.settings, next.precision]) === JSON.stringify([state.project.viewport, state.project.editing, state.project.settings, state.project.precision])) return { changed: false };
     state.project = next;
     if (state.status !== 'error') state.status = 'unsaved';
     emit();
@@ -194,6 +227,7 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
     init,
     save,
     edit,
+    apply,
     undo: () => step('undo'),
     redo: () => step('redo'),
     handleStorageEvent,
@@ -205,6 +239,10 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
     },
     get state() {
       return view();
+    },
+    /** 새 객체 ID 생성기(명령 전에 ID가 필요할 때). */
+    get nextId() {
+      return ids;
     },
     get historyBytes() {
       return history.bytes;
