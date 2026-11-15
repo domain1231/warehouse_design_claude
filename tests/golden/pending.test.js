@@ -6,7 +6,6 @@ const pending = {
   G2: 'Phase 2 — 공간 경고·W.scan (geometry/clearance, warehouse/constraints)',
   G3: 'Phase 5 — Excel 분석 (excel/*)',
   G4: 'Phase 6 — 자동 배치 (placement/*)',
-  G5: 'Phase 1 — 프로젝트 모델·스키마 2.3.6 (core/project)',
 };
 
 for (const [id, phase] of Object.entries(pending)) {

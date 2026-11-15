@@ -56,3 +56,37 @@ export function diff(expected, actual, limit = 20, at = '$', out = []) {
 export function formatDiff(rows) {
   return rows.map((r) => `${r.path}: 기준 ${JSON.stringify(r.expected)} / 재구축 ${JSON.stringify(r.actual)}`).join('\n');
 }
+
+/**
+ * 기준본 하네스(tools/golden-master.cjs)와 같은 정규화: 키 정렬, drop 키 제거, 숫자 1e-9 반올림,
+ * ID 패턴 문자열을 순회 순서대로 ID#n 토큰으로 치환. 재구축본 ID 형식에 맞는 idPattern을 넘긴다.
+ */
+export const HARNESS_DROP = ['checkedAt', 'lastSavedAt', 'time', 'recordedAt', 'importedAt', 'createdAt', 'snapshotTime', 'versionId', 'elapsedMs', 'columnElapsedMs', 'columnCheckedMs', 'searchMs', 'renderMs', 'renderCount', 'started', 'deadline', 'heapBeforeBytes', 'heapAfterBytes', 'date', 'created', 'asOfDate', 'asOf', 'editedAt'];
+export function normalizeLikeHarness(value, { idPattern, extraDrop = [] } = {}) {
+  const ids = new Map();
+  const drop = new Set([...HARNESS_DROP, ...extraDrop]);
+  const re = idPattern ? new RegExp(idPattern.source, 'g') : null;
+  const token = (m) => {
+    if (!ids.has(m)) ids.set(m, 'ID#' + (ids.size + 1));
+    return ids.get(m);
+  };
+  const walk = (v) => {
+    if (typeof v === 'number') {
+      if (!Number.isFinite(v)) return String(v);
+      const r = Math.round(v * 1e9) / 1e9;
+      return r === 0 ? 0 : r;
+    }
+    if (typeof v === 'string') return re ? v.replace(re, token) : v;
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === 'object') {
+      const o = {};
+      for (const k of Object.keys(v).sort()) {
+        if (drop.has(k) || v[k] === undefined) continue;
+        o[k] = walk(v[k]);
+      }
+      return o;
+    }
+    return v;
+  };
+  return walk(value);
+}

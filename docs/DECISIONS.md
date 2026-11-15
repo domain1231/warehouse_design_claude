@@ -30,9 +30,15 @@
 - 저장 원문은 기준본과 같은 `warehouse-backup-zip-v1` 형식이다. 기준본 v2.4.1이 이 원문을 읽을 수 있음을 `tools/legacy-compat.mjs`로 확인했다(원문 복원 바이트 동일, 새로고침 부팅 정상).
 - 이유: 기준본 데이터를 원본 보존본으로 남기고, 재구축본 저장 방식(2-슬롯·포인터)과 섞지 않기 위해.
 - 영향: 같은 브라우저에서 기준본으로 되돌아가면 기준본은 재구축본 이전의 자기 데이터를 연다. 최신 작업을 기준본으로 옮기려면 JSON 내보내기·불러오기를 쓴다. 저장 공간은 기준본 1개 + 재구축본 슬롯 2개를 차지한다.
-- 미결(사용자 확인 필요): 되돌림 편의를 위해 재구축본 저장 시 기준본 키에도 같은 원문을 함께 쓸지(저장 공간 1개분 추가 사용). 기본값은 쓰지 않음.
+- 확정(2026-11-11 사용자 결정, A안): 기준본 키에는 쓰지 않는다. 기준본 키는 원본 보존본으로만 둔다. 재구축본에서 기준본으로 최신 작업을 옮길 때는 JSON 내보내기·불러오기를 쓴다.
 
 ## D-007 저장 원자성: 2-슬롯 + 포인터 (2026-11-11, Phase 1a)
 - 결정: 비활성 슬롯에 쓰고 읽어서 확인한 뒤 포인터 키 하나만 교체한다. 포인터 교체 전 어떤 실패도 기존 저장본을 바꾸지 않으므로 기준본의 바이트 복구 쓰기가 필요 없다. 교체 후 비활성 슬롯이 직전 저장본(last-good)이 된다.
 - 동시 저장: 각 저장소 인스턴스는 마지막으로 읽거나 쓴 포인터 원문을 기억하고, 저장 시작 시와 포인터 교체 직전(비동기 압축 이후)에 두 번 비교한다. 다르면 CONFLICT로 중단하고, 명시적 확인(force) 시에만 덮어쓴다(기준본 BUG-STORAGE-002와 같은 정책).
 - 브라우저 요구: CompressionStream/DecompressionStream('deflate-raw') (Chrome·Edge 103+, Firefox 113+, Safari 16.4+). 실제 Windows Edge 확인은 UI 연결 단계(Phase 1b)에서 한다.
+
+## D-008 프로젝트 모델: 기준본 검증 체인을 한 함수로 펼침 (2026-11-11, Phase 1b)
+- 결정: `src/core/project.js`의 `validateProject`는 기준본 12단계 래퍼(10→40→50→60→65×2→70×2→75→80→90→92)와 기본값 보정(S.ensure 3단계, M/EX/V/Q/W.ensure)의 최종 합성 동작을 실행 순서 그대로 한 함수에 펼친다. `createProject`는 makeProject 최종 합성(90 W.ensure ∘ 80 Q.ensure(fresh) ∘ 00)이다.
+- 검증: Golden Master G5(샘플·빈 프로젝트) 완전 일치, 기준본 대조 70사례(수락 10·거부 60)에서 수락/거부·오류 메시지·보정 결과 sha256 일치(`tools/validation-diff.mjs` → `fixtures/legacy/validation-cases.json`).
+- 미이식: 열 우선 모드 배치(`autoPlacementRules.mode === "column"`)의 검사 결과 재계산(W.scan) — Phase 2·6.
+- 참고: 기준본 `tools/function-chain.cjs`는 `const x=S.ensure;S.ensure=p=>` 형태(멤버 화살표 함수 포획)를 놓친다. S.ensure 체인(60→65→70)은 직접 확인했다.
