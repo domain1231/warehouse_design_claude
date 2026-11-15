@@ -570,3 +570,29 @@ export function applyAisleRule(p, layout, type, { min, target, enabled }) {
   p.aisleRules[type] = { minWidth: lo, targetWidth: hi, enabled: !!enabled };
   for (const o of layout.objects) if (o.kind === 'aisle' && o.aisleType === type) Object.assign(o, { minWidth: lo, targetWidth: hi, warningsEnabled: !!enabled });
 }
+
+// ── 선택 정보 패널 편집(기준본 60 크기 제한·비율 잠금, 50 통로 단면 설정, 90 검토 표시) ──
+const objectOf = (layout, id) => layout.objects.find((x) => x.id === id);
+export const LIMIT_COMMAND = '크기 조절 제한 설정';
+export const setLimit = (id, key, value) => (draft, layout) => {
+  if (!['minWidth', 'minDepth', 'maxWidth', 'maxDepth'].includes(key)) throw new Error('알 수 없는 크기 제한입니다.');
+  const o = objectOf(layout, id);
+  if (o) o.resizeConstraints[key] = value;
+};
+export const setAspectLock = (id, value) => (draft, layout) => {
+  const o = objectOf(layout, id);
+  if (o) o.resizeConstraints.aspectLocked = !!value;
+};
+/** 통로의 clearanceAxis / warningsEnabled / linkedDoorId / scopeIds 한 칸. 검증은 applyCommand가 한다. */
+export const AISLE_FIELDS = Object.freeze(['clearanceAxis', 'warningsEnabled', 'linkedDoorId', 'scopeIds']);
+export const setAisleField = (id, key, value) => (draft, layout) => {
+  if (!AISLE_FIELDS.includes(key)) throw new Error('알 수 없는 통로 설정입니다.');
+  const o = objectOf(layout, id);
+  if (o?.kind === 'aisle') o[key] = value;
+};
+/** 위반 '검토 중' 표시(기준본 90 wReview). 켜면 reviewNotes[배치][id]='review', 끄면 삭제. */
+export const setReviewMark = (id, on) => (draft) => {
+  const notes = draft.autoPlacement.reviewNotes[draft.settings.scenario];
+  if (on) notes[id] = 'review';
+  else delete notes[id];
+};
