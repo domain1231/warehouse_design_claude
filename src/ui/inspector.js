@@ -9,6 +9,7 @@ import { groupStats, GROUP_BUTTONS, recentCommands } from '../warehouse/group-pa
 import { dimsText, placementLines, aisleInfoLines, scopeText } from '../warehouse/inspector-info.js';
 import { specWarning } from '../warehouse/rackinfo.js';
 import { formatNumber as fmt } from '../core/format.js';
+import { heightUtilization } from '../warehouse/appearance.js';
 
 const RACK_TYPES = ['경량랙', '중량랙', '팔레트랙', '일반 선반', '사용자 지정 랙'];
 const SWINGS = [['in-right', '위쪽 좌경첩 → 아래'], ['in-left', '위쪽 우경첩 → 아래'], ['out-right', '아래 좌경첩 → 위'], ['out-left', '아래 우경첩 → 위']];
@@ -27,6 +28,35 @@ function groupPanel(racks, c) {
   const s = groupStats(racks, c.warnings, c.selected), dis = c.history ? 'disabled' : '';
   const hist = recentCommands(c.project.commandHistory).map((h) => `<div class="m-command">${esc(h.type)} · ${h.targetIds.length}개 · ${h.success ? '성공' : '취소'}<br>${esc(h.time)}${h.reason ? '<br>' + esc(h.reason) : ''}</div>`).join('');
   return `<h3>다중 랙 편집 패널</h3><div class="info">선택 ${s.count}개 · 외곽 ${fmt(s.width)} × ${fmt(s.depth)}m<br>랙 면적 합계 ${fmt(s.area, 3)}㎡<br>공간 경고 ${s.spaceWarnings}건 / 통로 위반 ${s.aisleWarnings}건<br>${s.units.map((u) => `최대 ${fmt(u.capacity)} ${esc(u.unit)} (${u.known}/${u.total}랙 확인)`).join('<br>')}</div><p class="m-group-list">${racks.map((o) => esc(o.code)).join(', ')}</p><div class="m-group-grid">${GROUP_BUTTONS.map(([k, t]) => `<button data-group-action="${k}" ${dis}>${t}</button>`).join('')}<button id="mGroupDuplicate" ${dis}>그룹 복제</button><button id="mGroupDelete" ${dis}>그룹 삭제</button><button id="mGroupUndo">실행 취소</button><button id="mGroupCheck">공간 검토</button><button id="mGroupCompare">Before/After 비교</button><button id="mGroupExport">현재 좌표 CSV</button></div><p class="muted">정렬·간격은 회전 외접 경계 기준이며 적용 전 미리보기합니다. Ctrl+클릭 토글, Shift+클릭 추가. 로케이션·선반·자재 정보는 변경하지 않습니다.</p><details><summary>최근 편집 명령</summary>${hist}</details>`;
+}
+
+// 기준본 40 EX.renderDetail: Excel 연결 랙의 읽기 전용 상세(탭 상태는 화면 안에서만 유지).
+const EX_TABS = [['basic', '기본정보'], ['shelves', '선반정보'], ['items', '자재정보'], ['analysis', '분석정보'], ['history', '이력']];
+const HEIGHT_POLICY_LABELS = { weightedMax: '선반별 최대 높이 / 높이 가중평균', meanMax: '선반별 최대 높이 비율 / 단순평균', max: '등록 자재 중 최대 높이 비율' };
+const exView = { tab: 'basic', shelf: null };
+const byLocation = (a, b) => String(a.location).localeCompare(String(b.location), 'en', { numeric: true });
+const shelfRatio = (sh) => {
+  const v = sh.items.map((i) => (i.shelfHeight > 0 && i.materialHeight !== null && i.materialHeight !== undefined ? (i.materialHeight / i.shelfHeight) * 100 : null)).filter((x) => x !== null);
+  return v.length ? Math.max(...v) : null;
+};
+function excelBox(o, c) {
+  const e = o.excel, shelves = [...e.shelves].sort((a, b) => a.level - b.level), all = shelves.flatMap((sh) => sh.items).sort(byLocation);
+  if (exView.shelf && !shelves.some((sh) => sh.level === exView.shelf)) exView.shelf = null;
+  const r = ratio(o), policy = c.project.settings.heightPolicy ?? 'weightedMax', hu = heightUtilization(o, policy);
+  let h = '';
+  if (exView.tab === 'basic') {
+    h = `<div class="info">${esc(e.key)} · ${esc(e.column)}열 / ${e.rackNumber}번 랙<br>등록 선반 ${shelves.length}개 · 자재 위치 ${all.length}건<br>실제 재고: ${r === null ? '데이터 없음' : fmt(r, 1) + '%'}<br>위치 근거: ${esc(o.provenance)}<br>가져오기 기준일: ${esc(e.asOfDate)} / ${esc(e.sourceFile)}<br>${e.missingInLatest ? '<strong class="ex-warning">이번 파일 미등록 · 자동 삭제하지 않음</strong>' : ''}${e.placeholder ? '<strong class="ex-warning">사용자 생성 후보 · 실존 미확인</strong>' : ''}</div><label class="check"><input id="exPhysical" type="checkbox" ${e.physicalConfirmed ? 'checked' : ''} disabled>현장에서 실존 확인</label>`;
+  } else if (exView.tab === 'shelves') {
+    h = `<p class="muted">선반은 수직 계층입니다. 아래 목록은 실제 수평 배치도를 뜻하지 않습니다.</p><table><tr><th>선반</th><th>높이 mm</th><th>자재높이 mm</th><th>위치 수</th><th>최대 높이 비율</th></tr>${shelves.map((sh) => { const sr = shelfRatio(sh); return `<tr data-shelf="${sh.level}" style="cursor:pointer"><td>${sh.level}번</td><td>${[...new Set(sh.items.map((i) => i.shelfHeight ?? '미확인'))].join(', ')}</td><td>${[...new Set(sh.items.map((i) => i.materialHeight ?? '미확인'))].join(', ')}</td><td>${sh.items.length}</td><td>${sr === null ? '미확인' : fmt(sr, 1) + '%'}</td></tr>`; }).join('')}</table>`;
+  } else if (exView.tab === 'items') {
+    h = `<label>선반 선택<select id="exShelfSelect"><option value="">전체 등록 선반</option>${shelves.map((sh) => `<option value="${sh.level}" ${exView.shelf === sh.level ? 'selected' : ''}>${sh.level}번째 선반</option>`).join('')}</select></label>`;
+    h += all.filter((i) => !exView.shelf || i.shelfNumber === exView.shelf).map((i) => `<div class="ex-item"><strong>${esc(i.location)}</strong><br>${esc(i.itemCode)} · ${esc(i.itemName)}<br>규격: ${esc(i.specification)}<br>ROP ${fmt(i.reorderPoint)} / MAX Stock ${fmt(i.maxStock)}<br>3개월 평균 입고수량 ${fmt(i.averageInbound3M)}<br>혼적수 ${fmt(i.mixedItemCount)} / 선반 높이 ${fmt(i.shelfHeight)}mm / 자재 높이 ${fmt(i.materialHeight)}mm<br>높이 활용률 ${i.shelfHeight > 0 && i.materialHeight !== null ? fmt((i.materialHeight / i.shelfHeight) * 100, 1) + '%' : '미확인'}<br>비고: ${esc(i.note || '—')}<br><small class="muted">원본 ${esc(e.sheet)}!${i.sourceRow}행 · 자재 위치 ${i.position} / 현재고 정보 없음</small></div>`).join('') || '<p>등록 자재 없음</p>';
+  } else if (exView.tab === 'analysis') {
+    h = `<div class="info">랙 바닥면적 ${fmt(o.width * o.depth, 4)}㎡ (한 번만 집계)<br>높이 활용률 ${hu === null ? '미확인' : fmt(hu, 1) + '%'}<br>집계: ${esc(HEIGHT_POLICY_LABELS[policy] ?? '선반별 최대 높이')}<br>원본 R열은 참고값으로만 보관합니다.<br>등록 위치는 실제 재고 유무를 보증하지 않습니다.</div><p class="muted">동일 선반의 복수 자재 높이는 합산하지 않습니다. 최대값은 나란히 놓인 자재를 가정하는 분석 정책이며 실제 적층 형상은 별도 확인해야 합니다.</p>${(e.issues || []).map((t) => `<p class="ex-warning">${esc(t)}</p>`).join('')}`;
+  } else {
+    h = c.project.importHistory.filter((x) => x.keys.includes(e.building + '|' + e.key)).slice().reverse().map((x) => `<div class="ex-item">${esc(x.date)} · ${esc(x.file)} / ${esc(x.source)}<br>${esc(x.mode)} · 기준일 기록<br>실제 재고 수량 이력과 별도입니다.</div>`).join('') || '<p>가져오기 이력 없음</p>';
+  }
+  return `<div id="exImportDetails"><h3>Excel 연결 · ${esc(e.building)} ${esc(e.floor)}</h3><div class="ex-tabs">${EX_TABS.map(([k, t]) => `<button type="button" data-extab="${k}" class="${exView.tab === k ? 'active' : ''}">${t}</button>`).join('')}</div><div id="exDetailPane" class="ex-pane">${h}</div></div>`;
 }
 
 function objectPanel(o, n, c) {
@@ -50,6 +80,7 @@ function objectPanel(o, n, c) {
   s += sel('provenance', '치수·위치 근거', pairs(PROVENANCE.includes(o.provenance) ? PROVENANCE : [o.provenance, ...PROVENANCE]));
   s += `<label class="full">비고<textarea data-field="note" rows="2" ${ro}>${esc(o.note)}</textarea></label></div></div>`;
   s += `<div>${c.selWarnings.length ? '<div class="warnbox" data-testid="selection-warnings">' + c.selWarnings.map((w) => esc(w.text)).join('<br>') + '</div>' : '<div class="info" data-testid="selection-warnings">선택 객체에 공간 경고가 없습니다.</div>'}<p class="muted">X → 오른쪽 / Y ↓ 아래<br>중심 회전 · 정확한 좌표 입력은 스냅 제외</p></div>`;
+  if (o.excel) s += excelBox(o, c);
   if (o.kind === 'aisle') {
     const a = aisleClearance(o, layout), dh = history ? 'disabled' : '';
     s += `<div><h3>유효 통로 폭</h3><div class="info">${aisleInfoLines(a).join('<br>')}</div><label>폭을 측정할 로컬 축<select id="mAisleAxis" ${dh}><option value="auto">짧은 변 기준 자동</option><option value="x">로컬 X 방향 폭</option><option value="y">로컬 Y 방향 폭</option></select></label><label class="check"><input id="mAisleEnabled" type="checkbox" ${a.enabled ? 'checked' : ''} ${dh}>이 통로 경고 사용</label><label>검사할 랙 번호 (비우면 전체)<input id="mAisleScope" value="${esc(scopeText(o, layout.objects))}" ${dh}></label><label>연결할 출입문<select id="mLinkedDoor" ${dh}><option value="">미지정 / 연결성 미검증</option>${layout.objects.filter((d) => d.kind === 'door').map((d) => `<option value="${esc(d.id)}">${esc(d.code)}</option>`).join('')}</select></label><p class="note">단면별 최대 연속 여유 폭의 최솟값입니다. 전체 경로 연결을 증명하지 않습니다. 회전 시 로컬 단면 축도 함께 회전합니다.</p></div>`;
@@ -125,6 +156,9 @@ export function renderInspector(root, c) {
     $('mAisleScope').onchange = (e) => on.aisle(o.id, 'scopeIds', e.target.value);
   }
   root.querySelectorAll('[data-group-action]').forEach((b) => { b.onclick = () => on.group(b.dataset.groupAction); });
+  root.querySelectorAll('[data-extab]').forEach((b) => { b.onclick = () => { exView.tab = b.dataset.extab; renderInspector(root, c); }; });
+  root.querySelectorAll('#exDetailPane [data-shelf]').forEach((r) => { r.onclick = () => { exView.shelf = Number(r.dataset.shelf); exView.tab = 'items'; renderInspector(root, c); }; });
+  change('exShelfSelect', (e) => { exView.shelf = e.target.value ? Number(e.target.value) : null; renderInspector(root, c); });
   click('mGroupDuplicate', () => on.duplicate());
   click('mGroupDelete', () => on.remove());
   click('mGroupUndo', () => on.undo());

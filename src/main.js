@@ -248,7 +248,29 @@ async function start() {
     },
     toast: (t) => showToast(t),
   });
-  const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => historyBlocked() || session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)) });
+  const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => historyBlocked() || session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)),
+    download, exportRecovery: () => storageDialogs.exportRecovery(), openStorage: () => storageDialogs.openStorage(),
+    // 기준본 40 exPick: 대화상자를 닫고 도면을 클릭한 지점을 A열 기준점으로 쓴다. Esc는 취소(대화상자는 닫힌 채).
+    pickPoint: (done) => {
+      picking = done;
+      setTool('select');
+      showToast('도면을 클릭해 A열 기준점(회전 외곽 좌상단)을 지정하세요. Esc로 취소합니다.');
+    } });
+  let picking = null;
+  ui.plan.addEventListener('pointerdown', (e) => {
+    if (!picking) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const done = picking, p = toWorld(e.clientX, e.clientY);
+    picking = null;
+    done(p);
+  }, { capture: true });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && picking) {
+      picking = null;
+      showToast('A열 기준점 지정을 취소했습니다.');
+    }
+  }, true);
   const scenarioDialogs = createScenarioDialogs({
     getProject: () => project(), toast: (t) => showToast(t), download, pngBlob, openHistoryPanel: () => pref({ panels: { bottomOpen: true, bottomSections: { ...panelsOf().bottomSections, layout: true }, layoutPreset: 'custom' } }), jsonName: () => `warehouse_project_v${SCHEMA_VERSION.replaceAll('.', '_')}_${today()}.json`, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
     apply: (label, compute) => historyBlocked() || session.apply(label, compute),
@@ -611,6 +633,7 @@ async function start() {
   const paint = (s) => {
     storageDialogs.observe(s);
     ui.recoveryBtn.hidden = !s.lastFailure;
+    excelDialog.setStorage(STATUS_TEXT[s.status] ?? s.status, storageDialogs.riskText());
     ui.status.textContent = STATUS_TEXT[s.status] ?? s.status;
     ui.status.dataset.state = s.status;
     // 기준본 V.paint 상세 문구: (오류 · )(안내 · )마지막 확인 저장 시각 · 이 PC·브라우저 저장 …
