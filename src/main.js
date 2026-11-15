@@ -12,11 +12,12 @@ import { rackLabelParts, labelStatusText } from './cad/labels.js';
 import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js';
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
 import { pixelsPerMeter } from './cad/camera.js';
-import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
+import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { setObjectColor, setColorMode, applyThresholdColors, resetColors } from './warehouse/appearance.js';
 import { renderInspector } from './ui/inspector.js';
 import { createRoomPanel } from './ui/room-panel.js';
 import { applyRoom } from './warehouse/room.js';
+import { createAisleDialog } from './ui/aisle-dialog.js';
 import { createGroupDialog } from './ui/group-dialog.js';
 import { createPanels } from './ui/panels.js';
 import { createRackDetail } from './ui/rack-detail.js';
@@ -132,6 +133,8 @@ function renderShell(root) {
   const [warnBox, warnBody] = section('공간 검토', 'warnings-section', 'space');
   $('bTopRow').append(invBox, snapBox);
   $('bLowerRow').append(listBox, warnBox);
+  const measureResult = el('p', { id: 'measureResult', class: 'info', testid: 'measure-result' }, '거리 도구: 도면의 두 점을 클릭하면 미터 단위 거리를 표시합니다.');
+  warnBox.append(measureResult);
   const exportBtns = { svg: $('svgOut'), png: $('pngOut'), print: $('printBtn') };
   for (const [k, t] of [['racks-csv', '랙 목록 CSV'], ['history-csv', '이력 CSV'], ['template-csv', 'CSV 양식'], ['compare-csv', '비교 요약 CSV']]) $('bExports').append((exportBtns[k] = button('export-' + k, t)));
 
@@ -140,7 +143,7 @@ function renderShell(root) {
     saveBtn: $('vSave'), overwriteBtn: $('vOverwrite'), replaceBtn: $('vReplaceCorrupt'), undoBtn: $('undo'), redoBtn: $('redo'), exportBtn: $('jsonOut'), importInput: $('jsonIn'),
     versionsBtn: $('vVersions'), storageBtn: $('vStorage'), recoveryBtn: $('rBackupDownload'),
     kpi: { area: $('kArea'), racks: $('kRacks'), footprint: $('kFootprint'), load: $('kLoad'), warnings: $('kWarnings') }, wSummary: document.querySelector('[data-testid=w-summary]'), wNote: $('wTopNote'), wAll: $('wAll'), wViolations: $('wViolations'),
-    toolSelect: toolButtons[0], toolPan: toolButtons[1], toolHelp: $('toolHelp'), zoomOut: $('zoomOut'), zoomIn: $('zoomIn'), zoomLabel: $('zoomLabel'), fit: $('fit'), zoom50: $('mZoom50'), zoom200: $('mZoom200'), focus: $('focusSelection'), centerLock: $('mCenterLock'),
+    measureResult, toolSelect: toolButtons[0], toolPan: toolButtons[1], toolHelp: $('toolHelp'), zoomOut: $('zoomOut'), zoomIn: $('zoomIn'), zoomLabel: $('zoomLabel'), fit: $('fit'), zoom50: $('mZoom50'), zoom200: $('mZoom200'), focus: $('focusSelection'), centerLock: $('mCenterLock'),
     centerBtn: $('mCenter'), resetZoomBtn: $('mResetZoom'), selectAllBtn: $('mSelectAll'), clearSelBtn: $('mClearSelection'), selectRule: $('mSelectRule'), policy: $('collisionPolicy'), gridStep: $('gridStep'), gridOn: $('gridOn'), minGap: $('minGap'),
     snapOn2: $('snapOn'), decimals: $('qDecimals'), fastStep: $('qFastStep'), guides: $('qGuides'), guideSnap: $('qGuideSnap'), nudgeBtns: [...document.querySelectorAll('[data-q-nudge]')],
     aisleType: $('mAisleType'), ruleMin: $('mRuleMin'), ruleTarget: $('mRuleTarget'), ruleEnabled: $('mRuleEnabled'), ruleApply: $('mApplyAisleRule'), validateBtn: $('mValidate'), polygonBtn: $('mPolygonAisle'), polygonFinish: $('mFinishPolygon'),
@@ -183,6 +186,8 @@ async function start() {
   const wheel = { pending: 0, clientX: 0, clientY: 0, frame: 0 };
   const touches = new Map();
   let wheelMode = loadWheelMode(window.localStorage);
+  let polygonPoints = null; // 다각형 통로 그리는 중이면 월드 m 꼭짓점 배열, 아니면 null
+  let measurePts = []; // 거리 측정 도구의 점(화면 상태, 프로젝트·실행취소와 무관)
   let preview = null; // 드래그 이동 중 미리보기 { layout, guides }
   let clipboard = [];
   let toastTimer = 0;
@@ -277,7 +282,7 @@ async function start() {
     if (p.theme !== appliedTheme) { appliedTheme = p.theme; applyTheme(p); }
     const l = layout();
     const u = view ? pixelsPerMeter(view, l.warehouse, size()) : 20;
-    const key = [l, !!historyDate, p.settings, p.theme, p.precision, p.rackLabels, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview, gesture && gesture.kind !== 'move' ? gesture.kind : null];
+    const key = [l, !!historyDate, p.settings, p.theme, p.precision, p.rackLabels, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), polygonPoints, measurePts, preview, gesture && gesture.kind !== 'move' ? gesture.kind : null];
     const same = !force && sceneKey && key.every((k, i) => k === sceneKey[i]);
     if (same && u === sceneScale) return;
     // 확대율만 바뀌면 라벨 크기·배치(화면 px 기준)만 다시 계산하고 선택·패널은 그대로 둔다.
@@ -286,7 +291,7 @@ async function start() {
     sceneScale = u;
     const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: u, gesture: gesture?.kind, resize: isLocked(p) || historyDate ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view, warnings: scaleOnly ? sceneWarnings : undefined });
     sceneWarnings = r.warnings;
-    ui.plan.innerHTML = r.svg;
+    ui.plan.innerHTML = r.svg + overlaySvg(u);
     ui.labelStatus.textContent = labelStatusText(r.labelHidden);
     if (scaleOnly) return;
     // 기준본 W.top: 현재(또는 과거 조회) 도면 재검사 한 줄 요약
@@ -302,6 +307,18 @@ async function start() {
       records.render();
       rackDetail.refresh();
     }
+  }
+
+  /** 진행 중인 다각형 통로와 거리 측정 점(화면 전용 덧그림). */
+  function overlaySvg(u) {
+    const dots = (pts, color) => pts.map((q) => `<circle cx="${q[0]}" cy="${q[1]}" r="${4 / u}" fill="${color}"/>`).join('');
+    const line = (pts, color, close) => (pts.length > 1 ? `<polyline points="${pts.map((q) => q.join(',')).join(' ')}${close ? ' ' + pts[0].join(',') : ''}" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"/>` : '');
+    const m = measurePts.map((q) => [q.x, q.y]);
+    return `<g pointer-events="none">${polygonPoints ? line(polygonPoints, '#38bdf8', polygonPoints.length > 2) + dots(polygonPoints, '#38bdf8') : ''}${line(m, '#ffd166') + dots(m, '#ffd166')}</g>`;
+  }
+  function cancelPolygon() {
+    polygonPoints = null;
+    ui.polygonFinish.disabled = true;
   }
 
   function renderSelection() {
@@ -470,7 +487,7 @@ async function start() {
     ui.hint.textContent = on ? `과거 조회 · 읽기 전용 · ${historyDate}` : '원점: 좌상단 · X → / Y ↓ · 단위 m';
     ui.undoBtn.disabled = on || !session.state.canUndo || session.state.status === 'saving';
     ui.redoBtn.disabled = on || !session.state.canRedo || session.state.status === 'saving';
-    for (const b of ui.toolButtons) if (b.dataset.tool !== 'select' && b.dataset.tool !== 'pan') b.disabled = on;
+    for (const b of ui.toolButtons) if (!['select', 'pan', 'measure'].includes(b.dataset.tool)) b.disabled = on;
     roomPanel.updateState();
   }
   /** 기준본 setHistory: 선택 해제·카메라 초기화·선택 도구. */
@@ -486,6 +503,8 @@ async function start() {
 
   function setTool(t) {
     tool = t;
+    cancelPolygon();
+    measurePts = [];
     for (const b of ui.toolButtons) b.classList.toggle('active', b.dataset.tool === t);
     ui.toolHelp.textContent = TOOL_HELP[t] ?? `${OBJECT_TYPES[t]}를 배치할 위치를 클릭하세요.`;
     ui.plan.style.cursor = t === 'pan' ? 'grab' : t === 'select' ? 'default' : 'crosshair';
@@ -804,6 +823,36 @@ async function start() {
     ui.ruleEnabled.checked = r.enabled;
   };
   ui.aisleType.addEventListener('change', loadAisleRule);
+  const aisleDialog = createAisleDialog({ getLayout: () => layout(), getWarnings: () => sceneWarnings, csv });
+  ui.validateBtn.addEventListener('click', () => { if (project()) aisleDialog.open(); });
+  ui.polygonBtn.addEventListener('click', () => {
+    if (historyDate) return showToast('현재 편집으로 돌아오세요.');
+    setTool('select');
+    polygonPoints = [];
+    ui.polygonFinish.disabled = true;
+    renderPlan();
+    showToast('통로 꼭짓점을 순서대로 클릭한 뒤 다각형 완성을 누르세요. Esc 취소.');
+  });
+  ui.polygonFinish.addEventListener('click', async () => {
+    if (!polygonPoints || polygonPoints.length < 3) return;
+    let add;
+    try { add = addPolygonAisle(polygonPoints, ui.aisleType.value, { nextId: session.nextId }); } catch (e) { return showToast(e.message); }
+    const r = await command('다각형 통로 생성', add.mutate);
+    if (!r?.ok) return;
+    cancelPolygon();
+    commitSelection(new Set([add.id]));
+  });
+  // 랙 팔레트 끌어놓기: 놓은 점이 중심인 랙을 '추가 랙' 설정으로 추가(도구 클릭 경로 addAt 재사용)
+  const RACK_DRAG = 'application/warehouse-rack';
+  ui.rackPalette.addEventListener('dragstart', (e) => e.dataTransfer.setData(RACK_DRAG, 'rack'));
+  ui.plan.addEventListener('dragover', (e) => { if (e.dataTransfer?.types.includes(RACK_DRAG)) e.preventDefault(); });
+  ui.plan.addEventListener('drop', (e) => {
+    if (!e.dataTransfer?.types.includes(RACK_DRAG)) return;
+    e.preventDefault();
+    if (historyDate) return showToast('현재 편집으로 돌아온 뒤 배치하세요.');
+    const p = toWorld(e.clientX, e.clientY);
+    addAt('rack', { x: p.x, y: p.y });
+  });
   ui.ruleApply.addEventListener('click', () => command('통로 유형 기준 변경', (d, l) => applyAisleRule(d, l, ui.aisleType.value, { min: ui.ruleMin.value, target: ui.ruleTarget.value, enabled: ui.ruleEnabled.checked })));
   // 기준본 M.center(false/true)
   ui.centerBtn.addEventListener('click', () => { cancelWheel(); commitView({ ...view, centerLocked: true, panX: 0, panY: 0 }); });
@@ -896,6 +945,26 @@ async function start() {
     }
     if (e.button !== 0 || gesture) return;
     e.preventDefault();
+    if (polygonPoints) {
+      const p = toWorld(e.clientX, e.clientY);
+      if (polygonPoints.length >= 60) showToast('다각형 꼭짓점은 최대 60개입니다.');
+      else {
+        polygonPoints = [...polygonPoints, [snapped(project(), p.x), snapped(project(), p.y)]];
+        ui.polygonFinish.disabled = polygonPoints.length < 3;
+      }
+      renderPlan();
+      return;
+    }
+    if (tool === 'measure') {
+      const p = toWorld(e.clientX, e.clientY);
+      measurePts = measurePts.length === 1 ? [...measurePts, { x: p.x, y: p.y }] : [{ x: p.x, y: p.y }];
+      if (measurePts.length === 2) {
+        const [a, b] = measurePts, dx = Math.abs(b.x - a.x), dy = Math.abs(b.y - a.y);
+        ui.measureResult.textContent = `두 점 거리 ${fmt(Math.hypot(dx, dy), 3)} m · ΔX ${fmt(dx, 3)} m · ΔY ${fmt(dy, 3)} m`;
+      }
+      renderPlan();
+      return;
+    }
     if (tool === 'calibrate') {
       const p = toWorld(e.clientX, e.clientY);
       calibrationClick(p);

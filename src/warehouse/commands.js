@@ -4,7 +4,7 @@
 // 실패해도 기준본처럼 명령 기록(success:false)은 남긴다. 실행취소 기록은 세션이 성공한 경우에만 만든다.
 import { validateProject, validateLayout, createObject, OBJECT_TYPES, AISLE_TYPES } from '../core/project.js';
 import { warnings } from './constraints.js';
-import { bounds } from '../geometry/polygons.js';
+import { bounds, isSimplePolygon } from '../geometry/polygons.js';
 import { addMm, roundMm, snapToStep, GEOMETRY_EPS_M as EPS } from '../geometry/tolerance.js';
 
 export const COMMAND_DEFAULT = '객체 수정';
@@ -156,6 +156,34 @@ export function addObjectAt(project, kind, point, { nextId, rack = RACK_DEFAULTS
       const o = createObject(kind, snapped(draft, point.x - w / 2), snapped(draft, point.y - d / 2), w, d, { id, code: nextCode(layout, kind) }, { nextId });
       if (kind === 'rack') Object.assign(o, { height: rack.height, type: rack.type, unit: String(rack.unit).trim() });
       layout.objects.push(o);
+    },
+  };
+}
+
+export const POLYGON_CLOSE_M = 0.02;
+export const POLYGON_INVALID_MESSAGE = '꼭짓점이 겹치거나 자기 교차하는 다각형입니다. Esc 후 다시 그리세요.';
+
+/** 월드 m 꼭짓점 → 통로 객체 상자(x,y,width,depth)와 상자 기준 0..1 꼭짓점. 끝점이 첫 점과 0.02m 이내면 닫힘 점으로 보고 뺀다. 올바르지 않으면 throw. */
+export function polygonAisleShape(points) {
+  const pts = points.map(([x, y]) => [x, y]);
+  if (pts.length > 3 && Math.hypot(pts[0][0] - pts.at(-1)[0], pts[0][1] - pts.at(-1)[1]) <= POLYGON_CLOSE_M) pts.pop();
+  if (pts.length < 3 || !isSimplePolygon(pts)) throw new Error(POLYGON_INVALID_MESSAGE);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const x = Math.min(...xs), y = Math.min(...ys), width = Math.max(...xs) - x, depth = Math.max(...ys) - y;
+  const vertices = pts.map(([px, py]) => [(px - x) / width, (py - y) / depth]);
+  if (!isSimplePolygon(vertices)) throw new Error(POLYGON_INVALID_MESSAGE);
+  return { x, y, width, depth, vertices };
+}
+
+/** 다각형 통로 추가 변경 함수(기준본 M.finishPolygon). 코드·통로 기준값은 사각형 통로와 같은 경로(nextCode, applyCommand)를 쓴다. */
+export function addPolygonAisle(points, aisleType, { nextId }) {
+  const shape = polygonAisleShape(points);
+  const id = nextId();
+  return {
+    id,
+    mutate(draft, layout) {
+      const { x, y, width, depth, vertices } = shape;
+      layout.objects.push(createObject('aisle', x, y, width, depth, { id, code: nextCode(layout, 'aisle'), aisleType, clearanceAxis: 'auto', vertices }, { nextId }));
     },
   };
 }
