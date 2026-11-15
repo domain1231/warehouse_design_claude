@@ -116,6 +116,9 @@
 ## 매트릭스 감사·잔여 기능 (2026-11-15, chore/matrix-audit)
 - D-030: F-010 거리 표시(Q1), F-020 UI 색·복원 미리보기, F-041 검사 결과 재계산. 42개 중 40개 구현, F-042 보류, 나머지 0.
 
+## 출시 준비 (2026-11-15, chore/release-prep)
+- D-031: `pnpm golden:refresh`(확인 모드)·`golden:write`, `tools/legacy-json-compat.mjs`(v2.4.1 JSON 불러오기 PASS), docs/MIGRATION.md. 실사용 시험판 v2.5.0-alpha.0(main ad45ae0) 사용자 전달.
+
 ## 다음 작업
 - Phase 9a 완료(D-029, feature/phase9a-room-reference). 남은 Phase 9b(선택): 미뤄 둔 UI(색 직접 입력·미수용 상세·모든 랙 보기·첨부 도면 사용). 모바일(F-042)은 정책상 보류.
 - Phase 11: 기준본 전수 비교·500랙 성능·고위험 영역 독립 검토.
