@@ -11,14 +11,14 @@
 | F-001 | 프로젝트 생성·검증 | 00-core makeProject, validateProject | 새 프로젝트 | 스키마 2.3.6 유효 프로젝트 | Project 전체 | core/project | SV10 | IMPLEMENTED | G5 일치, 기준본 대조 V1 70사례 일치 — 열 우선 결과 재계산 제외 |
 | F-002 | Undo/Redo | 00-core commit/undo (전체 JSON 60개) | Ctrl+Z/Y, 버튼 | 원상복원, 이력 필드 보존 | undo/redo | core/history, core/session | CAD08 | IMPLEMENTING | patch 이력 단위 검사(무작위 200단계 왕복), 저장 E2E — 도면 편집 UI 전 |
 | F-003 | 창고 치수 적용·면적 역산 | 70-scenarios R.updateRoomApplyState | 가로·세로·면적 | 경계만 갱신, 랙 불변 | warehouse | warehouse/constraints, ui | UI01–UI05 | NOT STARTED | — |
-| F-004 | SVG 렌더링·통계 | 20-renderer renderScene | — | 미터 좌표 기준 도면 | objects | cad/renderer | CAD10 | NOT STARTED | — |
+| F-004 | SVG 렌더링·통계 | 20-renderer renderScene | — | 미터 좌표 기준 도면 | objects | cad/scene | CAD10, P1 | IMPLEMENTING | 객체 도형·순서·회전·통로 유효 폭 선·다중 선택 상자 기준본 일치(P1). 라벨·Excel 색·필터 흐림·참고 도면 전 |
 | F-005 | 객체 생성·삭제·복제 | 30-editor-io | 도구 선택·클릭 | 객체 추가/삭제 | objects | cad/interaction | CAD01 | NOT STARTED | — |
 | F-006 | 드래그 이동·그룹 이동 | 50-editor | 마우스 드래그 | 좌표 정확, 상대 위치 유지 | objects | cad/interaction | CAD02, CAD07 | NOT STARTED | — |
 | F-007 | 회전 (90°·임의 각도) | 50-editor, 10-geometry polygon | 회전 입력 | 규격 보존, 실제 형상 | rotation | geometry/rotation | CAD03, CAD04 | NOT STARTED | — |
 | F-008 | 8방향 크기 조절 | 50-editor | 핸들 드래그 | 로컬 좌표계 크기 변경 | width/depth | cad/interaction | CAD05 | NOT STARTED | — |
-| F-009 | 다중 선택·정렬 | 50-editor | Shift 클릭, 정렬 버튼 | 선택 집합 편집 | selection | cad/selection | CAD06 | NOT STARTED | — |
+| F-009 | 다중 선택·정렬 | 50-editor | Shift 클릭, 정렬 버튼 | 선택 집합 편집 | selection | cad/selection | CAD06, E2E plan | IMPLEMENTING | 클릭·Shift·Ctrl·영역 선택(겹침/포함)·선택 저장 복원 — 정렬 전 |
 | F-010 | 정밀 좌표·스냅·키보드 이동 | 80-precision-labels | 방향키, 스냅 간격 | 1mm 정확 이동 | x/y | geometry/tolerance ✚, cad/snapping | CAD09 | NOT STARTED | — |
-| F-011 | 카메라·휠 확대 | 50-editor M.handleWheel/flushWheel | 휠, 핀치, 패널 스크롤 | 좌표 불변, 패널 스크롤 분리 | viewport | cad/camera | CAD10, CAD11 | NOT STARTED | — |
+| F-011 | 카메라·휠 확대 | 50-editor M.handleWheel/flushWheel | 휠, 핀치, 패널 스크롤 | 좌표 불변, 패널 스크롤 분리 | viewport | cad/camera | CAD10, CAD11, P1, E2E plan | IMPLEMENTED | 카메라 13사례 기준본 일치, 휠 기준점·패널 스크롤 분리·팬·Esc 취소 E2E(합성 이벤트). 실제 마우스·터치패드·핀치 NOT RUN |
 | F-012 | 참고 도면·두 점 축척 | 35-reference | 이미지, 두 점+거리 | 축척 계산 | background | cad/reference | CAD12 | NOT STARTED | — |
 | F-013 | 회전 충돌 (SAT) | 10-geometry overlaps | — | 정확한 겹침 판정, 접촉은 충돌 아님(D-004) | objects | geometry/polygons, geometry/collision | GEO01, GEO08, G1, G2, S1 | IMPLEMENTED | G1 421쌍·G2·S1(회전 랙·벽·기둥 충돌) 기준본 일치 |
 | F-014 | 간격·이격 (다각형 최소거리) | 10-geometry gap, warnings | 간격 설정 | 실제/요구/부족 거리 | settings | geometry/collision(gap), geometry/clearance | GEO02–GEO05, G1, G2, S1 | IMPLEMENTED | G1 gap·G2·S1(최소 간격 경계값, 벽·외벽 이격, 설계 간격) 기준본 일치 |
@@ -42,12 +42,12 @@
 | F-032 | JSON 내보내기·불러오기 | 30-editor-io | 파일 | 2.3.6 무손실 왕복 | Project | exports/json, persistence/migration | SV08, SV10 | IMPLEMENTING | 기준본 저장 형식 양방향 호환, JSON 내보내기 버튼 — JSON 불러오기 UI 전 |
 | F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | NOT STARTED | — |
 | F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | scenarios/history | UI04 | NOT STARTED | — |
-| F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels | UI06, UI07 | NOT STARTED | — |
+| F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels | UI06, UI07 | NOT STARTED | fitScale 유지로 창 크기 변경 시 축척 불변(P1·단위) — 패널 접기 UI 전 |
 | F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | IMPLEMENTED | 단위(2단계 감지·경쟁) + 브라우저 E2E(알림·차단·확인 후 덮어쓰기) |
 | F-036 | 프로그램 정보·버전 표시 | 99-bootstrap | — | 앱/스키마 버전 분리 | — | main | smoke E2E | IMPLEMENTED | TESTING |
 
 | F-038 | 오프라인·런타임 오류 0 (횡단) | 모든 묶음 공통 | — | 외부 요청 0, 런타임 오류 0 | — | tools/verify, tests/e2e | smoke E2E | IMPLEMENTED | TESTING |
-| F-039 | 휠 감도 설정·저장 | 50-editor M.setWheelMode | 감도 선택 | 프로젝트와 독립 저장, 손상 시 안전 기본값 | 별도 키 | cad/camera | — | NOT STARTED | — |
+| F-039 | 휠 감도 설정·저장 | 50-editor M.setWheelMode | 감도 선택 | 프로젝트와 독립 저장, 손상 시 안전 기본값 | 별도 키 | cad/wheel-settings | unit plan, E2E plan | IMPLEMENTED | 저장·쓰기 후 읽기·손상 시 기본값·기준본 키 읽기 전용 |
 | F-040 | 탐색 예산·중단 사유 | 92 C.limits/C.check | — | probe 상한, 사유 표시(D-005 결정적) | autoPlacement | placement/candidates | AL12 | NOT STARTED | — |
 | F-041 | 파생 검사 결과 재계산 | 92 JSON 복원 후 재검사 | JSON 불러오기 | 저장된 집계 불신, 현재 좌표로 재계산 | autoPlacement | placement/diagnostics | — | NOT STARTED | — |
 | F-042 | 모바일 드로어·레이아웃 | shell, 65 | 좁은 화면 | 가로 넘침 없음, 드로어 동작 | — | ui/panels | — | NOT STARTED | — |

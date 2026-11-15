@@ -83,8 +83,19 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
     return view();
   }
 
-  async function save({ force = false, replaceCorrupt = false } = {}) {
+  // 저장은 한 번에 하나씩 순서대로 실행한다(편집 자동 저장과 화면 상태 저장이 겹쳐 스스로 충돌로 보이지 않게).
+  let chain = Promise.resolve();
+  let viewTimer = null;
+  function save(opts) {
+    const run = chain.then(() => saveNow(opts));
+    chain = run.catch(() => {});
+    return run;
+  }
+
+  async function saveNow({ force = false, replaceCorrupt = false } = {}) {
     if (!state.project) throw new Error('init() 전에는 저장할 수 없습니다.');
+    clearTimeout(viewTimer);
+    viewTimer = null;
     state.status = 'saving';
     emit();
     try {
@@ -139,6 +150,38 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
     return { changed: true, label };
   }
 
+  /**
+   * 화면 상태(카메라 viewport, 선택)를 바꾼다. 기준본처럼 프로젝트에 저장하지만 실행취소 기록에는 넣지 않는다.
+   * 확대·이동 중 매 프레임 저장하지 않도록 delay(ms) 뒤에 한 번 저장한다. delay가 0이면 바로 저장한다.
+   * viewport 값은 스키마 범위(배율 0.05–30, 이동 ±5000m, fitScale 0.001–100000)로 제한한다.
+   */
+  function setView({ viewport, selection } = {}, { delay = 250 } = {}) {
+    if (!state.project) throw new Error('init() 전에는 화면 상태를 바꿀 수 없습니다.');
+    const next = { ...state.project };
+    if (viewport) {
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      if (![viewport.zoom, viewport.panX, viewport.panY].every(Number.isFinite)) throw new Error('화면 상태 값이 올바르지 않습니다.');
+      next.viewport = { zoom: clamp(viewport.zoom, 0.05, 30), panX: clamp(viewport.panX, -5e3, 5e3), panY: clamp(viewport.panY, -5e3, 5e3), centerLocked: !!viewport.centerLocked };
+      if (Number.isFinite(viewport.fitScale) && viewport.fitScale > 0) next.viewport.fitScale = Math.max(1e-3, Math.min(1e5, viewport.fitScale));
+    }
+    if (selection) next.editing = { ...state.project.editing, selectedRackIds: [...selection], selectionScenario: state.project.settings.scenario };
+    if (JSON.stringify([next.viewport, next.editing]) === JSON.stringify([state.project.viewport, state.project.editing])) return { changed: false };
+    state.project = next;
+    if (state.status !== 'error') state.status = 'unsaved';
+    emit();
+    if (!autosave || state.corrupt) return { changed: true };
+    clearTimeout(viewTimer);
+    if (delay <= 0) return save().then(() => ({ changed: true }));
+    viewTimer = setTimeout(() => save(), delay);
+    return { changed: true };
+  }
+
+  /** 예약된 화면 상태 저장을 바로 실행한다(페이지를 떠나기 전 등). */
+  function flushView() {
+    if (!viewTimer) return Promise.resolve(null);
+    return save();
+  }
+
   /** 다른 탭·창의 storage 이벤트를 받아 안내한다. 저장 시에는 저장소가 덮어쓰기를 막는다. */
   function handleStorageEvent(event) {
     if (!store.isExternalChange(event)) return false;
@@ -154,6 +197,8 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
     undo: () => step('undo'),
     redo: () => step('redo'),
     handleStorageEvent,
+    setView,
+    flushView,
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
