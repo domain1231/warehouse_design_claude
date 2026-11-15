@@ -28,7 +28,7 @@
 | F-018 | 랙 상세 인포그래픽 | 65-panels-details | 더블클릭 | 선반별 자재·지표 | shelves | warehouse/rackinfo, ui/rack-detail | UI08, P3, E2E details | IMPLEMENTED | 더블클릭·요약·선반 SVG·자재 상세·검색·선반 필터·방향 저장·SVG/PNG/CSV·실제 설비 확인 기준본 일치(P3·E1) |
 | F-019 | ZONE·랙 번호 라벨 | 80-precision-labels | 라벨 설정 | 정방향·외부 표시 | rackLabels | cad/labels | UI09 | NOT STARTED | — |
 | F-020 | 색상 범례·3종 지표 | 75-storage-appearance | 임계값·색상 | 지표 분리 표시 | theme | warehouse/utilization | UI10 | NOT STARTED | — |
-| F-021 | Excel 읽기·매핑·로케이션 | 40-excel EX.readFile | XLSX/CSV, 머리글, 매핑 | 원본 의미 보존, null 유지 | excelSnapshots | excel/* | XL01–XL05, XL10 | NOT STARTED | — |
+| F-021 | Excel 읽기·매핑·로케이션 | 40-excel EX.readFile | XLSX/CSV, 머리글, 매핑 | 원본 의미 보존, null 유지 | excelSnapshots | excel/xlsx, excel/analyze, ui/excel-dialog | XL01–XL05, XL10, X1, unit xlsx, E2E excel | IMPLEMENTING | XLSX·CSV 읽기, 머리글 탐지, 자동 매핑, 분석·규격 충돌 선택 기준본 일치(X1 6사례) — 배치 생성·적용 전 |
 | F-022 | 건물별 코드·기존 랙 매칭 | 70-scenarios EX.proposal (BUG-EXCEL-CODE-001) | 건물 설정 | ID·사용자 이름 보존 | R.key | excel/proposal | XL06–XL09 | NOT STARTED | — |
 | F-023 | Excel 미리보기·적용 승인 | 90-auto-layout W.readiness/proof, EX.apply | 후보·경고 확인 | 승인 후보=적용 후보 | autoPlacement | scenarios/approval | XL11–XL13 | NOT STARTED | — |
 | F-024 | 기존 자동 배치 모드 | 90-auto-layout W.fits/scan/pack | 배치 설정 | 기존 후보 재현 | autoPlacement | placement/* | AL01–AL03 | NOT STARTED | — |

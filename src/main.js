@@ -15,6 +15,7 @@ import { createGroupDialog } from './ui/group-dialog.js';
 import { createPanels } from './ui/panels.js';
 import { createRackDetail } from './ui/rack-detail.js';
 import { createRecordsPanel } from './ui/records-panel.js';
+import { createExcelDialog } from './ui/excel-dialog.js';
 import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
 import { saveSnapshot, restoreSnapshot, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
@@ -87,7 +88,8 @@ function renderShell(root) {
   const undoBtn = button('undo', '실행취소');
   const redoBtn = button('redo', '다시 실행');
   const exportBtn = button('export', 'JSON 내보내기');
-  actions.append(saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn);
+  const excelBtn = button('excel-open', 'Excel 가져오기');
+  actions.append(saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, excelBtn);
   const scenarioRow = el('div', { class: 'tool-group scenario-row', role: 'group', 'aria-label': '배치 대상' });
   const scenBefore = button('scenario-before', 'BEFORE 개선 전');
   const scenAfter = button('scenario-after', 'AFTER 개선 후');
@@ -204,7 +206,7 @@ function renderShell(root) {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
-    scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
+    scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
@@ -259,6 +261,7 @@ async function start() {
     },
     toast: (t) => showToast(t),
   });
+  const excelDialog = createExcelDialog({ toast: (t) => showToast(t) });
   const groupDialog = createGroupDialog({
     getProject: () => project(),
     getSelection: () => selectedRackIds(),
@@ -486,6 +489,7 @@ async function start() {
   const W = () => layout().warehouse;
   for (const b of ui.toolButtons) b.addEventListener('click', () => setTool(b.dataset.tool));
   ui.rotateBtn.addEventListener('click', () => rotateSelected());
+  ui.excelBtn.addEventListener('click', () => excelDialog.open());
   ui.detailBtn.addEventListener('click', () => rackDetail.open([...selected][0]));
   ui.alignXBtn.addEventListener('click', () => groupDialog.open('left'));
   ui.alignYBtn.addEventListener('click', () => groupDialog.open('top'));

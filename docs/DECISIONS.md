@@ -104,3 +104,11 @@
 - 내려받는 SVG에는 xmlns가 필요하므로 오프라인 검사(`tools/verify.cjs`)가 SVG 이름공간 식별자만 허용한다(네트워크 요청 아님).
 - 기준본 일치: plan-diff details(요약 9항목, 인포그래픽 SVG 3가지 보기·자재 상세, 재고 기록 3범위) P3 7건, edit-cases(배치 이력 기록·복원·실제 설비 확인) 3사례 추가.
 
+## D-017 Excel 읽기: SheetJS 대신 최소 XLSX·CSV 읽기를 직접 구현 (2026-11-15, Phase 5a)
+- 기준본은 SheetJS(XLSX.read + sheet_to_json raw·defval null·blankrows)를 번들했다. 재구축은 새 의존성 없이 `src/excel/xlsx.js`에 필요한 부분만 구현했다: ZIP 중앙 디렉터리 → DecompressionStream('deflate-raw') → workbook.xml·관계·sharedStrings·시트 XML. 브라우저와 Node 모두 같은 코드로 동작하고 DOM이 필요 없다.
+- 이유: 단일 오프라인 HTML 크기(SheetJS는 수백 KB), 의존성·라이선스 관리, 결정적 검사. 필요한 기능은 셀 원시 값 읽기뿐이다(수식 계산·서식·쓰기 불필요).
+- 동작 기준(기준본과 같음): 숫자는 숫자, 공유/인라인/수식 문자열은 문자열, 참/거짓은 boolean, 오류 값(#N/A 등)은 빈 칸, 날짜는 일련번호 그대로, 서식 문자열은 조각을 잇고 발음(rPh)은 뺀다, _xHHHH_·XML 엔터티를 푼다. CSV는 UTF-8(BOM 제거, 잘못된 바이트는 오류)·따옴표·줄바꿈 포함 칸을 지원하고 모든 값은 문자열. 12MB·20,010행(sheetRows)·2만 행/201열 제한 동일. 암호화·ZIP64는 미지원(오류 안내).
+- 분석(`src/excel/analyze.js`): 기준본 EX.norm·EX.number·EX.parse·머리글 탐지·EX.autoMap·EX.analyze를 그대로 옮겼다(재정의 없음 확인).
+- 기준본 일치: `tools/excel-diff.mjs`가 기준본 페이지의 SheetJS로 가상 통합 문서를 만들어 `fixtures/excel/`에 저장(공유 문자열·인라인 문자열·CSV·오류 칸·빈 행·중복·규격 충돌 등)하고, 같은 바이트의 기준본 결과(행렬·머리글 행·매핑·분석)를 기록한다. 재구축 X1 6사례 완전 일치.
+- 범위: 이번 단계는 읽기·매핑·검증 화면까지. 배치 생성·건물 코드·기존 랙 매칭·적용(EX.generate/proposal/apply, 60·70·90·92 래퍼)은 Phase 5b.
+
