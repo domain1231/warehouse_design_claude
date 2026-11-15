@@ -59,3 +59,13 @@
 - 열 우선(column) 배치의 확장 검사·결과 재계산(92)은 자동 배치와 함께 Phase 6에서 이식한다. 그 전까지 `scanLayout`은 column 모드에서 오류를 던지고, 저장 시에는 기존 결과를 건드리지 않는다.
 - 성능: 랙 500 + 벽 6 + 통로 4 배치 검사 중앙값 약 35ms(Linux, Node 24, 7회). 브라우저·Windows는 NOT RUN.
 
+## D-012 도면 보기: 카메라·선택은 저장하되 실행취소에서 뺀다 (2026-11-15, Phase 3a)
+- 카메라(`src/cad/camera.js`)·선택(`selection.js`)·도면 문자열(`scene.js`)은 DOM 없는 함수다. `main.js`는 이벤트 연결만 한다.
+- 기준본처럼 `viewport`(fitScale 포함)와 `editing.selectedRackIds/selectionScenario`를 프로젝트에 저장한다. 다만 `session.setView`로 바꾸며 실행취소 기록에는 넣지 않는다(실행취소가 화면을 되돌리지 않음). 확대·이동 중 매 프레임 저장하지 않도록 250ms 뒤 한 번 저장, 조작 종료·선택은 즉시 저장.
+- fitScale(배율 1의 1m당 px)은 기준본 65 래퍼대로 한 번 정하면 유지한다. 창 크기·패널이 바뀌어도 축척이 변하지 않고, 전체 보기·50%·200%에서만 다시 계산한다.
+- 세션 저장을 한 줄로 직렬화했다(`save` 체인). 편집 자동 저장과 화면 저장이 겹쳐 같은 탭이 자기 자신을 다른 탭 충돌로 오인하지 않게 한다.
+- 성능: 확대·이동은 SVG viewBox만 바꾸고, 도면 내용은 배치·선택·설정이 바뀔 때만 다시 만든다(기준본은 이동 중에도 매번 전체를 다시 그림). 랙 500개 도면 생성 중앙값 약 22ms(Node).
+- 휠 감도는 `warehouse-layout-v2:wheel-sensitivity`에 저장하고 쓰기 후 읽기를 확인한다. 기준본 키(`warehouse-studio-v1-wheel-sensitivity-v1`)는 처음에 읽기만 한다(D-006).
+- 기준본 일치: `tools/plan-diff.mjs` → `fixtures/legacy/plan-cases.json`. 카메라 13사례(viewport·viewBox 완전 일치), 도면 객체 도형 58개·겹침 표시 3개 일치.
+- 아직 옮기지 않은 그리기: 라벨(F-019), Excel 상태 색, 검색·필터 흐림, 참고 도면(F-012), 측정. 객체 이동·크기 조절·생성은 Phase 3b.
+

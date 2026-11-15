@@ -1,9 +1,9 @@
 # AI 인수인계
 
-## 현재 상태 (2026-11-11)
-- 단계: Phase 2(공간검사) 완료. PR `feature/phase2-spatial`(기준: `feature/phase1-session`, 스택 PR #1→#6 위).
-- 앱 2.5.0-alpha.0 / 스키마 2.3.6. 화면은 저장 상태·이름·실행취소·JSON 내보내기만 있고 도면은 없다.
-- 검사: 단위 56 + Golden 110(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 6. Linux, Node 24, Chrome for Testing 153에서 PASS.
+## 현재 상태 (2026-11-15)
+- 단계: Phase 3a(도면 보기·선택) 완료. PR `feature/phase3-plan`(기준: `feature/phase2-spatial`, 스택 PR #1→#8).
+- 앱 2.5.0-alpha.0 / 스키마 2.3.6. 화면: 머리글(저장 상태·명령) + 도구·화면 패널 + SVG 도면 + 선택 패널. 객체 편집은 없다.
+- 검사: 단위 74 + Golden 126(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 12. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -41,10 +41,16 @@
 - 성능: 랙 500 배치 검사 중앙값 약 35ms(Node). 브라우저 측정 NOT RUN.
 - 미이식: 열 우선 배치 확장 검사·결과 재계산(92) → Phase 6.
 
+## Phase 3a 결과 (2026-11-15, feature/phase3-plan)
+- `src/cad/camera.js`(fitView·viewBox·zoomBy·pan·pinch·중심·선택 영역 보기·휠), `selection.js`, `scene.js`, `wheel-settings.js`, `session.setView/flushView`, 저장 직렬화(D-012).
+- 기준본 대조 `tests/golden/P1-plan.test.js` 16(카메라 13사례·도형·겹침 표시). 재생성: `BASELINE_REPO=../warehouse_design WAREHOUSE_BROWSER_PATH=<chrome> node tools/plan-diff.mjs`.
+- E2E `tests/e2e/plan.test.js` 6: 휠 기준점·좌표 불변·복원, 패널 휠 분리, 선택·영역 선택·복원, 팬·Esc·버튼, 휠 감도, 390px.
+- NOT RUN: 실제 마우스·터치패드·터치 핀치(합성 이벤트만), Windows Edge, 브라우저 성능 측정.
+
 ## 다음 작업
-- Phase 3: SVG 도면(카메라·확대/이동·선택·격자·스냅) — 계산은 순수 함수, 좌표 1mm 입력 단위 유지. 휠 감도(F-039) 포함.
-- Phase 6에서 열 우선 확장 검사·결과 재계산(92)을 자동 배치와 함께 이식.
-- 사용자: 스택 PR 순서대로 병합(#1→#7). 기준본 저장소 PR #20→#22.
+- Phase 3b: 객체 생성·삭제·복제(F-005), 드래그·그룹 이동(F-006, 스냅·차단 정책), 8방향 크기 조절(F-008), 정밀 좌표·키보드 이동(F-010), 속성 편집(Inspector).
+- 이후: 라벨(F-019)·Excel 색은 Excel 단계와 함께. Phase 6에서 열 우선 확장 검사·재계산(92).
+- 사용자: 스택 PR 순서대로 병합(#1→#8). 기준본 저장소 PR #20→#22.
 
 ## 미결 사항
 - 명세서 원본 전문(`docs/SPEC_v1_0.md`) 반입 여부.
