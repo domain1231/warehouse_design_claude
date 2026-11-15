@@ -43,14 +43,14 @@ export function createPanels(roots, { onFocus, onView }) {
       const m = metrics(layout, project, { warnings });
       lastWarnings = m.warnings;
       const units = Object.entries(m.units).map(([u, t]) => `${esc(u)} ${t.known ? fmt((t.validQuantity / t.validCapacity) * 100, 1) + '%' : '미확인'} <small>${t.known}/${t.total}랙 확인</small>`).join('<br>') || '랙 없음';
-      roots.stats.innerHTML = `<div class="kpis">
-<div><span>창고 면적</span><strong data-testid="k-area">${fmt(m.area)}㎡</strong></div>
-<div><span>랙</span><strong data-testid="k-racks">${m.racks}개</strong></div>
-<div><span>랙 점유율</span><strong data-testid="k-footprint">${fmt(m.footprint, 1)}%</strong></div>
-<div><span>공간 경고</span><strong data-testid="k-warnings">${m.warnings.length}건</strong></div>
-</div><p class="unit-load" data-testid="k-load"><span class="muted">단위별 적재율</span><br>${units}</p>
-${[['랙 면적 합계', fmt(m.rackArea) + '㎡'], ['보관 불가 / 문 안전 구역', fmt(m.unavailable) + '㎡'], ['통로 / 작업 구역', fmt(m.aisles) + '㎡'], ['중복 제외 잔여 면적', fmt(m.remaining) + '㎡']].map(([k, v]) => `<div class="metricline"><span>${k}</span><strong>${v}</strong></div>`).join('')}
-<p class="muted">각 구역 지표는 서로 겹칠 수 있습니다. 잔여 면적만 전체 합집합을 차감합니다.</p>`;
+      // 기준본 renderStats: 상단 KPI 5칸(kArea·kRacks·kFootprint·kLoad·kWarnings)과 오른쪽 공간 지표(spaceMetrics).
+      const k = roots.kpi;
+      k.area.textContent = fmt(m.area);
+      k.racks.textContent = String(m.racks);
+      k.footprint.textContent = fmt(m.footprint, 1);
+      k.load.innerHTML = units;
+      k.warnings.textContent = String(m.warnings.length);
+      roots.metrics.innerHTML = `${[['랙 면적 합계', fmt(m.rackArea) + '㎡'], ['보관 불가 / 문 안전 구역', fmt(m.unavailable) + '㎡'], ['통로 / 작업 구역', fmt(m.aisles) + '㎡'], ['중복 제외 잔여 면적', fmt(m.remaining) + '㎡']].map(([t, v]) => `<div class="metricline"><span>${t}</span><strong>${v}</strong></div>`).join('')}<p class="note">각 구역 지표는 서로 겹칠 수 있습니다. 잔여 면적만 전체 합집합을 차감합니다.</p>`;
       roots.warnings.innerHTML = m.warnings.length
         ? `<ol class="warning-list">${m.warnings.map((w, i) => `<li data-warning="${i}" tabindex="0">${esc(w.text)}</li>`).join('')}</ol>`
         : '<p class="info">설정된 기준에 따른 경고 없음</p>';

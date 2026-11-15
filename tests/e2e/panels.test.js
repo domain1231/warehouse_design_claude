@@ -34,10 +34,10 @@ test('통계·범례: 샘플 배치의 면적·랙 수·경고 수, 범례 6항�
   const { ctx, page } = await open();
   const p = await page.evaluate(() => window.__warehouseSession.state.project);
   const racks = p.scenarios.after.objects.filter((o) => o.kind === 'rack').length;
-  assert.equal(await page.locator('[data-testid=k-racks]').textContent(), `${racks}개`);
-  assert.match(await page.locator('[data-testid=k-area]').textContent(), /㎡$/);
+  assert.equal(await page.locator('[data-testid=k-racks]').textContent(), `${racks}`);
+  assert.match(await page.locator('[data-testid=k-area]').textContent(), /^\d+(\.\d+)?$/);
   const warnCount = await page.locator('[data-testid=warnings-section] li').count();
-  assert.equal(await page.locator('[data-testid=k-warnings]').textContent(), `${warnCount}건`);
+  assert.equal(await page.locator('[data-testid=k-warnings]').textContent(), `${warnCount}`);
   assert.equal(await page.locator('[data-testid=legend] span').count(), 6);
   assert.match(await page.locator('[data-testid=legend]').textContent(), /보통 \(50% 이상 ~ 90% 미만\)/);
   assert.deepEqual(page.problems, []);

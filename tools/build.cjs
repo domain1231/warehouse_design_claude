@@ -25,7 +25,8 @@ const result = esbuild.buildSync({
   },
 });
 const script = result.outputFiles[0].text;
-const css = fs.readFileSync(path.join(root, 'styles/app.css'), 'utf8');
+// v2.4.1 디자인(baseline.css)을 먼저, 재구축 대화상자·보조 규칙(app.css)을 뒤에 둔다(D-033).
+const css = ['styles/baseline.css', 'styles/app.css'].map((f) => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
 const template = fs.readFileSync(path.join(root, 'src/index.html'), 'utf8');
 
 for (const marker of ['<!-- APP_STYLE -->', '<!-- APP_SCRIPT -->']) {

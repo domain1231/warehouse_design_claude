@@ -20,7 +20,7 @@ after(async () => {
 });
 
 async function open() {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await ctx.newPage();
   page.problems = [];
   page.on('pageerror', (e) => page.problems.push(`pageerror: ${e.message}`));
@@ -178,7 +178,7 @@ test('BEFORE 잠금: 편집 단추·속성 칸이 잠기고 추가는 거부된�
   const { ctx, page } = await open();
   // 샘플은 BEFORE 잠금. 화면 전환 UI 전이므로 세션 편집으로 BEFORE를 보게 한다.
   await page.evaluate(() => window.__warehouseSession.edit('BEFORE 보기', (p) => { p.settings.scenario = 'before'; }));
-  await page.waitForFunction(() => document.querySelector('[data-testid=summary]').textContent.includes('현재 BEFORE'));
+  await page.waitForFunction(() => document.getElementById('rActive').textContent.includes('BEFORE ·'));
   const rack = (await P(page)).scenarios.before.objects.find((o) => o.kind === 'rack');
   const c = await screen(page, rack.x + rack.width / 2, rack.y + rack.depth / 2);
   await page.mouse.click(c.x, c.y);

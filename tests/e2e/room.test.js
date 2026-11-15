@@ -20,7 +20,7 @@ after(async () => {
 });
 
 async function open() {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await ctx.newPage();
   page.problems = [];
   page.on('pageerror', (e) => page.problems.push(`pageerror: ${e.message}`));
@@ -100,7 +100,8 @@ test('면적 역산: 가로 기준 세로를 칸에 채운다(적용 전에는 �
 
 test('참고 도면: 불러오기·투명도·두 점 축척 보정·제거가 모두 실행취소 가능하다', async () => {
   const { ctx, page } = await open();
-  await page.evaluate(() => { document.querySelector('[data-testid=reference-section]').open = true; });
+  const sec = page.locator('details', { has: page.locator('summary', { hasText: '04 / 참고 도면 배경' }) });
+  if (!(await sec.evaluate((e) => e.open))) await sec.locator('summary').click();
   const bgOf = async () => (await P(page)).settings.background;
   await page.setInputFiles(T('bg-file'), { name: 'ref.png', mimeType: 'image/png', buffer: tinyPng() });
   await page.waitForSelector('[data-testid=plan] image');

@@ -42,20 +42,11 @@ async function attachFixture(page) {
   }), fx);
   return racks[3];
 }
-const screen = (page, x, y) => page.evaluate(([x, y]) => {
-  const svg = document.querySelector('[data-testid=plan]');
-  const pt = svg.createSVGPoint();
-  pt.x = x;
-  pt.y = y;
-  const s = pt.matrixTransform(svg.getScreenCTM());
-  return { x: s.x, y: s.y };
-}, [x, y]);
 
 test('랙 더블클릭 상세: 선반·자재 카드, 자재 원본 정보, 검색·선반 필터, 방향 설정 저장, CSV 내려받기, 실제 설비 확인', async () => {
   const { ctx, page } = await open();
   const rack = await attachFixture(page);
-  const c = await screen(page, rack.x + rack.width / 2, rack.y + rack.depth / 2);
-  await page.mouse.dblclick(c.x, c.y);
+  await page.locator(`[data-testid=plan] g[data-id="${rack.id}"]`).first().dblclick();
   const dialog = page.locator('[data-testid=detail-dialog]');
   await dialog.waitFor({ state: 'visible' });
   assert.match(await page.locator('[data-testid=detail-summary]').textContent(), /SYN \/ 7F \/ A열 \/ 1번째 랙/);

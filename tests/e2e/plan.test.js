@@ -34,7 +34,7 @@ const saved = (page) => page.waitForFunction(() => document.querySelector('[data
 const objectGeometry = (page) => page.evaluate(() => JSON.stringify(window.__warehouseSession.state.project.scenarios.after.objects.map((o) => [o.id, o.x, o.y, o.width, o.depth, o.rotation])));
 
 test('도면이 그려지고, 휠 확대는 커서 위치 기준이며 객체 좌표는 바뀌지 않는다; 새로고침해도 화면이 복원된다', async () => {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await open(ctx);
   const geometry = await objectGeometry(page);
   assert.equal(await page.locator('[data-testid=zoom-label]').textContent(), '100%');
@@ -68,10 +68,10 @@ test('도면이 그려지고, 휠 확대는 커서 위치 기준이며 객체 �
 });
 
 test('패널에서 시작한 휠은 도면 위로 지나가도 확대하지 않는다(CAD11)', async () => {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await open(ctx);
   const z0 = (await view(page)).viewport.zoom;
-  const panel = await page.locator('.side.right').boundingBox();
+  const panel = await page.locator('.sidebar.right').boundingBox();
   const plan = await page.locator('[data-testid=plan]').boundingBox();
   await page.mouse.move(panel.x + 20, panel.y + 40);
   await page.mouse.wheel(0, 100);
@@ -86,12 +86,12 @@ test('패널에서 시작한 휠은 도면 위로 지나가도 확대하지 않�
 });
 
 test('선택: 클릭·Shift 추가·빈 곳 클릭 해제·영역 선택, 선택은 새로고침 후 복원된다', async () => {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await open(ctx);
   const racks = page.locator('[data-testid=plan] g[data-id] rect[rx="0.055"]');
   await racks.nth(5).click();
   assert.equal((await view(page)).selected.length, 1);
-  assert.equal(await page.locator('[data-testid=selection-status]').textContent(), '1개 선택');
+  assert.match(await page.locator('[data-testid=selection-status]').textContent(), /^1개 랙 · 면적 \d+(\.\d+)?㎡$/);
   await racks.nth(6).click({ modifiers: ['Shift'] });
   assert.equal((await view(page)).selected.length, 2);
   await saved(page);
@@ -118,7 +118,7 @@ test('선택: 클릭·Shift 추가·빈 곳 클릭 해제·영역 선택, 선택
 });
 
 test('화면 이동 도구 드래그·Esc 취소·전체 보기·50%/200%·선택 영역 보기', async () => {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await open(ctx);
   await page.locator('[data-testid=tool-pan]').click();
   const plan = await page.locator('[data-testid=plan]').boundingBox();
@@ -159,7 +159,7 @@ test('화면 이동 도구 드래그·Esc 취소·전체 보기·50%/200%·선�
 });
 
 test('휠 감도: 선택·새로고침 후 유지, 감도가 높을수록 같은 휠에 더 많이 확대, 기본값 복원', async () => {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await open(ctx);
   assert.equal(await page.locator('[data-testid=wheel-sensitivity]').inputValue(), 'low');
   const plan = await page.locator('[data-testid=plan]').boundingBox();
