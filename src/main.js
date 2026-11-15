@@ -11,6 +11,8 @@ import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from '.
 import { pixelsPerMeter } from './cad/camera.js';
 import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { renderInspector } from './ui/inspector.js';
+import { createGroupDialog } from './ui/group-dialog.js';
+import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
 import { OBJECT_TYPES } from './core/project.js';
 import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
 
@@ -81,7 +83,12 @@ function renderShell(root) {
   const redoBtn = button('redo', '다시 실행');
   const exportBtn = button('export', 'JSON 내보내기');
   actions.append(saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn);
-  header.append(brand, label, statusBox, actions);
+  const scenarioRow = el('div', { class: 'tool-group scenario-row', role: 'group', 'aria-label': '배치 대상' });
+  const scenBefore = button('scenario-before', 'BEFORE 개선 전');
+  const scenAfter = button('scenario-after', 'AFTER 개선 후');
+  const lockBtn = button('before-lock', '');
+  scenarioRow.append(scenBefore, scenAfter, lockBtn);
+  header.append(brand, label, scenarioRow, statusBox, actions);
   const notice = el('p', { class: 'notice', testid: 'notice' });
 
   // 왼쪽: 도구·화면
@@ -110,6 +117,10 @@ function renderShell(root) {
   const editRow = el('div', { class: 'tool-group', role: 'group', 'aria-label': '선택 객체 편집' });
   const rotateBtn = button('rotate', '↻ 90° 회전'), duplicateBtn = button('duplicate', '⧉ 복제'), deleteBtn = button('delete', '✕ 삭제');
   editRow.append(rotateBtn, duplicateBtn, deleteBtn);
+  const groupRow = el('div', { class: 'tool-group', role: 'group', 'aria-label': '여러 랙 정렬' });
+  const alignXBtn = button('align-x', '⇤ 왼쪽 정렬'), alignYBtn = button('align-y', '⤒ 위쪽 정렬'), distributeBtn = button('distribute', '↔ 간격 배치');
+  const distributeGap = el('input', { type: 'number', min: '0', step: '0.001', value: '0.3', testid: 'distribute-gap', 'aria-label': '간격 배치 간격(m)', class: 'mini-input' });
+  groupRow.append(alignXBtn, alignYBtn, distributeBtn, distributeGap);
   const allowLabel = el('label', { class: 'check' });
   const allowWarnings = el('input', { type: 'checkbox', testid: 'allow-warnings' });
   allowLabel.append(allowWarnings, ' 공간 경고 허용(끄면 새 경고가 생기는 편집을 전체 취소)');
@@ -140,7 +151,7 @@ function renderShell(root) {
   wheelLabel.append(wheelSelect);
   const wheelReset = button('wheel-reset', '휠 감도 기본값');
   const wheelStatus = el('p', { class: 'muted', testid: 'wheel-status', role: 'status' });
-  left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus);
+  left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus);
 
   // 가운데: 도면
   const canvasWrap = el('div', { class: 'canvas-wrap', testid: 'canvas-wrap' });
@@ -169,6 +180,7 @@ function renderShell(root) {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
+    scenBefore, scenAfter, lockBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
@@ -194,6 +206,12 @@ async function start() {
   let preview = null; // 드래그 이동 중 미리보기 { layout, guides }
   let clipboard = [];
   let toastTimer = 0;
+  const groupDialog = createGroupDialog({
+    getProject: () => project(),
+    getSelection: () => selectedRackIds(),
+    toast: (t) => showToast(t),
+    apply: (label, mutate, overrideAllow) => run(label, (p, ctx) => applyCommand(p, mutate, { command: label, selection: [...selected], overrideAllow, ...ctx })),
+  });
 
   const project = () => session.state.project;
   const layout = () => project().scenarios[project().settings.scenario];
@@ -222,10 +240,10 @@ async function start() {
     const p = project();
     if (!p) return;
     const l = layout();
-    const key = [l, p.settings, p.theme, p.precision, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
+    const key = [l, p.settings, p.theme, p.precision, p.scenarioMeta, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
     if (!force && sceneKey && key.every((k, i) => k === sceneKey[i])) return;
     sceneKey = key;
-    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: view ? pixelsPerMeter(view, l.warehouse, size()) : 20 });
+    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: view ? pixelsPerMeter(view, l.warehouse, size()) : 20, resize: isLocked(p) ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText } });
     sceneWarnings = r.warnings;
     ui.plan.innerHTML = r.svg;
     renderSelection();
@@ -242,6 +260,8 @@ async function start() {
     ui.focus.disabled = !os.length;
     const locked = isLocked(project());
     for (const b of [ui.rotateBtn, ui.duplicateBtn, ui.deleteBtn]) b.disabled = !os.length || locked;
+    const rackCount = os.filter((o) => o.kind === 'rack').length;
+    for (const b of [ui.alignXBtn, ui.alignYBtn, ui.distributeBtn]) b.disabled = rackCount < 2 || locked;
     if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)) });
   }
 
@@ -294,7 +314,12 @@ async function start() {
     const r = await command('객체 복제', d.mutate);
     if (r?.ok) commitSelection(new Set(d.ids));
   }
-  const rotateSelected = () => selected.size && command('객체 회전', rotateObjects([...selected]));
+  const selectedRackIds = () => [...selected].filter((id) => layout().objects.some((o) => o.kind === 'rack' && o.id === id));
+  const rotateSelected = () => {
+    if (!selected.size) return;
+    if (selectedRackIds().length > 1) return groupDialog.open('rotate');
+    command('객체 회전', rotateObjects([...selected]));
+  };
   function nudge(dx, dy, fast) {
     if (!selected.size || tool !== 'select') return;
     const n = nudgeObjects(project(), [...selected], dx, dy, fast);
@@ -344,6 +369,10 @@ async function start() {
     ui.saveBtn.disabled = s.status === 'saving' || s.status === 'loading';
     if (!s.project) return;
     ui.allowWarnings.checked = s.project.editing.allowWarnings;
+    ui.scenBefore.classList.toggle('active', s.project.settings.scenario === 'before');
+    ui.scenAfter.classList.toggle('active', s.project.settings.scenario === 'after');
+    ui.lockBtn.textContent = s.project.scenarioMeta.before.locked ? '🔒 BEFORE 잠금 해제' : '🔓 BEFORE 잠그기';
+    ui.lockBtn.dataset.locked = String(s.project.scenarioMeta.before.locked);
     ui.snapOn.checked = s.project.settings.snap;
     ui.snapStep.value = String(s.project.precision.snapStep);
     ui.keyStep.value = String(s.project.precision.keyStep);
@@ -389,6 +418,21 @@ async function start() {
   const W = () => layout().warehouse;
   for (const b of ui.toolButtons) b.addEventListener('click', () => setTool(b.dataset.tool));
   ui.rotateBtn.addEventListener('click', () => rotateSelected());
+  ui.alignXBtn.addEventListener('click', () => groupDialog.open('left'));
+  ui.alignYBtn.addEventListener('click', () => groupDialog.open('top'));
+  ui.distributeBtn.addEventListener('click', () => groupDialog.open('spaceX', { gap: ui.distributeGap.value }));
+  const switchScenario = (k) => {
+    abortGesture();
+    selected = new Set();
+    pref({ scenario: k });
+  };
+  ui.scenBefore.addEventListener('click', () => switchScenario('before'));
+  ui.scenAfter.addEventListener('click', () => switchScenario('after'));
+  ui.lockBtn.addEventListener('click', () => {
+    const locked = project().scenarioMeta.before.locked;
+    if (locked && !confirm('개선 전 배치를 수정하면 개선 효과 분석의 기준 데이터가 변경됩니다. BEFORE 잠금을 해제합니까?')) return;
+    pref({ beforeLocked: !locked });
+  });
   ui.duplicateBtn.addEventListener('click', () => duplicate(selectedObjects()));
   ui.deleteBtn.addEventListener('click', () => deleteSelected());
   const pref = (v) => { try { session.setView(v, { delay: 0 }); } catch (e) { showToast(e.message); } };
@@ -470,8 +514,8 @@ async function start() {
     } else if (g.kind === 'pan' || g.kind === 'pinch') {
       view = g.viewport;
       applyCamera();
-    } else if (g.kind === 'move') {
-      preview = null; // 기준본 Esc: 기록 없이 이동 전으로
+    } else if (g.kind === 'move' || g.kind === 'resize') {
+      preview = null; // 기준본 Esc: 기록 없이 이동·크기 조절 전으로
       renderPlan();
     }
   }
@@ -504,6 +548,20 @@ async function start() {
     if (tool === 'pan') {
       gesture = { kind: 'pan', pointer: e.pointerId, start: { x: e.clientX, y: e.clientY }, viewport: view, matrix: ui.plan.getScreenCTM().inverse() };
       return;
+    }
+    const handle = e.target.closest?.('[data-resize]');
+    if (handle) {
+      if (isLocked(project())) {
+        showToast('BEFORE 잠금 · 크기 변경 불가');
+        return;
+      }
+      const o = layout().objects.find((x) => x.id === handle.dataset.object);
+      if (o) {
+        const p = toWorld(e.clientX, e.clientY);
+        const [sx, sy] = HANDLE_DIRECTIONS[handle.dataset.resize];
+        gesture = { kind: 'resize', pointer: e.pointerId, start: { x: p.x, y: p.y }, sx, sy, object: structuredClone(o), changes: null, moved: false };
+        return;
+      }
     }
     const hit = e.target.closest?.('[data-id]')?.dataset.id;
     if (hit) {
@@ -542,6 +600,19 @@ async function start() {
       applyCamera();
       return;
     }
+    if (g.kind === 'resize') {
+      const p = toWorld(e.clientX, e.clientY);
+      if (!g.moved && Math.hypot(p.x - g.start.x, p.y - g.start.y) < 2e-3) return;
+      g.moved = true;
+      const pr = project(), l = layout();
+      g.changes = resized(pr, g.object, g.sx, g.sy, p.x - g.start.x, p.y - g.start.y);
+      const next = { ...l, objects: l.objects.map((o) => (o.id === g.object.id ? { ...o, ...g.changes } : o)) };
+      const invalid = newSpatialWarnings(pr, l, next, new Set([g.object.id]));
+      preview = { layout: next, guides: [], invalidText: invalid[0]?.text ?? '' };
+      renderPlan();
+      ui.selStatus.textContent = `크기 조절 · 폭 ${fmt(g.changes.width, 3)}m × 깊이 ${fmt(g.changes.depth, 3)}m`;
+      return;
+    }
     if (g.kind === 'move') {
       const p = toWorld(e.clientX, e.clientY);
       const pr = project(), l = layout();
@@ -576,6 +647,20 @@ async function start() {
       return;
     }
     if (g.pointer !== e.pointerId) return;
+    if (g.kind === 'resize') {
+      gesture = null;
+      if (cancel || !g.moved || !g.changes) {
+        preview = null;
+        renderPlan(true);
+        return;
+      }
+      const changes = { width: g.changes.width, depth: g.changes.depth, height: g.object.height ?? null, x: g.changes.x, y: g.changes.y };
+      command(RESIZE_COMMAND, applyResize(g.object.id, changes), RESIZE_COMMAND).finally(() => {
+        preview = null;
+        renderPlan(true);
+      });
+      return;
+    }
     if (g.kind === 'move') {
       gesture = null;
       const ids = g.originals.map((o) => o.id);

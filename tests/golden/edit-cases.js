@@ -4,6 +4,7 @@
 // setup: { allowWarnings?, snap?, scenario?, lockFirst? }  select: 시작 시 AFTER 랙 목록의 순번
 // steps: { op: 'add', kind, point } | 'delete' | 'duplicate' | 'rotate' | { op: 'nudge', dx, dy, fast }
 //        | { op: 'field', field, raw, number } | { op: 'dimension', field, raw } | { op: 'move', dx, dy, cancel? }
+//        | { op: 'resize', handle, dx, dy } | { op: 'group', action, fields?: { mGap, mAlignRef, ... }, allow? }   setup.aspect: 첫 선택 랙 비율 고정
 export const editCases = [
   { name: '랙 추가(기본 크기·스냅)', select: [], steps: [{ op: 'add', kind: 'rack', point: { x: 12.3456, y: 6.789 } }] },
   { name: '랙 추가(경고 허용, 추가 랙 설정 기본값)', select: [], setup: { allowWarnings: true }, steps: [{ op: 'add', kind: 'rack', point: { x: 12.3456, y: 6.789 } }] },
@@ -24,4 +25,18 @@ export const editCases = [
   { name: '드래그 이동: 포인터 취소(사용자 취소 기록)', select: [12], steps: [{ op: 'move', dx: 0.5, dy: 0, cancel: true }] },
   { name: '드래그 이동: 위치 잠금 랙 취소', select: [12], setup: { lockFirst: true, allowWarnings: true }, steps: [{ op: 'move', dx: 0.5, dy: 0 }] },
   { name: 'BEFORE 잠금: 추가 거부(기록 없음)', select: [], setup: { scenario: 'before' }, steps: [{ op: 'add', kind: 'rack', point: { x: 12, y: 6 } }] },
+  { name: '크기 조절 se(+0.2, +0.1, 스냅)', select: [12], setup: { allowWarnings: true }, steps: [{ op: 'resize', handle: 'se', dx: 0.2034, dy: 0.1012 }] },
+  { name: '회전 후 크기 조절 e(로컬 축)', select: [12], setup: { allowWarnings: true }, steps: ['rotate', { op: 'resize', handle: 'e', dx: 0.0, dy: 0.25 }] },
+  { name: '크기 조절 nw: 최소 크기 제한', select: [12], setup: { allowWarnings: true }, steps: [{ op: 'resize', handle: 'nw', dx: 5, dy: 5 }] },
+  { name: '크기 조절: 비율 고정', select: [12], setup: { allowWarnings: true, aspect: true }, steps: [{ op: 'resize', handle: 'se', dx: 0.4, dy: 0.05 }] },
+  { name: '크기 조절: 겹침 차단(경고 허용 끔)', select: [12], steps: [{ op: 'resize', handle: 'e', dx: 1.5, dy: 0 }] },
+  { name: '그룹 왼쪽 정렬(그룹 경계)', select: [30, 31, 32], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'left' }] },
+  { name: '그룹 위쪽 정렬(기준 랙)', select: [32, 30, 31], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'top', fields: { mAlignRef: 'first' } }] },
+  { name: '그룹 가로 일렬 배치 간격 0.2', select: [30, 31, 32], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'lineX', fields: { mGap: '0.2' } }] },
+  { name: '그룹 세로 간격 배치 균등 분배', select: [5, 6, 7, 8], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'spaceY', fields: { mSpaceMode: 'between' } }] },
+  { name: '그룹 가로 간격 배치 그룹 중심 고정·직접 순서', select: [30, 31, 32], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'spaceX', fields: { mAnchor: 'center', mOrder: 'custom', mCustomOrder: '#CODES' } }] },
+  { name: '그룹 이동 ΔX 0.25', select: [30, 31], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'move', fields: { mMoveX: '0.25' } }] },
+  { name: '그룹 중심 회전 90°', select: [30, 31], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'rotate' }] },
+  { name: '그룹 정렬: 위반 미허용이면 적용 안 함', select: [30, 31, 32], steps: [{ op: 'group', action: 'top', fields: { mAlignRef: 'warehouse' } }] },
+  { name: '그룹 정렬: 위반 확인 후 허용', select: [30, 31, 32], steps: [{ op: 'group', action: 'top', fields: { mAlignRef: 'warehouse' }, allow: true }] },
 ];

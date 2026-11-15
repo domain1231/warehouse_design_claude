@@ -39,11 +39,15 @@ const raw = await page.evaluate(({ text, cases }) => cases.map((c) => {
   P.settings.policy = P.editing.allowWarnings ? 'warn' : 'block';
   const racks = active().objects.filter((o) => o.kind === 'rack');
   if (c.setup?.lockFirst) racks[c.select[0]].placementMeta.positionLocked = true;
+  if (c.setup?.aspect) racks[c.select[0]].resizeConstraints.aspectLocked = true;
   setTool('select');
   renderAll(); // 새 P를 화면 상태로 받아들인다(이후 renderAll이 저장된 선택으로 되돌리지 않게)
   selected = new Set(c.select.map((i) => racks[i].id));
   save(); // 실제 사용처럼 선택을 프로젝트에 기록(editing.selectedRackIds)
   renderAll();
+  // 대화상자 값은 페이지에 남으므로 사례마다 처음 값으로 되돌린다(shell.html 기본값)
+  for (const [id, v] of Object.entries({ mAlignRef: 'group', mReferenceLine: '0', mSpaceMode: 'fixed', mCustomOrder: '', mMoveX: '0', mMoveY: '0', mRotateAngle: '90' })) $(id).value = v;
+  $('mReverse').checked = false;
   const initial = JSON.parse(JSON.stringify(P));
   for (const s of c.steps) {
     const step = typeof s === 'string' ? { op: s } : s;
@@ -75,6 +79,24 @@ const raw = await page.evaluate(({ text, cases }) => cases.map((c) => {
         }
       }
       M.finish({ pointerId: 1 }, !!step.cancel);
+    } else if (step.op === 'resize') {
+      const o = active().objects.find((x) => selected.has(x.id));
+      const [sx, sy] = S.handleDirections[step.handle];
+      S.resizeSession = { object: JSON.parse(JSON.stringify(o)), before: JSON.stringify(P), scenario: P.settings.scenario, handle: step.handle };
+      M.gesture = { kind: 'resize', pointer: 1, start: { x: 0, y: 0 }, sx, sy, moved: true };
+      Object.assign(o, S.resized(S.resizeSession.object, sx, sy, step.dx, step.dy));
+      M.finish({ pointerId: 1 }, false);
+    } else if (step.op === 'group') {
+      M.open(step.action);
+      for (const [id, v] of Object.entries(step.fields ?? {})) {
+        const value = v === '#CODES' ? active().objects.filter((o) => selected.has(o.id)).map((o) => o.code).reverse().join(',') : v;
+        if ($(id).type === 'checkbox') $(id).checked = value;
+        else $(id).value = value;
+      }
+      M.previewEdit();
+      if (step.allow !== undefined) $('mPreviewAllow').checked = step.allow;
+      M.applyEdit();
+      if ($('mEditDialog').open) $('mEditDialog').close();
     }
   }
   return { initial, final: JSON.parse(JSON.stringify(P)), selected: [...selected] };

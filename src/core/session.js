@@ -180,7 +180,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
    * 확대·이동 중 매 프레임 저장하지 않도록 delay(ms) 뒤에 한 번 저장한다. delay가 0이면 바로 저장한다.
    * viewport 값은 스키마 범위(배율 0.05–30, 이동 ±5000m, fitScale 0.001–100000)로 제한한다.
    */
-  function setView({ viewport, selection, allowWarnings, snap, precision } = {}, { delay = 250 } = {}) {
+  function setView({ viewport, selection, allowWarnings, snap, precision, scenario, beforeLocked } = {}, { delay = 250 } = {}) {
     if (!state.project) throw new Error('init() 전에는 화면 상태를 바꿀 수 없습니다.');
     const next = { ...state.project };
     if (viewport) {
@@ -197,8 +197,17 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     }
     if (typeof snap === 'boolean') next.settings = { ...(next.settings ?? state.project.settings), snap };
     if (precision) next.precision = { ...state.project.precision, ...precision };
-    if (allowWarnings !== undefined || snap !== undefined || precision) projectValidator(structuredClone(next));
-    if (JSON.stringify([next.viewport, next.editing, next.settings, next.precision]) === JSON.stringify([state.project.viewport, state.project.editing, state.project.settings, state.project.precision])) return { changed: false };
+    // BEFORE/AFTER 전환(기준본 R.switch): 대상의 자동 배치 설정을 현재 설정으로 복사하고 선택을 비운다.
+    if (scenario === 'before' || scenario === 'after') {
+      next.settings = { ...(next.settings ?? state.project.settings), scenario };
+      next.locationLayout = structuredClone(state.project.scenarioMeta[scenario].locationLayout);
+      next.editing = { ...(next.editing ?? state.project.editing), selectedRackIds: [], selectionScenario: scenario };
+    }
+    // BEFORE 원본 잠금 전환(기준본 rLock). 해제 확인은 화면에서 받는다.
+    if (typeof beforeLocked === 'boolean') next.scenarioMeta = { ...state.project.scenarioMeta, before: { ...state.project.scenarioMeta.before, locked: beforeLocked } };
+    if (allowWarnings !== undefined || snap !== undefined || precision || scenario !== undefined || beforeLocked !== undefined) projectValidator(structuredClone(next));
+    const viewKeys = ['viewport', 'editing', 'settings', 'precision', 'locationLayout', 'scenarioMeta'];
+    if (JSON.stringify(viewKeys.map((k) => next[k])) === JSON.stringify(viewKeys.map((k) => state.project[k]))) return { changed: false };
     state.project = next;
     if (state.status !== 'error') state.status = 'unsaved';
     emit();

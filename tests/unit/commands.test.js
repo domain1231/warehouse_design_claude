@@ -157,3 +157,47 @@ test('세션 apply: 성공은 실행취소 가능, 실패는 기록만 남기고
   // 기준본 실행취소는 이동 전 전체 상태로 돌아가므로 그 뒤의 실패 기록도 함께 사라진다
   assert.deepEqual(s.state.project.commandHistory, []);
 });
+
+import { resized, handlePoint, calculateGroup, readGroupConfig, groupOrder } from '../../src/warehouse/commands.js';
+
+test('크기 조절: 회전한 객체도 반대쪽 핸들이 제자리, 크기 제한·스냅', () => {
+  const { p } = base();
+  const o = { ...active(p).objects[0], rotation: 30 };
+  for (const [sx, sy] of [[1, 1], [-1, 0], [0, -1]]) {
+    const ch = resized(p, o, sx, sy, 0.3, -0.2);
+    const anchorBefore = handlePoint(o, -sx, -sy), anchorAfter = handlePoint({ ...o, ...ch }, -sx, -sy);
+    assert.ok(Math.abs(anchorBefore.x - anchorAfter.x) < 1e-9 && Math.abs(anchorBefore.y - anchorAfter.y) < 1e-9);
+  }
+  const tiny = resized(p, o, 1, 1, -50, -50);
+  assert.deepEqual([tiny.width, tiny.depth], [o.resizeConstraints.minWidth, o.resizeConstraints.minDepth]);
+  const snappedSize = resized(p, { ...o, rotation: 0 }, 1, 0, 0.1234, 0);
+  assert.equal(snappedSize.width, 1.12);
+});
+
+const groupRaw = (over = {}) => ({ action: 'left', reference: 'group', line: '0', spacing: 'fixed', gap: '0.3', anchor: 'first', order: 'x', custom: '', dx: '0', dy: '0', angle: '90', reverse: false, ...over });
+
+test('다중 랙 편집: 입력 검사(숫자·1mm), 2개 미만·간격 범위·균등 분배 불가·직접 순서 오류', () => {
+  const { p } = base();
+  const l = active(p);
+  assert.throws(() => readGroupConfig(groupRaw({ gap: '' })), /숫자 입력/);
+  assert.throws(() => readGroupConfig(groupRaw({ dx: '0.0005' })), /0.001m/);
+  assert.throws(() => calculateGroup(l, ['A'], readGroupConfig(groupRaw())), /2개 이상/);
+  assert.throws(() => calculateGroup(l, ['A', 'B'], readGroupConfig(groupRaw({ gap: '501' }))), /0~500m/);
+  l.objects[1].x = 2.5; // A(2~3)와 B(2.5~3.5) 겹침: 양 끝 사이 공간이 합보다 작다
+  assert.throws(() => calculateGroup(l, ['A', 'B'], readGroupConfig(groupRaw({ action: 'spaceX', spacing: 'between' }))), /균등 분배 불가/);
+  assert.throws(() => groupOrder(l.objects.slice(0, 2), { order: 'custom', custom: 'R-001,R-001', reverse: false }), /직접 순서/);
+});
+
+test('다중 랙 편집: 왼쪽 정렬·고정 간격 배치·그룹 이동은 입력 배치를 바꾸지 않고 결과만 돌려준다', () => {
+  const { p } = base();
+  const l = active(p);
+  const snapshot = JSON.stringify(l);
+  const left = calculateGroup(l, ['C', 'B'], readGroupConfig(groupRaw()));
+  assert.deepEqual(left.layout.objects.map((o) => o.x), [2, 5, 5]); // 선택한 B·C만 그룹 경계 왼쪽(5)으로
+  const space = calculateGroup(l, ['A', 'B', 'C'], readGroupConfig(groupRaw({ action: 'spaceX', gap: '0.5' })));
+  assert.deepEqual(space.layout.objects.map((o) => o.x), [2, 3.5, 5]);
+  assert.match(space.lengthInfo, /필요 4/);
+  const move = calculateGroup(l, ['A', 'B'], readGroupConfig(groupRaw({ action: 'move', dx: '0.1', dy: '0.2' })));
+  assert.deepEqual(move.layout.objects.slice(0, 2).map((o) => [o.x, o.y]), [[2.1, 2.2], [5.1, 2.2]]);
+  assert.equal(JSON.stringify(l), snapshot);
+});

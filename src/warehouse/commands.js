@@ -2,7 +2,7 @@
 //   90 W(위치 잠금·수동 편집 표시) → 75 V(대량 삭제 백업: Phase 8) → 70 R(BEFORE 잠금·재고 이력 대상) → 60 S(크기 제한·규격 이력) → 50 M(본체)
 // 50 본체: 정책 동기화 → 새 통로 기준값 → 검증 → 바뀐 객체의 새 공간 경고 검사(허용 안 함이면 전체 취소) → 명령 기록.
 // 실패해도 기준본처럼 명령 기록(success:false)은 남긴다. 실행취소 기록은 세션이 성공한 경우에만 만든다.
-import { validateProject, createObject, OBJECT_TYPES, AISLE_TYPES } from '../core/project.js';
+import { validateProject, validateLayout, createObject, OBJECT_TYPES, AISLE_TYPES } from '../core/project.js';
 import { warnings } from './constraints.js';
 import { bounds } from '../geometry/polygons.js';
 import { addMm, roundMm, snapToStep, GEOMETRY_EPS_M as EPS } from '../geometry/tolerance.js';
@@ -348,3 +348,181 @@ export function applyMove(project, ids, dx, dy, { cancel = false, now = () => ne
   log(draft, { command, ids: set, before, after: clone(active(draft)), success: true, now, nextId });
   return { ok: true, moved: true, project: draft };
 }
+
+// ── 크기 조절(기준본 65 S.resized, 8방향 핸들) ───────────────────────────────
+
+/** 핸들 이름 → 로컬 방향(sx: 폭 방향, sy: 깊이 방향). */
+export const HANDLE_DIRECTIONS = Object.freeze({ nw: [-1, -1], n: [0, -1], ne: [1, -1], e: [1, 0], se: [1, 1], s: [0, 1], sw: [-1, 1], w: [-1, 0] });
+export const RESIZE_COMMAND = '크기 조절';
+
+/** 회전을 반영한 핸들 위치(월드 m). */
+export function handlePoint(o, sx, sy) {
+  const a = (o.rotation * Math.PI) / 180, c = Math.cos(a), s = Math.sin(a);
+  return { x: o.x + o.width / 2 + ((sx * o.width) / 2) * c - ((sy * o.depth) / 2) * s, y: o.y + o.depth / 2 + ((sx * o.width) / 2) * s + ((sy * o.depth) / 2) * c };
+}
+
+/**
+ * 핸들을 (dx, dy)만큼 끌었을 때의 새 위치·크기. 반대쪽 핸들을 고정점으로 하고 로컬 좌표계(회전 반영)에서 계산한다.
+ * 크기는 스냅·크기 제한을 따르고, 비율 고정이면 더 많이 바뀐 축의 배율을 양 축에 적용한다.
+ */
+export function resized(project, o, sx, sy, dx, dy) {
+  const a = (o.rotation * Math.PI) / 180, c = Math.cos(a), s = Math.sin(a);
+  const du = dx * c + dy * s, dv = -dx * s + dy * c, lim = o.resizeConstraints;
+  let w = sx ? snapped(project, o.width + sx * du) : o.width;
+  let d = sy ? snapped(project, o.depth + sy * dv) : o.depth;
+  if (lim.aspectLocked) {
+    let k = sx && sy ? (Math.abs(w / o.width - 1) > Math.abs(d / o.depth - 1) ? w / o.width : d / o.depth) : sx ? w / o.width : d / o.depth;
+    k = Math.max(lim.minWidth / o.width, lim.minDepth / o.depth, Math.min(lim.maxWidth / o.width, lim.maxDepth / o.depth, k));
+    w = o.width * k;
+    d = o.depth * k;
+  } else {
+    w = Math.max(lim.minWidth, Math.min(lim.maxWidth, w));
+    d = Math.max(lim.minDepth, Math.min(lim.maxDepth, d));
+  }
+  const anchor = handlePoint(o, -sx, -sy);
+  const cx = anchor.x + ((sx * w) / 2) * c - ((sy * d) / 2) * s, cy = anchor.y + ((sx * w) / 2) * s + ((sy * d) / 2) * c;
+  return { x: cx - w / 2, y: cy - d / 2, width: w, depth: d };
+}
+
+/** 크기 조절 확정 변경 함수(기준본: 시작 상태에서 최종 x·y·폭·깊이·높이를 한 번에 commit). */
+export const applyResize = (id, changes) => (draft, layout) => {
+  const o = layout.objects.find((x) => x.id === id);
+  if (o) Object.assign(o, changes);
+};
+
+// ── 다중 랙 편집(기준본 50 M.calculate·M.order·M.applyEdit, 80 Q 입력 검사) ─────────
+
+export const GROUP_ACTIONS = Object.freeze([
+  ['left', '왼쪽 정렬'], ['right', '오른쪽 정렬'], ['top', '위쪽 정렬'], ['bottom', '아래쪽 정렬'],
+  ['centerX', '가로 가운데 정렬'], ['centerY', '세로 가운데 정렬'], ['lineX', '가로 일렬 배치'], ['lineY', '세로 일렬 배치'],
+  ['spaceX', '가로 간격 배치'], ['spaceY', '세로 간격 배치'], ['move', '그룹 이동'], ['rotate', '그룹 중심 회전'],
+]);
+export const groupCommandName = (action) => `그룹 ${Object.fromEntries(GROUP_ACTIONS)[action]}`;
+
+/**
+ * 대화상자 값 검사(기준본 M.readEdit + 80 래퍼). raw는 문자열 값들.
+ * @returns {object} config { action, reference, line, spacing, gap, anchor, order, custom, dx, dy, angle, reverse }
+ */
+export function readGroupConfig(raw) {
+  const n = (k) => {
+    const s = raw[k], v = Number(s);
+    if (s === '' || !Number.isFinite(v)) throw new Error('숫자 입력을 확인하세요.');
+    return v;
+  };
+  const c = { action: raw.action, reference: raw.reference, line: n('line'), spacing: raw.spacing, gap: n('gap'), anchor: raw.anchor, order: raw.order, custom: raw.custom, dx: n('dx'), dy: n('dy'), angle: n('angle'), reverse: !!raw.reverse };
+  for (const k of ['line', 'gap', 'dx', 'dy']) if (Math.abs(c[k] * 1e3 - Math.round(c[k] * 1e3)) > 1e-6) throw new Error('정밀 좌표·간격은 0.001m 단위까지 입력하세요.');
+  return c;
+}
+
+const locationSort = (a, b) => String(a).localeCompare(String(b), 'en', { numeric: true });
+
+/** 배치 순서(기준본 M.order). selection은 선택한 순서의 ID 목록. */
+export function groupOrder(os, c, selection = []) {
+  let out = [...os];
+  if (c.order === 'x') out.sort((a, b) => bounds(a).minX - bounds(b).minX);
+  else if (c.order === 'y') out.sort((a, b) => bounds(a).minY - bounds(b).minY);
+  else if (c.order.startsWith('location')) out.sort((a, b) => locationSort(a.excel?.key || a.code, b.excel?.key || b.code) * (c.order === 'locationDesc' ? -1 : 1));
+  else if (c.order === 'selection') out.sort((a, b) => selection.indexOf(a.id) - selection.indexOf(b.id));
+  else {
+    const codes = c.custom.split(',').map((s) => s.trim()).filter(Boolean);
+    if (codes.length !== os.length || new Set(codes).size !== codes.length || codes.some((code) => !os.some((o) => o.code === code))) throw new Error('직접 순서는 선택 랙 번호를 중복 없이 모두 포함해야 합니다.');
+    out = codes.map((code) => os.find((o) => o.code === code));
+  }
+  if (c.reverse) out.reverse();
+  return out;
+}
+
+/**
+ * 다중 랙 편집 미리보기 계산(기준본 M.calculate). ids는 선택 순서의 랙 ID(첫 ID가 기준 랙). 입력 배치는 바꾸지 않는다.
+ * @returns {{ layout, lengthInfo: string, computedGap: number, targetIds: Set<string>, before, config }}
+ */
+export function calculateGroup(layout, ids, c, { fmt: format = (v) => String(v) } = {}) {
+  const l = clone(layout);
+  const os = l.objects.filter((o) => o.kind === 'rack' && ids.includes(o.id));
+  const original = layout.objects.filter((o) => ids.includes(o.id));
+  const group = boxOf(original), ref = original.find((o) => o.id === ids[0]);
+  if (os.length < 2) throw new Error('랙을 2개 이상 선택하세요.');
+  if (c.gap < 0 || c.gap > 500) throw new Error('간격은 0~500m 범위로 입력하세요.');
+  let lengthInfo = '', computedGap = c.gap;
+  const wb = { minX: 0, minY: 0, maxX: l.warehouse.width, maxY: l.warehouse.height, cx: l.warehouse.width / 2, cy: l.warehouse.height / 2 };
+  if (c.action === 'move') {
+    // 기준본은 단순 덧셈. 입력이 1mm 단위이므로 mm 덧셈으로 부동소수점 잡음만 없앤다(D-014).
+    for (const o of os) {
+      o.x = addMm(o.x, c.dx);
+      o.y = addMm(o.y, c.dy);
+    }
+  } else if (c.action === 'rotate') {
+    const a = (c.angle * Math.PI) / 180, co = Math.cos(a), si = Math.sin(a);
+    for (const o of os) {
+      const x = o.x + o.width / 2 - group.cx, y = o.y + o.depth / 2 - group.cy;
+      o.x = group.cx + x * co - y * si - o.width / 2;
+      o.y = group.cy + x * si + y * co - o.depth / 2;
+      o.rotation += c.angle;
+    }
+  } else if (['left', 'right', 'top', 'bottom', 'centerX', 'centerY'].includes(c.action)) {
+    const target = c.reference === 'warehouse' ? wb : c.reference === 'first' ? boxOf([ref]) : group;
+    const line = c.reference === 'line';
+    for (const o of os) {
+      const b = bounds(o);
+      if (c.action === 'left') o.x += (line ? c.line : target.minX) - b.minX;
+      if (c.action === 'right') o.x += (line ? c.line : target.maxX) - b.maxX;
+      if (c.action === 'top') o.y += (line ? c.line : target.minY) - b.minY;
+      if (c.action === 'bottom') o.y += (line ? c.line : target.maxY) - b.maxY;
+      if (c.action === 'centerX') o.x += (line ? c.line : target.cx) - (b.minX + b.maxX) / 2;
+      if (c.action === 'centerY') o.y += (line ? c.line : target.cy) - (b.minY + b.maxY) / 2;
+    }
+  } else {
+    const x = c.action.endsWith('X'), min = x ? 'minX' : 'minY', max = x ? 'maxX' : 'maxY', pos = x ? 'x' : 'y';
+    const ordered = groupOrder(os, c, ids), bs = ordered.map(bounds), sizes = bs.map((b) => b[max] - b[min]), sum = sizes.reduce((a, b) => a + b, 0);
+    let start, total;
+    if (c.spacing === 'between') {
+      const available = bs.at(-1)[max] - bs[0][min];
+      computedGap = (available - sum) / (os.length - 1);
+      if (computedGap < -EPS) throw new Error(`균등 분배 불가 · 필요 최소 ${format(sum, 3)}m / 확보 ${format(available, 3)}m / 부족 ${format(sum - available, 3)}m`);
+      computedGap = Math.max(0, computedGap);
+      start = bs[0][min];
+      total = available;
+      lengthInfo = `시작·끝 유지 · 자동 간격 ${format(computedGap, 4)}m · 확보 길이 ${format(available, 3)}m`;
+    } else {
+      total = sum + c.gap * (os.length - 1);
+      if (c.anchor === 'last') start = bs.at(-1)[max] - total;
+      else if (c.anchor === 'center') start = (group[min] + group[max]) / 2 - total / 2;
+      else if (c.anchor === 'reference') {
+        const index = ordered.findIndex((o) => o.id === ref.id);
+        start = bounds(ref)[min] - sizes.slice(0, index).reduce((a, b) => a + b, 0) - c.gap * index;
+      } else start = bs[0][min];
+      const room = x ? l.warehouse.width : l.warehouse.height;
+      const overflow = Math.max(0, -start) + Math.max(0, start + total - room), available = Math.max(0, total - overflow);
+      lengthInfo = `필요 ${format(total, 3)}m / 현재 기준점에서 확보 ${format(available, 3)}m / 부족 ${format(overflow, 3)}m`;
+    }
+    let next = start;
+    for (let i = 0; i < ordered.length; i++) {
+      const o = ordered[i], b = bounds(o);
+      o[pos] += next - b[min];
+      next += sizes[i] + computedGap;
+    }
+    if (c.action.startsWith('line')) {
+      const anchorObject = c.anchor === 'last' ? ordered.at(-1) : c.anchor === 'reference' ? ref : ordered[0];
+      const anchorOriginal = original.find((o) => o.id === anchorObject.id), perp = x ? 'minY' : 'minX', perpPos = x ? 'y' : 'x';
+      let baseline;
+      if (c.anchor === 'center') {
+        const maxPerp = Math.max(...ordered.map((o) => { const b = bounds(o); return x ? b.maxY - b.minY : b.maxX - b.minX; }));
+        baseline = (x ? group.cy : group.cx) - maxPerp / 2;
+      } else baseline = bounds(anchorOriginal)[perp];
+      for (const o of ordered) o[perpPos] += baseline - bounds(o)[perp];
+    }
+  }
+  validateLayout(l);
+  return { layout: l, lengthInfo, computedGap, targetIds: new Set(ids), before: clone(layout), config: c };
+}
+
+/** 미리보기 결과를 적용하는 변경 함수: 대상 랙의 x·y·회전과 다음 기본값(간격·순서·고정 위치)을 기록한다. */
+export const applyGroupPreview = (preview) => (draft, layout) => {
+  for (const next of preview.layout.objects.filter((o) => preview.targetIds.has(o.id))) {
+    const o = layout.objects.find((x) => x.id === next.id);
+    o.x = next.x;
+    o.y = next.y;
+    o.rotation = next.rotation;
+  }
+  draft.editing.groupEditing = { gap: preview.config.gap, order: preview.config.order, anchor: preview.config.anchor };
+};
