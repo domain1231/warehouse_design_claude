@@ -3,7 +3,7 @@
 ## 현재 상태 (2026-11-15)
 - 단계: Phase 5b(Excel 배치안·적용 트랜잭션) 완료. PR `feature/phase5b-excel-apply`(기준: main). PR #1~#13은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 96 + Golden 197(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 31. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 96 + Golden 208(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 35. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -78,8 +78,13 @@
 - 기준본 대조 `tests/golden/X2-proposal.test.js` 9(배치안 6 + 적용 2 + 목록). 단위 `tests/unit/excel-apply.test.js` 4. E2E excel 2.
 - NOT RUN: 실제 업무 Excel, Windows Edge.
 
+## Phase 5c-1 결과 (2026-11-15, feature/phase5c-labels, PR #14 위에 쌓음)
+- `src/cad/labels.js`, 라벨 설정 3종·상태 문구, 속성 창 ZONE 표시 이름(D-019). 대조 `tests/golden/L1-labels.test.js` 11, E2E `tests/e2e/labels.test.js` 4.
+- 모델 배분 첫 적용: 기준본 추출 Haiku, 대조 사례·판정 Opus, 구현·E2E Sonnet(docs/MODEL_POLICY.md).
+- NOT RUN: Windows Edge·실제 글꼴(Segoe UI·맑은 고딕) 렌더링, 실제 마우스.
+
 ## 다음 작업
-- Phase 5c: 표시 모드 전환·Excel 색(F-018 잔여), ZONE·랙 번호 라벨(F-019).
+- Phase 5c-2: 표시 색 모드(settings.vizMode 4종, EX.color·EX.legend·임계값), 사용자 지정 색(theme.colorMode·objectColors, 속성 창 색 지정·초기화 대화상자).
 - Phase 6: 자동 배치 후보(W.pack 5종·W.build·비교표·후보 선택), 열 우선 생성(92).
 - 사용자 확인 필요: 실제 업무 Excel을 로컬 빌드로 열고 '매핑 요약 복사' 결과(값 제외)로 매핑 확인.
 
