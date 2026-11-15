@@ -8,7 +8,7 @@ import { readWorkbook, sheetMatrix } from '../../src/excel/xlsx.js';
 import { detectHeaderRow, autoMap, analyzeSheet } from '../../src/excel/analyze.js';
 import { buildProposal } from '../../src/excel/proposal.js';
 import { applyExcelProposal } from '../../src/excel/apply.js';
-import { buildCandidates } from '../../src/autolayout/candidates.js';
+import { buildCandidates, reoptimize, candidateSummary, movedCount } from '../../src/autolayout/candidates.js';
 import { warnings as spatialWarnings, scanLayout } from '../../src/warehouse/constraints.js';
 import { validateProject } from '../../src/core/project.js';
 import { createIdGenerator } from '../../src/core/ids.js';
@@ -61,6 +61,17 @@ for (const c of proposalCases) {
         if (step.build) {
           const b = buildCandidates(p, a, step.c, { nextId, filename: c.file ?? 'synthetic-basic.xlsx', sheet: '자재 목록', missingDelete });
           out.push({ choice: b.choice, candidates: b.candidates.map((v) => ({ name: v.name, objects: v.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), counts: v.result.counts, moved: v.moved, manualMoved: v.manualMoved, orderLoss: v.orderLoss })) });
+          let current = b.candidates[b.choice];
+          for (const ro of step.reopt || []) {
+            const racks = current.layout.objects.filter((o) => o.kind === 'rack');
+            try {
+              const r = reoptimize(current, step.c, ro.scope, { project: p, chosen: new Set((ro.select || []).map((i) => racks[i].id)) });
+              out.push({ reopt: ro.scope, name: r.candidate.name, worse: r.worse, summary: candidateSummary(r.candidate.result), priorSummary: candidateSummary(current.result), objects: r.candidate.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), movedFromPrior: movedCount(r.candidate.layout, current.layout), freeArea: r.candidate.result.warehouseArea - r.candidate.result.footprint });
+              current = r.candidate;
+            } catch (e) {
+              out.push({ reopt: ro.scope, error: e.message });
+            }
+          }
         }
       } catch (e) {
         out.push({ error: e.message });

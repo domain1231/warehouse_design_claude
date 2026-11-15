@@ -6,6 +6,7 @@ import { overlaps, gap } from '../geometry/collision.js';
 import { GEOMETRY_EPS_M as EPS, roundMm } from '../geometry/tolerance.js';
 import { scanLayout } from '../warehouse/constraints.js';
 import { buildProposal } from '../excel/proposal.js';
+import { formatNumber as fmt } from '../core/format.js';
 
 export const PROBE_LIMIT = 6000;
 const geom = (o) => [o.x, o.y, o.width, o.depth, o.height, o.rotation];
@@ -166,4 +167,30 @@ export function buildCandidates(project, analysis, c, opts) {
   let choice = candidates[0].result.counts.validInside === candidates[0].result.counts.total ? 0 : 1;
   for (let i = 1; i < candidates.length; i++) if (compareCandidates(candidates[i], candidates[choice], c) < 0) choice = i;
   return { proposal, candidates, choice };
+}
+
+export const REOPTIMIZE_SCOPES = ['all', 'new', 'selected', 'boundary', 'collision'];
+
+/** 기준본 W.summary: 배치 검사 결과 한 줄 요약. */
+export function candidateSummary(r) {
+  const s = r.counts;
+  return `전체 ${s.total}랙 · 경계 내부 ${s.inside} / 기준 충족 ${s.validInside} · 경계 초과 ${s.boundary}랙 · 랙 충돌 ${s.rackCollision}건 / 구조물 ${s.structureCollision}건 / 통로 ${s.aisle}건 / 간격 ${s.gap}건 · 대기 ${s.waiting}랙`;
+}
+
+/**
+ * 기준본 wOptimize: 현재 후보(prior)를 기준으로 범위 안 랙만 다시 배치한 변형(행·반전·열·면적·회전)을 만들어
+ * 점수가 가장 좋은 하나를 돌려준다. 기존 랙 위치 유지 설정(keep)은 이 재배치에서만 'reflow'로 본다.
+ * scope='selected'인데 chosen이 비면 오류. 프로젝트·후보는 바꾸지 않는다.
+ * @returns {{ candidate, worse: boolean, note: string }}
+ */
+export function reoptimize(prior, c, scope, { project, chosen = new Set() }) {
+  if (scope === 'selected' && !chosen.size) throw new Error('아래 목록에서 재최적화할 랙을 선택하세요.');
+  const old = project.scenarios[c.target];
+  const variants = ['row', 'reverse', 'column', 'area', ...(c.autoPlacement.allowRotation ? ['rotate'] : [])]
+    .map((s) => makeCandidate('재최적화 · ' + scope + ' · ' + s, pack(prior.layout, { ...c, keep: 'reflow' }, s, { project, scope, chosen }), c, old, project));
+  variants.sort((a, b) => compareCandidates(a, b, c));
+  const next = variants[0], worse = compareCandidates(next, prior, c) > 0;
+  const p = prior.result.counts, n = next.result.counts;
+  const note = `${worse ? '개선되지 않은 후보입니다. 이전 후보로 돌아갈 수 있습니다.' : '재최적화 후보를 생성했습니다.'} 이전 경계 ${p.boundary} / 현재 ${n.boundary} · 충돌 ${p.rackCollision + p.structureCollision} → ${n.rackCollision + n.structureCollision} · 이동 ${movedCount(next.layout, prior.layout)}랙 · 창고 면적 − 랙 면적 ${fmt(next.result.warehouseArea - next.result.footprint, 3)}㎡ (순 가용 공간 아님)`;
+  return { candidate: next, worse, note };
 }
