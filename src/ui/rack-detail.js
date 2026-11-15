@@ -2,23 +2,20 @@
 import { esc } from '../cad/scene.js';
 import { rackInfoSvg, rackSummary, itemDetail, filteredShelves, rackItems, rackCsvRows, csvEncode, specWarning } from '../warehouse/rackinfo.js';
 
-const MARKUP = `<div class="dialog-head"><h2 data-title></h2><button type="button" data-close data-testid="detail-close">닫기 ×</button></div>
-<div class="detail-summary" data-testid="detail-summary"></div>
-<div class="detail-controls">
-<label>선반<select data-shelf data-testid="detail-shelf"></select></label>
-<label>선반 번호 방향<select data-order data-testid="detail-order"><option value="bottom">아래 → 위</option><option value="top">위 → 아래</option></select></label>
-<label class="grow">자재 검색<input type="search" data-search data-testid="detail-search" placeholder="품목코드·품목명·로케이션"></label>
-<button type="button" data-physical data-testid="detail-physical">실제 설비 변경 확인</button>
-<button type="button" data-svg>SVG</button><button type="button" data-png>PNG</button><button type="button" data-csv>CSV</button>
-</div>
-<div class="detail-grid"><div class="detail-elevation" data-testid="detail-elevation"></div><div class="detail-item" data-testid="detail-item"></div></div>`;
+const MARKUP = `<header><h2 id="sInfoTitle" data-title>랙 상세 · 선반별 자재</h2><button type="button" id="sInfoClose" aria-label="랙 상세 닫기" data-close data-testid="detail-close">닫기 ×</button></header>
+<div id="sInfoSummary" class="s-summary detail-summary" data-testid="detail-summary"></div>
+<div class="s-note" id="sInfoMeaning">현재 화면은 로케이션 기반 논리적 자재 배치도입니다. 실제 자재의 가로·세로 점유 크기를 나타내지 않습니다.</div>
+<div class="s-info-tools"><input id="sInfoSearch" data-search data-testid="detail-search" placeholder="품목코드·품목명·로케이션 검색" aria-label="자재 검색"><select id="sInfoShelf" data-shelf data-testid="detail-shelf" aria-label="선반 필터"><option value="">전체 선반</option></select><select id="sShelfOrder" data-order data-testid="detail-order" aria-label="선반 번호 방향"><option value="bottom">1번 선반이 아래 (사용자 설정)</option><option value="top">1번 선반이 위 (사용자 설정)</option></select><select id="sInfoMode" aria-label="자재 배치 표시 방식"><option value="logical">논리적 위치</option><option value="measured" disabled>실측 위치 (미지원)</option></select><button type="button" id="sInfoSvg" data-svg>선반 SVG</button><button type="button" id="sInfoPng" data-png>선반 PNG</button><button type="button" id="sInfoCsv" data-csv>자재 CSV</button></div>
+<div class="s-info-grid"><div id="sElevation" class="s-elevation detail-elevation" data-testid="detail-elevation"></div><aside id="sInfoDetail" class="s-info-detail detail-item" data-testid="detail-item"></aside></div>
+<p class="s-note">선반 번호 방향은 Excel에서 확인할 수 없어 사용자가 지정합니다. 카드 폭과 선반 간격은 가독성을 위한 논리적 표시입니다. 높이 막대만 자재높이 ÷ 선반높이로 계산합니다. 원본 현재고가 없으면 실제 적재율은 미확인입니다.</p>`;
 
 /**
- * @param {{ getProject: () => object, getLayout: () => object, readOnly?: () => boolean, saveOrder: (order: string) => void, confirmPhysical: (rackId: string) => void, download: (name: string, data: string|Blob, type?: string) => void, toast: (t: string) => void }} deps
+ * @param {{ getProject: () => object, getLayout: () => object, saveOrder: (order: string) => void, download: (name: string, data: string|Blob, type?: string) => void, toast: (t: string) => void }} deps
  */
-export function createRackDetail({ getProject, getLayout, readOnly = () => false, saveOrder, confirmPhysical, download, toast }) {
+export function createRackDetail({ getProject, getLayout, saveOrder, download, toast }) {
   const dialog = document.createElement('dialog');
-  dialog.className = 'detail-dialog';
+  dialog.id = 'sInfoDialog';
+  dialog.className = 'detail-dialog s-info';
   dialog.dataset.testid = 'detail-dialog';
   dialog.innerHTML = MARKUP;
   document.body.append(dialog);
@@ -35,7 +32,6 @@ export function createRackDetail({ getProject, getLayout, readOnly = () => false
     $('[data-title]').textContent = `${o.code} · 선반별 자재`;
     $('[data-order]').value = p.rackInfographic.shelfOrder;
     $('[data-testid=detail-summary]').innerHTML = rackSummary(o).map(([k, v]) => `<span>${esc(k)}: ${esc(v)}</span>`).join('') + (o.specificationChanged ? `<div class="warnbox">${esc(specWarning(o))}</div>` : '');
-    $('[data-physical]').disabled = p.settings.scenario === 'before' && p.scenarioMeta.before.locked || readOnly();
     const box = $('.detail-elevation');
     box.innerHTML = rackInfoSvg(o, { shelfOrder: p.rackInfographic.shelfOrder, info });
     const chosen = rackItems(o).find((i) => i.location === info.item);
@@ -73,10 +69,6 @@ export function createRackDetail({ getProject, getLayout, readOnly = () => false
   $('select[data-shelf]').addEventListener('change', (e) => { info.shelf = e.target.value; info.item = null; render(); });
   $('[data-search]').addEventListener('input', (e) => { info.search = e.target.value; info.item = null; render(); });
   $('[data-order]').addEventListener('change', (e) => saveOrder(e.target.value));
-  $('[data-physical]').addEventListener('click', () => {
-    if (!confirm('현재 설계 치수를 실제 설비 변경으로 확인하여 기록합니까? Excel 원본 규격은 그대로 보존됩니다.')) return;
-    confirmPhysical(info.rackId);
-  });
   const name = (suffix) => `${rack()?.code || 'rack'}_${suffix}`;
   $('[data-svg]').addEventListener('click', () => download(name('shelves.svg'), rackInfoSvg(rack(), { shelfOrder: getProject().rackInfographic.shelfOrder, info }), 'image/svg+xml;charset=utf-8'));
   $('[data-csv]').addEventListener('click', () => download(name('materials.csv'), csvEncode(rackCsvRows(rack(), info)), 'text/csv;charset=utf-8'));

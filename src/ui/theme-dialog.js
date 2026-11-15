@@ -16,9 +16,10 @@ export function applyTheme(project) {
 /** @param {{ project: () => object, edit: (label: string, mutate: Function) => Promise<boolean>, resetColors: Function, confirm?: (t: string) => boolean }} deps */
 export function createThemeDialog({ project, edit, resetColors, confirm = (t) => window.confirm(t) }) {
   const d = document.createElement('dialog');
+  d.id = 'vThemeDialog';
   d.className = 'theme-dialog';
   d.dataset.testid = 'theme-dialog';
-  d.innerHTML = '<div class="dialog-head"><h2>색상 설정 · 기본 색상 복원</h2><button type="button" data-close data-testid="theme-close">취소·닫기 ×</button></div><p class="muted">색상 설정만 변경되며 랙 좌표·회전·규격·선반·재고·이력은 유지됩니다.</p><div class="theme-fields" data-fields></div><button type="button" class="primary" data-apply data-testid="theme-apply">입력한 UI 색상 적용</button><hr><label class="field">복원 범위<select data-scope data-testid="reset-scope"><option value="ui">UI 기본 테마만 복원</option><option value="occupancy">적재율 기본 색상·기준만 복원</option><option value="all">모든 색상 설정 복원 (양쪽 객체 지정색 포함)</option></select></label><div class="theme-preview" data-preview data-testid="reset-preview"></div><button type="button" data-reset data-testid="reset-colors">미리본 기본 색상 복원</button><p class="muted">취소·닫기는 아직 적용하지 않은 입력과 미리보기를 취소합니다.</p>';
+  d.innerHTML = '<button type="button" class="close" id="vThemeClose" data-close data-testid="theme-close">취소·닫기 ×</button><h2>색상 설정 · 기본 색상 복원</h2><p class="muted">기본값 출처: 최초 warehouse_layout_designer_original.html. 색상 설정만 변경되며 랙 좌표·회전·규격·선반·재고·이력은 유지됩니다.</p><div class="theme-fields v-fields" id="vThemeFields" data-fields></div><button type="button" id="vThemeApply" data-apply data-testid="theme-apply">입력한 UI 색상 적용</button><hr><label>복원 범위<select id="vResetScope" data-scope data-testid="reset-scope"><option value="ui">UI 기본 테마만 복원</option><option value="occupancy">적재율 기본 색상·기준만 복원</option><option value="all">모든 색상 설정 복원 (양쪽 객체 지정색 포함)</option></select></label><div class="theme-preview" id="vResetPreview" data-preview data-testid="reset-preview"></div><button type="button" id="vResetApply" data-reset data-testid="reset-colors">미리본 기본 색상 복원</button><p class="muted">취소·닫기는 아직 적용하지 않은 입력과 미리보기를 취소합니다.</p>';
   document.body.append(d);
   const q = (s) => d.querySelector(s);
 

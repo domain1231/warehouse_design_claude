@@ -72,10 +72,11 @@ test('랙 더블클릭 상세: 선반·자재 카드, 자재 원본 정보, 검�
   await page.waitForFunction(() => window.__warehouseSession.state.project.rackInfographic.shelfOrder === 'top');
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=detail-dialog] [data-csv]').click()]);
   assert.match(dl.suggestedFilename(), /_materials\.csv$/);
-  await page.locator('[data-testid=detail-physical]').click();
-  await page.waitForFunction(() => window.__warehouseSession.state.project.specificationHistory.at(-1)?.type === 'physical-confirmed');
-  await page.locator('[data-testid=detail-close]').click();
+  await page.locator('#sInfoClose').click();
   await dialog.waitFor({ state: 'hidden' });
+  // 기준본처럼 실제 설비 변경 확인은 선택 정보의 #sPhysical 단추
+  await page.locator('#sPhysical').click();
+  await page.waitForFunction(() => window.__warehouseSession.state.project.specificationHistory.at(-1)?.type === 'physical-confirmed');
   assert.deepEqual(page.problems, []);
   await ctx.close();
 });
