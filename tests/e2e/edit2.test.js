@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
+import { waitPlanStable } from './helpers.js';
 
 const root = path.resolve(import.meta.dirname, '../..');
 const meta = JSON.parse(fs.readFileSync(path.join(root, 'dist/build-metadata.json'), 'utf8'));
@@ -55,6 +56,7 @@ test('크기 조절: 선택하면 8개 핸들, se 핸들 드래그로 폭·깊�
   const rack = (await objs(page)).filter((o) => o.kind === 'rack')[12];
   await clickObject(page, rack);
   assert.equal(await page.locator('[data-testid=plan] [data-resize]').count(), 8);
+  await waitPlanStable(page); // 선택 직후 배치가 정착한 뒤에 좌표를 잰다
   const h = await screen(page, rack.x + rack.width, rack.y + rack.depth);
   const to = await screen(page, rack.x + rack.width + 0.2, rack.y + rack.depth + 0.1);
   await page.mouse.move(h.x, h.y);
