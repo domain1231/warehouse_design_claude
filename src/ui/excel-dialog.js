@@ -23,7 +23,7 @@ const B = (id, text, attr = '') => `<button type="button" id="${id}" ${attr}>${t
 const MARKUP = `<div class="ex-sticky"><button type="button" id="exClose" class="close" data-close data-testid="excel-close">닫기 ×</button><h2>Excel 연동 / 창고 레이아웃 자동 생성</h2><p class="muted">엑셀 치수와 사용자 지정 규칙으로 만드는 초기 설계안입니다. 적용 전까지 현재 프로젝트를 변경하지 않습니다.</p></div>
 <form data-config data-testid="excel-config" autocomplete="off">
 <section id="rTargetBox" class="r-box"><h3>적용할 편집 배치 · 다른 편집안은 유지</h3><div class="r-target"><label>가져오기 대상<select id="rTarget" name="target"><option value="before">BEFORE — 개선 전</option><option value="after">AFTER — 개선 후</option></select></label><label class="check"><input id="rTargetConfirm" data-targetconfirm type="checkbox">선택한 대상 배치를 확인했습니다.</label></div><p id="rTargetWarning" class="r-notice"></p><label class="check"><input type="checkbox" checked disabled>적용 전 대상 자동 백업 (필수 · 최신 최대 6개 / JSON 합계 3.2MB · 정상 저장·검증 성공 시 오래된 백업부터 교체 · 실패 시 기존 백업 보존)</label></section>
-<div class="ex-grid"><section><h3>1 / 파일 · 데이터 분석</h3><label class="filebtn">파일 선택<input id="exFileDialog" type="file" accept=".xlsx,.csv" hidden data-file data-testid="excel-file"></label><span id="exFilename" class="muted" data-filename data-testid="excel-filename">파일을 선택하세요.</span><div class="fields"><label>워크시트<select id="exSheet" data-sheet data-testid="excel-sheet"></select></label><label>머리글 행<input id="exHeader" type="number" value="8" min="1" max="100" data-header data-testid="excel-header"></label></div>${B('exRemap', '머리글 자동 인식', 'data-remap data-testid="excel-remap"')}${B('exAnalyze', '데이터 재분석', 'data-analyze data-testid="excel-analyze"')}<details><summary>20개 필드 / 수동 열 매핑</summary><div id="exMapping" class="ex-map" data-mapping data-testid="excel-mapping"></div></details><div id="exSummary" class="info" data-summary data-testid="excel-summary">파일 선택 후 시트와 머리글을 확인하세요.</div><label class="check"><input id="exSkip" name="skip" type="checkbox">오류 행 제외 허용 (첫 중복만 유지)</label><details open><summary>검증 결과 / 오류 원본 행</summary><div id="exIssues" class="ex-scroll" data-issues data-testid="excel-issues"></div>${B('exIssuesCsv', '검증 결과 CSV', 'data-issuescsv data-testid="excel-issues-csv"')}<button type="button" data-copy data-testid="excel-copy">매핑 요약 복사(값 제외)</button><div data-dims data-testid="excel-dims" id="exDimensions"></div></details></section>
+<div class="ex-grid"><section><h3>1 / 파일 · 데이터 분석</h3><label class="filebtn">파일 선택<input id="exFileDialog" type="file" accept=".xlsx,.csv" hidden data-file data-testid="excel-file"></label><span id="exFilename" class="muted" data-filename data-testid="excel-filename">파일을 선택하세요.</span><div class="fields"><label>워크시트<select id="exSheet" data-sheet data-testid="excel-sheet"></select></label><label>머리글 행<input id="exHeader" type="number" value="8" min="1" max="100" data-header data-testid="excel-header"></label></div>${B('exRemap', '머리글 자동 인식', 'data-remap data-testid="excel-remap"')}${B('exAnalyze', '데이터 재분석', 'data-analyze data-testid="excel-analyze"')}<details><summary>20개 필드 / 수동 열 매핑</summary><div id="exMapping" class="ex-map" data-mapping data-testid="excel-mapping"></div></details><div id="exSummary" class="info" data-summary data-testid="excel-summary">파일 선택 후 시트와 머리글을 확인하세요.</div><label class="check"><input id="exSkip" name="skip" type="checkbox">오류 행 제외 허용 (첫 중복만 유지)</label><details open><summary>검증 결과 / 오류 원본 행</summary><div id="exIssues" class="ex-scroll" data-issues data-testid="excel-issues"></div>${B('exIssuesCsv', '검증 결과 CSV', 'data-issuescsv data-testid="excel-issues-csv"')}<div data-dims data-testid="excel-dims" id="exDimensions"></div></details></section>
 <section><h3>2 / 창고 · 자동 배치 규칙</h3><div class="fields"><label>건물<input id="exBuilding" name="building" value="B동" maxlength="40"></label><label>층<select id="exFloor" name="floor"></select></label><label>창고 가로 (m)<input id="exWidth" name="width" type="number" min="1" max="500" step="0.1"></label><label>창고 세로 (m)<input id="exDepth" name="depth" type="number" min="1" max="500" step="0.1"></label><label>북쪽 표시<select id="exNorth" name="northRotation"><option value="0">화면 위 ↑</option><option value="90">화면 오른쪽 →</option><option value="180">화면 아래 ↓</option><option value="270">화면 왼쪽 ←</option></select></label><label>열 진행 방향<select id="exDirection" name="columnDirection"><option value="east">A → N / 동쪽 방향</option><option value="west">A → N / 서쪽 방향</option></select></label><label>A열 기준 X (m)<input id="exOriginX" name="originX" type="number" value="1" step="0.001"></label><label>A열 기준 Y (m)<input id="exOriginY" name="originY" type="number" value="1" step="0.001"></label><button type="button" id="exPick" class="full">도면에서 A열 시작점 지정</button><label>첫 랙 위치 / 번호 증가<select id="exFirst" name="firstRackPosition"><option value="north">북쪽 시작 → 남쪽 증가</option><option value="south">남쪽 시작 → 북쪽 증가</option></select></label><label>초기 회전 (°)<input id="exRotation" name="rotation" type="number" value="90" step="1"></label>${[['exColumnGap', 'columnGap', '열 사이 간격 (m)', '0.6'], ['exRackGap', 'rackGap', '랙 사이 간격 (m)', '0.2'], ['exWallGap', 'wallGap', '벽 최소 이격 (m)', '0.1'], ['exAisleTarget', 'aisleTarget', '통로 목표 폭 (m)', '1.2']].map(([id, n, t, v]) => `<label>${t}<input id="${id}" name="${n}" type="number" value="${v}" min="0" max="50" step=".01" title="${t.replace(' (m)', '')} · 증감 0.01m / 직접 입력 0.001m까지 · 0~50m"></label>`).join('')}<label class="full">사용자 정의 열 순서 (비우면 A~N)<input id="exOrder" name="order" placeholder="A,B,C,D,E,F,G,H,I,J,K,L,M,N"></label></div><p class="muted">기준점은 각 열의 가장 작은 등록 번호 랙의 <b>회전 외곽 좌상단</b>입니다. 남쪽 시작은 기준점에서 북쪽으로 진행하므로 Y 위치를 충분히 아래에 지정하세요. 동·서 방향은 북쪽 표시와 함께 회전합니다.</p>
 <details><summary>열별 시작 좌표 · 북/남 · 회전</summary><p class="muted">빈 항목은 일괄 설정을 따릅니다. 각 열의 좌표는 자동 계산 대신 지정한 값을 사용합니다.</p><div class="ex-scroll"><table><thead><tr><th>열</th><th>X</th><th>Y</th><th>첫 랙</th><th>회전</th></tr></thead><tbody id="exColumns"></tbody></table></div></details>
 <details><summary>기록 없는 번호의 랙 후보 생성</summary><label class="check"><input id="exEmpty" name="empty" type="checkbox">1번~최대 등록 번호 사이 누락 랙을 생성</label><div class="fields"><label>후보 폭 (m)<input id="exEmptyW" name="emptyW" value="1.2" type="number" min="0.01" step="0.01"></label><label>후보 깊이 (m)<input id="exEmptyD" name="emptyD" value="0.5" type="number" min="0.01" step="0.01"></label><label>후보 높이 (m)<input id="exEmptyH" name="emptyH" value="2" type="number" min="0.01" step="0.01"></label></div><p class="note">사용자가 선택한 후보이며 실존·빈 랙으로 확정하지 않습니다. 빈 선반·자재는 생성하지 않습니다.</p></details>
@@ -291,25 +291,6 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
       toast(state.applyError);
     }
   }
-  /** 매핑 결과 요약(머리글 이름·열 위치·건수·문제 유형만, 데이터 값 제외). */
-  function mappingSummary() {
-    const a = state.analysis;
-    const row = state.matrix[Number($('[data-header]').value) - 1] || [];
-    const lines = [`시트: ${state.sheetName} · 머리글 ${$('[data-header]').value}행 · 열 ${row.length}개`];
-    for (const [k, name] of FIELDS) lines.push(`${name} ← ${state.mapping[k] >= 0 ? `${encodeCol(state.mapping[k])} "${row[state.mapping[k]] ?? ''}"` : '미지정'}`);
-    const unmapped = row.map((v, i) => [i, v]).filter(([i, v]) => v !== null && !Object.values(state.mapping).includes(i)).map(([i, v]) => `${encodeCol(i)} "${v}"`);
-    lines.push(`매핑 안 된 열: ${unmapped.join(', ') || '없음'}`);
-    if (a) {
-      lines.push(`데이터 ${a.dataRows}행 · 유효 ${a.rows.length} · 랙 ${a.racks.length} · 중복 ${a.duplicates} · 규격 충돌 ${a.dimensionConflicts.length}`);
-      const counts = {};
-      for (const i of a.issues) {
-        const key = `${i.type}: ${i.text.replace(/[0-9]+F-[A-Z]+-[0-9-]+/g, '<로케이션>').replace(/: .*/, '')}`;
-        counts[key] = (counts[key] ?? 0) + 1;
-      }
-      for (const [k, n] of Object.entries(counts)) lines.push(`${k} × ${n}`);
-    }
-    return lines.join('\n');
-  }
 
   function renderAnalysis() {
     const a = state.analysis;
@@ -457,18 +438,6 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     syncMode();
     preview();
   });
-  $('[data-copy]').addEventListener('click', async () => {
-    if (!state.book) return toast('먼저 파일을 선택하세요.');
-    const text = mappingSummary();
-    try {
-      await navigator.clipboard.writeText(text);
-      toast('매핑 요약을 복사했습니다(데이터 값 제외).');
-    } catch {
-      state.lastSummary = text;
-      toast('클립보드에 복사하지 못했습니다. 요약을 화면에 표시합니다.');
-      $('[data-issues]').insertAdjacentHTML('afterbegin', `<pre class="summary-text">${esc(text)}</pre>`);
-    }
-  });
   $('[data-file]').addEventListener('change', (e) => { if (e.target.files?.[0]) readFile(e.target.files[0]); });
   async function readFile(f) {
     try {
@@ -519,7 +488,6 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
       if (!dialog.open) dialog.showModal();
       preview();
     },
-    mappingSummary,
     /** 저장소 상태·위험 문구(기준본 vExcelStorageStatus·vExcelStorageRisk). */
     setStorage(status, risk) {
       $('#vExcelStorageStatus').textContent = status;

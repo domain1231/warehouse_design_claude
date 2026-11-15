@@ -1,8 +1,5 @@
 [
  "all extra  › h1 › Warehouse Studio 창고 배치 설계 v#.#-alpha.#",
- "all extra #vOverwrite",
- "all extra #vReplaceCorrupt",
- "all extra 대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석 › 검증 결과 / 오류 원본 행 › button › 매핑 요약 복사(값 제외)",
  "all missing  › button › 설계 도구 닫기 ×",
  "all missing  › h1 › Warehouse Studio 창고 배치 설계 v#.#",
  "all missing #toggleInfo",

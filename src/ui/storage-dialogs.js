@@ -59,6 +59,8 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   function exportProtectedRaw() {
     let raw = null;
     try {
+      raw = storage.getItem(store.keys.protected); // 교체 때 보존한 손상 원본(기준본 -protected-original)
+      if (raw !== null) return download('warehouse_protected_original.json', raw, 'application/json');
       const ptr = storage.getItem(store.keys.pointer);
       let active = null;
       try { active = JSON.parse(ptr)?.active; } catch { /* 포인터 손상 */ }
@@ -255,5 +257,6 @@ export function createStorageDialogs({ session, store, backups, storage, validat
     await refresh();
   }
 
-  return { observe, riskText, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
+  const hasProtectedRaw = () => { try { return storage.getItem(store.keys.protected) !== null; } catch { return false; } };
+  return { observe, riskText, hasProtectedRaw, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
 }

@@ -40,7 +40,7 @@ test('Excel 분석: 가상 XLSX를 읽어 머리글 8행 탐지, 20개 중 매�
   await ctx.close();
 });
 
-test('Excel 적용(Phase 5b): 배치안 미리보기 → 매핑 요약(값 제외) → 경고 확인·최종 확인 → AFTER만 변경·자동 백업 → 실행취소 복귀', async () => {
+test('Excel 적용(Phase 5b): 배치안 미리보기 → 경고 확인·최종 확인 → AFTER만 변경·자동 백업 → 실행취소 복귀', async () => {
   const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 } });
   const page = await ctx.newPage();
   const problems = [];
@@ -58,12 +58,6 @@ test('Excel 적용(Phase 5b): 배치안 미리보기 → 매핑 요약(값 제�
   assert.ok(await page.locator('[data-testid=excel-apply]').isDisabled());
   await page.locator('[data-testid=excel-dims] select').selectOption('1');
   await page.waitForFunction(() => /오류 행을 수정하거나/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
-  // 매핑 요약: 머리글·건수만, 품목명 등 데이터 값은 포함하지 않는다
-  const summary = await page.evaluate(() => window.__excelDialog?.mappingSummary?.() ?? null);
-  if (summary !== null) {
-    assert.match(summary, /로케이션 ← B "로케이션"/);
-    assert.doesNotMatch(summary, /가상 부품|P-001|7F-A-1-1-1/);
-  }
   await page.locator('[data-testid=excel-config] [name=target]').selectOption('after');
   await page.locator('[data-testid=excel-config] [name=mode]').selectOption('new');
   await page.locator('[data-testid=excel-config] [name=building]').fill('SYN');

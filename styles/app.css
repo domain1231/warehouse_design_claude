@@ -119,7 +119,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .excel-table tr[data-rack] { cursor: pointer; }
 .excel-optrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 6px; font-size: 12px; }
 [data-changes] { white-space: pre-line; }
-.summary-text { white-space: pre-wrap; font-size: 11px; background: var(--bg); padding: 6px; border-radius: 4px; }
 @media (max-width: 900px) { .excel-preview-grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* 라벨은 클릭을 가로채지 않는다(기준본 .v-labels). */
