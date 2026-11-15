@@ -22,6 +22,7 @@ const result = esbuild.buildSync({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
     __SCHEMA_VERSION__: JSON.stringify(schemaVersion),
+    __REFERENCE_IMAGE__: JSON.stringify('data:image/png;base64,' + fs.readFileSync(path.join(root, 'src/assets/reference.png')).toString('base64')),
   },
 });
 const script = result.outputFiles[0].text;

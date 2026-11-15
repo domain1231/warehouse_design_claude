@@ -154,3 +154,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .theme-fields input[type=color] { height: 36px; width: 100%; }
 .theme-swatch { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--line); vertical-align: middle; margin: 3px; }
 .theme-preview { max-height: 30vh; overflow: auto; font-size: 12px; }
+
+/* D-036: 저장 상태 문구 길이(저장 중 ↔ 저장됨 ↔ 미저장)에 따라 머리글 버튼 줄바꿈이 바뀌어 도면이 한 프레임 움직이던 문제 방지.
+   기준본 max-width(250px)를 고정 폭으로 써서 문구가 바뀌어도 머리글 높이가 그대로이게 한다. */
+.header-actions .save { display: inline-block; width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -22,7 +22,7 @@ export async function readBackgroundFile(f) {
  * @param {{ getProject, isHistory: () => boolean, applyRoom: (room) => Promise<any>, setBackground: (label: string, mutate: (bg, warehouse) => void) => Promise<any>, startCalibration: () => void, toast: (t: string) => void }} cb
  * @returns {{ sync: () => void, calibrationLength: () => number }}
  */
-export function createRoomPanel({ room, ref }, { getProject, isHistory, applyRoom, setBackground, startCalibration, toast }) {
+export function createRoomPanel({ room, ref }, { getProject, isHistory, applyRoom, setBackground, useReference, startCalibration, toast }) {
   room.innerHTML = `<div class="fields">
     <label>가로 X (m)<input id="roomWidth" data-testid="room-width" type="number" min="1" max="500" step="0.1"></label>
     <label>세로 Y (m)<input id="roomHeight" data-testid="room-height" type="number" min="1" max="500" step="0.1"></label>
@@ -36,6 +36,7 @@ export function createRoomPanel({ room, ref }, { getProject, isHistory, applyRoo
     <button type="button" id="deriveRoom" data-testid="room-derive">가로 기준 세로 계산</button>
     <p class="muted">면적만으로 두 변을 결정하지 않습니다.</p></details>`;
   ref.innerHTML = `<label class="filebtn">이미지 불러오기<input id="imageIn" data-testid="bg-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+    <button type="button" id="referenceImage" data-testid="bg-reference">첨부 도면 사용</button>
     <label class="check"><input id="bgOn" data-testid="bg-show" type="checkbox">배경 표시</label>
     <label>투명도<input id="bgOpacity" data-testid="bg-opacity" type="range" min="0" max="1" step="0.05" value="0.25"></label>
     <p class="muted">전체 창고 범위에 맞춰 늘려 표시합니다. 아래 보정은 균일 축척만 조정합니다.</p>
@@ -115,6 +116,7 @@ export function createRoomPanel({ room, ref }, { getProject, isHistory, applyRoo
   bg.show.addEventListener('change', () => edit('참고 도면 표시', (b) => { b.show = bg.show.checked; }));
   bg.opacity.addEventListener('change', () => edit('참고 도면 투명도', (b) => { b.opacity = Number(bg.opacity.value); }));
   for (const k of ['x', 'y', 'width', 'height']) bg[k].addEventListener('change', () => edit('참고 도면 위치·크기', (b) => { b[k] = Number(bg[k].value); }));
+  q(ref, 'bg-reference').addEventListener('click', () => useReference().finally(() => sync()));
   q(ref, 'bg-clear').addEventListener('click', () => edit('참고 도면 제거', (b) => { b.data = ''; b.show = false; }));
   q(ref, 'bg-calibrate').addEventListener('click', () => {
     const b = getProject().settings.background;
