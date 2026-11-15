@@ -40,3 +40,22 @@ export const excelCases = [
   { name: 'CSV(UTF-8 BOM, 따옴표·쉼표)', file: 'synthetic.csv', csv: '﻿' + [HEADER.map((h) => `"${h}"`).join(','), '1,7F-A-1-1-1,P-001,"부품, 쉼표",S,10,50,"1,250",1,1,800,1850,2000,400,120,,0,1.48,,', '2,7F-A-1-1-2,P-002,"따옴표 ""안""",S,10,50,3,1,1,800,1850,2000,400,380,0.95,0,1.48,,비고'].join('\r\n') + '\r\n' },
   { name: '머리글 행 자동 탐지 실패(기본 8행)', file: 'synthetic-noheader.xlsx', aoa: [['a', 'b'], [1, 2]], sst: true },
 ];
+
+// 배치안 대조 사례(Phase 5b). 입력: synthetic-basic.xlsx 분석 + fixtures/legacy/v2.4.1-primary.project.json.
+// steps를 차례로 실행하며, 'commit'은 직전 배치안을 대상 배치에 그대로 넣는다(적용 트랜잭션 대신 비교용).
+const baseConfig = {
+  building: 'SYN', floor: '7F', width: 24, depth: 14.2, originX: 1, originY: 1, northRotation: 0, columnDirection: 'east', firstRackPosition: 'north',
+  columnGap: 0.6, rackGap: 0.2, rotation: 90, wallGap: 0.1, aisleTarget: 1.2, order: '', perColumnSettings: {}, empty: false, emptyW: 1, emptyD: 0.6, emptyH: 2,
+  mode: 'new', keep: 'keep', date: '2026-11-01', source: '가상 자료', recordLayout: false, target: 'after', missingPolicy: 'mark', specPolicy: 'keep',
+  autoPlacement: { mode: 'inside', keepManual: true, allowRotation: false, allowWarnings: true, preserveStructures: true },
+};
+export const proposalCases = [
+  { name: '새 배치(기존 수동 랙·구조물 보호)', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: {} }] },
+  { name: '새 배치(수동 랙 보호 끔·구조물 제외)', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false, preserveStructures: false } } }] },
+  { name: '열 순서·북쪽 회전·서쪽 진행·남쪽 시작·열별 설정·빈 번호 후보', resolutions: { '7F-A-2': [900, 1850, 2000] }, steps: [{ c: { order: 'B, A', northRotation: 90, columnDirection: 'west', firstRackPosition: 'south', empty: true, perColumnSettings: { A: { x: 2.5, y: 3, rotation: 0 } }, autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } } }] },
+  { name: '병합: 규격 변경(설계 유지)·누락 표시·자재 변경', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } } }, 'commit', { c: { mode: 'merge', autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } }, resolutions: { '7F-A-2': [900, 1850, 2000] }, dropRack: '7F-A-1', editItem: true }] },
+  { name: '갱신 모드: 새 랙 제외·누락 삭제 승인·새 Excel 규격 적용', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } } }, 'commit', { c: { mode: 'update', keep: 'reflow', specPolicy: 'source', missingPolicy: 'delete', autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } }, resolutions: { '7F-A-2': [900, 1850, 2000] }, dropRack: '7F-A-1', deleteMissing: true, onlyRacks: ['7F-A-1', '7F-A-2'] }] },
+  { name: '적용: 새 배치 → 병합 재적용(배치 기록 포함)', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } } }, 'apply', { c: { mode: 'merge', recordLayout: true, autoPlacement: { ...baseConfig.autoPlacement, keepManual: false } }, resolutions: { '7F-A-2': [900, 1850, 2000] }, dropRack: '7F-A-1' }, 'apply'] },
+  { name: '적용: BEFORE 대상 같은 날짜 두 번(스냅숏 교체·백업 재사용)', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { target: 'before' } }, 'apply', { c: { target: 'before', mode: 'merge' } }, 'apply'] },
+  { name: '사용자 순서 오류', resolutions: { '7F-A-2': [800, 1850, 2000] }, steps: [{ c: { order: 'A' } }] },
+].map((x) => ({ ...x, steps: x.steps.map((s) => (typeof s === 'string' ? s : { ...s, c: { ...baseConfig, ...s.c } })) }));

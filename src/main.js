@@ -16,6 +16,7 @@ import { createPanels } from './ui/panels.js';
 import { createRackDetail } from './ui/rack-detail.js';
 import { createRecordsPanel } from './ui/records-panel.js';
 import { createExcelDialog } from './ui/excel-dialog.js';
+import { applyExcelProposal, EXCEL_APPLY_COMMAND } from './excel/apply.js';
 import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
 import { saveSnapshot, restoreSnapshot, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
@@ -261,7 +262,7 @@ async function start() {
     },
     toast: (t) => showToast(t),
   });
-  const excelDialog = createExcelDialog({ toast: (t) => showToast(t) });
+  const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)) });
   const groupDialog = createGroupDialog({
     getProject: () => project(),
     getSelection: () => selectedRackIds(),
@@ -822,6 +823,7 @@ async function start() {
   setTool('select');
   await session.init();
   window.__warehouseSession = session; // E2E 검사용 읽기 진입점
+  window.__excelDialog = excelDialog;
   window.__warehouseView = { get viewport() { return view; }, get selected() { return [...selected]; }, get wheelMode() { return wheelMode.mode; } };
 }
 
