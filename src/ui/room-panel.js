@@ -24,29 +24,29 @@ export async function readBackgroundFile(f) {
  */
 export function createRoomPanel({ room, ref }, { getProject, isHistory, applyRoom, setBackground, startCalibration, toast }) {
   room.innerHTML = `<div class="fields">
-    <label>가로 X (m)<input data-testid="room-width" type="number" min="1" max="500" step="0.1"></label>
-    <label>세로 Y (m)<input data-testid="room-height" type="number" min="1" max="500" step="0.1"></label>
-    <label>천장 높이 (m)<input data-testid="room-ceiling" type="number" min="0.1" step="0.1" placeholder="선택"></label>
-    <label>계산 면적 (㎡)<input data-testid="room-area" readonly></label></div>
-    <button type="button" data-testid="room-apply">치수 적용</button>
-    <p class="muted" data-testid="room-reason" role="status" aria-live="polite"></p>
-    <details><summary class="muted">면적에서 치수 계산</summary><div class="fields">
-    <label>목표 면적 (㎡)<input data-testid="room-area-in" type="number" min="1" value="240"></label>
-    <label>알려진 가로 (m)<input data-testid="room-known" type="number" min="1" value="20"></label></div>
-    <button type="button" data-testid="room-derive">가로 기준 세로 계산</button>
+    <label>가로 X (m)<input id="roomWidth" data-testid="room-width" type="number" min="1" max="500" step="0.1"></label>
+    <label>세로 Y (m)<input id="roomHeight" data-testid="room-height" type="number" min="1" max="500" step="0.1"></label>
+    <label>천장 높이 (m)<input id="ceiling" data-testid="room-ceiling" type="number" min="0.1" step="0.1" placeholder="선택"></label>
+    <label>계산 면적 (㎡)<input id="roomArea" data-testid="room-area" readonly></label></div>
+    <button type="button" id="applyRoom" class="fullbtn" aria-describedby="roomApplyReason" data-testid="room-apply">치수 적용</button>
+    <p id="roomApplyReason" class="muted" data-testid="room-reason" role="status" aria-live="polite"></p>
+    <details style="margin:10px 0 0;padding-bottom:0;border:0"><summary class="muted">면적에서 치수 계산</summary><div class="fields">
+    <label>목표 면적 (㎡)<input id="areaInput" data-testid="room-area-in" type="number" min="1" value="240"></label>
+    <label>알려진 가로 (m)<input id="knownWidth" data-testid="room-known" type="number" min="1" value="20"></label></div>
+    <button type="button" id="deriveRoom" data-testid="room-derive">가로 기준 세로 계산</button>
     <p class="muted">면적만으로 두 변을 결정하지 않습니다.</p></details>`;
-  ref.innerHTML = `<label class="filebtn">이미지 불러오기 <input data-testid="bg-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
-    <label class="check"><input data-testid="bg-show" type="checkbox"> 배경 표시</label>
-    <label>투명도<input data-testid="bg-opacity" type="range" min="0" max="1" step="0.05" value="0.25"></label>
+  ref.innerHTML = `<label class="filebtn">이미지 불러오기<input id="imageIn" data-testid="bg-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+    <label class="check"><input id="bgOn" data-testid="bg-show" type="checkbox">배경 표시</label>
+    <label>투명도<input id="bgOpacity" data-testid="bg-opacity" type="range" min="0" max="1" step="0.05" value="0.25"></label>
     <p class="muted">전체 창고 범위에 맞춰 늘려 표시합니다. 아래 보정은 균일 축척만 조정합니다.</p>
     <div class="fields">
-    <label>배경 X (m)<input data-testid="bg-x" type="number" step="0.1"></label>
-    <label>배경 Y (m)<input data-testid="bg-y" type="number" step="0.1"></label>
-    <label>배경 폭 (m)<input data-testid="bg-width" type="number" min="0.1" step="0.1"></label>
-    <label>배경 높이 (m)<input data-testid="bg-height" type="number" min="0.1" step="0.1"></label>
-    <label class="full">보정할 두 점 사이 실측 거리 (m)<input data-testid="bg-length" type="number" min="0.01" value="5" step="0.1"></label></div>
-    <button type="button" data-testid="bg-calibrate">도면 위 두 점으로 축척 보정</button>
-    <button type="button" data-testid="bg-clear">배경 제거</button>`;
+    <label>배경 X (m)<input id="bgX" data-testid="bg-x" type="number" value="0" step="0.1"></label>
+    <label>배경 Y (m)<input id="bgY" data-testid="bg-y" type="number" value="0" step="0.1"></label>
+    <label>배경 폭 (m)<input id="bgW" data-testid="bg-width" type="number" min="0.1" step="0.1"></label>
+    <label>배경 높이 (m)<input id="bgH" data-testid="bg-height" type="number" min="0.1" step="0.1"></label>
+    <label class="full">보정할 두 점 사이 실측 거리 (m)<input id="calibrationLength" data-testid="bg-length" type="number" min="0.01" value="5" step="0.1"></label></div>
+    <button type="button" id="calibrate" data-testid="bg-calibrate">도면 위 두 점으로 축척 보정</button>
+    <button type="button" id="clearBg" data-testid="bg-clear">배경 제거</button>`;
   const q = (root, id) => root.querySelector(`[data-testid="${id}"]`);
   const w = q(room, 'room-width'), h = q(room, 'room-height'), c = q(room, 'room-ceiling'), area = q(room, 'room-area');
   const apply = q(room, 'room-apply'), reason = q(room, 'room-reason');

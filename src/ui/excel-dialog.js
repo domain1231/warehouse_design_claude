@@ -398,9 +398,8 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
       $('[data-issues]').insertAdjacentHTML('afterbegin', `<pre class="summary-text">${esc(text)}</pre>`);
     }
   });
-  $('[data-file]').addEventListener('change', async (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  $('[data-file]').addEventListener('change', (e) => { if (e.target.files?.[0]) readFile(e.target.files[0]); });
+  async function readFile(f) {
     try {
       state.book = null;
       state.resolutions = {};
@@ -415,7 +414,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
       $('[data-summary]').textContent = `읽기 실패: ${err.message}`;
       toast(err.message);
     }
-  });
+  }
   $('[data-sheet]').addEventListener('change', () => { try { loadSheet(); } catch (err) { toast(err.message); } });
   $('[data-header]').addEventListener('change', () => { renderMap(); analyze(); });
   $('[data-remap]').addEventListener('click', () => state.book && remap());
@@ -435,6 +434,11 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
   });
 
   return {
+    /** 기준본 exFile(왼쪽 'Excel·로케이션 CSV 불러오기'): 파일을 읽고 대화상자를 연다. */
+    openWithFile(f) {
+      this.open();
+      readFile(f);
+    },
     open() {
       fillTarget(true);
       syncMode();

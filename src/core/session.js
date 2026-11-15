@@ -282,7 +282,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
    * 확대·이동 중 매 프레임 저장하지 않도록 delay(ms) 뒤에 한 번 저장한다. delay가 0이면 바로 저장한다.
    * viewport 값은 스키마 범위(배율 0.05–30, 이동 ±5000m, fitScale 0.001–100000)로 제한한다.
    */
-  function setView({ viewport, selection, allowWarnings, snap, precision, scenario, beforeLocked, panels, rackInfographic } = {}, { delay = 250 } = {}) {
+  function setView({ viewport, selection, selectionRule, allowWarnings, snap, precision, scenario, beforeLocked, panels, rackInfographic } = {}, { delay = 250 } = {}) {
     if (!state.project) throw new Error('init() 전에는 화면 상태를 바꿀 수 없습니다.');
     const next = { ...state.project };
     if (viewport) {
@@ -297,6 +297,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
       next.editing = { ...(next.editing ?? state.project.editing), allowWarnings };
       next.settings = { ...state.project.settings, policy: allowWarnings ? 'warn' : 'block' };
     }
+    if (selectionRule === 'intersect' || selectionRule === 'contain') next.editing = { ...(next.editing ?? state.project.editing), selectionRule };
     if (typeof snap === 'boolean') next.settings = { ...(next.settings ?? state.project.settings), snap };
     if (precision) next.precision = { ...state.project.precision, ...precision };
     // BEFORE/AFTER 전환(기준본 R.switch): 대상의 자동 배치 설정을 현재 설정으로 복사하고 선택을 비운다.
@@ -311,7 +312,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     // 랙 상세 선반 번호 방향(기준본 65 sShelfOrder: save만, 실행취소 없음)
     if (rackInfographic) next.rackInfographic = { ...state.project.rackInfographic, ...rackInfographic };
     if (typeof beforeLocked === 'boolean') next.scenarioMeta = { ...state.project.scenarioMeta, before: { ...state.project.scenarioMeta.before, locked: beforeLocked } };
-    if (allowWarnings !== undefined || snap !== undefined || precision || scenario !== undefined || beforeLocked !== undefined || panels || rackInfographic) projectValidator(structuredClone(next));
+    if (allowWarnings !== undefined || selectionRule !== undefined || snap !== undefined || precision || scenario !== undefined || beforeLocked !== undefined || panels || rackInfographic) projectValidator(structuredClone(next));
     const viewKeys = ['viewport', 'editing', 'settings', 'precision', 'locationLayout', 'scenarioMeta', 'panels', 'rackInfographic'];
     if (JSON.stringify(viewKeys.map((k) => next[k])) === JSON.stringify(viewKeys.map((k) => state.project[k]))) return { changed: false };
     state.project = next;

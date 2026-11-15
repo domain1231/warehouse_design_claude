@@ -528,3 +528,17 @@ export const applyGroupPreview = (preview) => (draft, layout) => {
   }
   draft.editing.groupEditing = { gap: preview.config.gap, order: preview.config.order, anchor: preview.config.anchor };
 };
+
+/**
+ * 기준본 50 mApplyAisleRule: 통로 유형 기준(최소·목표 폭, 경고 사용)을 저장하고 같은 유형의 통로에 적용한다.
+ * 랙·다른 유형 통로는 바꾸지 않는다. 값 오류는 기준본 finite 문구로 던진다(호출부가 전체 취소).
+ */
+export function applyAisleRule(p, layout, type, { min, target, enabled }) {
+  const n = (v) => (typeof v === 'string' && v.trim() === '' ? NaN : Number(v));
+  const lo = n(min), hi = n(target);
+  if (!Number.isFinite(lo) || lo < 0 || lo > 500) throw new Error('최소 폭 값이 올바르지 않습니다.');
+  if (!Number.isFinite(hi) || hi < lo || hi > 500) throw new Error('목표 폭 값이 올바르지 않습니다.');
+  if (!(type in p.aisleRules)) throw new Error('통로 종류 값이 올바르지 않습니다.');
+  p.aisleRules[type] = { minWidth: lo, targetWidth: hi, enabled: !!enabled };
+  for (const o of layout.objects) if (o.kind === 'aisle' && o.aisleType === type) Object.assign(o, { minWidth: lo, targetWidth: hi, warningsEnabled: !!enabled });
+}
