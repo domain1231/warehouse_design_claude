@@ -1,9 +1,9 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#16은 main에 병합됨.
+- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#18은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 96 + Golden 233(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 40. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 96 + Golden 234(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 41. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -92,8 +92,12 @@
 - `src/autolayout/candidates.js`(D-021), Excel 대화상자 배치 방식·회전 허용·선택 후보 표시·적용. 대조 X2 19(후보 10사례 추가), E2E excel 3.
 - 모델 배분: 알고리즘 이식·기준본 대조 Opus, 화면 연결·E2E Sonnet.
 
+## Phase 6b 결과 (2026-11-15, feature/phase6b-comparison)
+- `reoptimize`·`candidateSummary`(D-022), Excel 대화상자 비교표·후보 선택·위반 목록·재최적화. 대조 X2 20(재최적화 4사례 추가), E2E excel 4.
+- 모델 배분: 재최적화 계산·기준본 대조 Opus, 화면·E2E Sonnet.
+- NOT RUN: Windows Edge, 390px 화면에서 비교표 가로 스크롤 실측.
+
 ## 다음 작업
-- Phase 6b: 후보 비교표·직접 선택·부분 재배치 범위(W.comparison·W.list·W.previous 등).
 - Phase 6c: 열 우선 생성(92 C.search·C.enrich 등).
 - Phase 9로 미룬 것: UI 색 직접 입력·프리셋, 복원 미리보기.
 - Phase 6: 자동 배치 후보(W.pack 5종·W.build·비교표·후보 선택), 열 우선 생성(92).

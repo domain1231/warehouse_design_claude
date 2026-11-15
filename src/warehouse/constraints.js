@@ -135,7 +135,7 @@ function excess(o, layout) {
 }
 
 const SIDE = { left: '좌', right: '우', top: '상', bottom: '하' };
-function excessText(e) {
+export function excessText(e) {
   return Object.entries(e).filter(([, v]) => v > EPS * 1e3).map(([k, v]) => `${SIDE[k]} ${fmt(v, 3)}mm`).join(' / ') || '경계 내부';
 }
 

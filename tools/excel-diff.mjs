@@ -106,6 +106,23 @@ for (const c of proposalCases) {
           // 90 W.build: 후보 0(W.base) + W.pack 재배치 후보, 방식별 점수로 선택(Phase 6a)
           W.build(step.c);
           out.push({ choice: W.choice, candidates: W.candidates.map((v) => ({ name: v.name, objects: v.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), counts: v.result.counts, moved: v.moved, manualMoved: v.manualMoved, orderLoss: v.orderLoss })) });
+          // 재최적화(90 wOptimize 본문을 기준본 W.pack·W.candidate·W.compare로 재현, Phase 6b). 결과 후보를 추가하고 선택한다.
+          for (const ro of step.reopt || []) {
+            const prior = W.candidates[W.choice], c = step.c;
+            W.previewSelected.clear();
+            const racks = prior.layout.objects.filter((o) => o.kind === 'rack');
+            for (const i of ro.select || []) W.previewSelected.add(racks[i].id);
+            if (ro.scope === 'selected' && !W.previewSelected.size) {
+              out.push({ reopt: ro.scope, error: '아래 목록에서 재최적화할 랙을 선택하세요.' });
+              continue;
+            }
+            const variants = ['row', 'reverse', 'column', 'area', ...(c.autoPlacement.allowRotation ? ['rotate'] : [])].map((s) => W.candidate('재최적화 · ' + ro.scope + ' · ' + s, W.pack(prior.layout, { ...c, keep: 'reflow' }, s, ro.scope), c, P.scenarios[c.target]));
+            variants.sort((a, b) => W.compare(a, b, c));
+            const next = variants[0];
+            W.candidates.push(next);
+            W.choice = W.candidates.length - 1;
+            out.push({ reopt: ro.scope, name: next.name, worse: W.compare(next, prior, c) > 0, summary: W.summary(next.result), priorSummary: W.summary(prior.result), objects: next.layout.objects.map((o) => [o.id, o.x, o.y, o.rotation, o.placementMeta?.waiting ?? null]), movedFromPrior: W.moved(next.layout, prior.layout), freeArea: next.result.warehouseArea - next.result.footprint });
+          }
         }
       } catch (e) {
         out.push({ error: e.message });

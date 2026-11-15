@@ -130,3 +130,67 @@ test('Excel 자동 배치 후보(Phase 6a): 많은 랙을 좁은 창고에 적�
   assert.deepEqual(problems, []);
   await ctx.close();
 });
+
+test('Excel 후보 비교·선택·재최적화(Phase 6b): 비교표 선택은 후보를 다시 만들지 않고 미리보기만 바꾸며 선택 후보가 적용 기록에 남는다', async () => {
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 } });
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(e.message));
+  page.on('dialog', (d) => d.accept());
+  await page.goto(fileUrl);
+  await page.waitForFunction(() => window.__warehouseView);
+  await page.locator('[data-testid=excel-open]').click();
+  await page.locator('[data-testid=excel-file]').setInputFiles(path.join(root, 'fixtures/excel/synthetic-many.xlsx'));
+  await page.waitForFunction(() => /유효/.test(document.querySelector('[data-testid=excel-summary]').textContent));
+  const cfg = (n) => page.locator(`[data-testid=excel-config] [name=${n}]`);
+  await cfg('target').selectOption('after');
+  await cfg('mode').selectOption('new');
+  await cfg('building').fill('SYN');
+  await cfg('source').fill('가상 자료');
+  await cfg('keepManual').uncheck();
+  await cfg('preserveStructures').uncheck();
+  await cfg('width').fill('6');
+  await cfg('depth').fill('4');
+  await cfg('depth').dispatchEvent('change');
+  const rows = page.locator('[data-testid=excel-comparison] tbody tr');
+  const stats = () => page.locator('[data-testid=excel-pstats]').textContent();
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 5);
+  const first = await stats();
+  const checked = await page.locator('[data-testid=excel-comparison] input:checked').getAttribute('data-cand');
+  const other = checked === '0' ? '1' : '0';
+  await page.locator(`[data-testid=excel-comparison] input[data-cand="${other}"]`).check();
+  assert.notEqual(await stats(), first);
+  assert.equal(await rows.count(), 5, '선택은 후보를 다시 만들지 않는다');
+  await page.locator(`[data-testid=excel-comparison] input[data-cand="${checked}"]`).check();
+  assert.equal(await stats(), first);
+  // 선택 범위인데 체크된 랙이 없으면 토스트
+  await page.locator('[data-testid=excel-scope]').selectOption('selected');
+  await page.locator('[data-testid=excel-optimize]').click();
+  await page.waitForFunction(() => /아래 목록에서 재최적화할 랙을 선택하세요\./.test(document.body.textContent));
+  assert.equal(await rows.count(), 5);
+  // 랙 포커스 → 상세
+  await page.locator('[data-testid=excel-list] [data-focus]').first().click();
+  assert.match(await page.locator('[data-testid=excel-detail]').textContent(), /미리보기 선택/);
+  await page.locator('[data-testid=excel-scope]').selectOption('boundary');
+  await page.locator('[data-testid=excel-optimize]').click();
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 6);
+  assert.match(await rows.nth(5).textContent(), /^재최적화 · boundary/);
+  assert.equal(await page.locator('[data-testid=excel-comparison] input:checked').getAttribute('data-cand'), '5');
+  assert.ok(await page.locator('[data-testid=excel-previous]').isEnabled());
+  await page.locator('[data-testid=excel-previous]').click();
+  assert.equal(await page.locator('[data-testid=excel-comparison] input:checked').getAttribute('data-cand'), checked);
+  assert.match(await page.locator('[data-testid=excel-note]').textContent(), /이전 후보로 돌아왔습니다\./);
+  // 후보 선택을 바꾸면 경고 확인이 해제된다 → 다시 확인 후 적용
+  await page.locator('[data-testid=excel-comparison] input[data-cand="5"]').check();
+  const name = (await stats()).match(/선택 후보: (.+?) · 내부 정상/)[1];
+  assert.match(name, /^재최적화 · boundary/);
+  if (!(await page.locator('[data-testid=excel-ack]').isHidden())) {
+    assert.equal(await page.locator('[data-testid=excel-ack]').isChecked(), false);
+    await page.locator('[data-testid=excel-ack]').check();
+  }
+  await page.locator('[data-testid=excel-apply]').click();
+  await page.waitForFunction(() => window.__warehouseSession.state.project.layoutBackups.length === 1 && window.__warehouseSession.state.status === 'saved');
+  assert.equal(await page.evaluate(() => window.__warehouseSession.state.project.autoPlacement.history.at(-1).candidate), name);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
