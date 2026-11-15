@@ -19,3 +19,13 @@ export const cameraCases = [
   { name: '전체 보기(100%)', size: { w: 1000, h: 600 }, viewport: free, steps: [{ op: 'center', reset: true }] },
   { name: '아주 작은 화면(1px 하한)', size: { w: 0, h: 0 }, viewport: locked, steps: [] },
 ];
+
+// 랙 목록·검색·필터 대조 사례(Phase 4). 입력 배치: fixtures/legacy/v2.4.1-primary.project.json AFTER.
+export const listCases = [
+  { name: '전체·도면 순서' },
+  { name: '번호 오름차순', rackSort: 'code' },
+  { name: '검색 b-7·번호 내림차순', rackSearch: 'b-7', rackSort: 'codeDesc' },
+  { name: '정보 없음 필터', load: 'unknown' },
+  { name: '랙 종류 중량랙·검색 72', type: '중량랙', rackSearch: '72' },
+  { name: '빈 랙 필터(해당 없음)', load: 'empty' },
+];

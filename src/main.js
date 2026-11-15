@@ -12,6 +12,7 @@ import { pixelsPerMeter } from './cad/camera.js';
 import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { renderInspector } from './ui/inspector.js';
 import { createGroupDialog } from './ui/group-dialog.js';
+import { createPanels } from './ui/panels.js';
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
 import { OBJECT_TYPES } from './core/project.js';
 import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
@@ -88,7 +89,11 @@ function renderShell(root) {
   const scenAfter = button('scenario-after', 'AFTER 개선 후');
   const lockBtn = button('before-lock', '');
   scenarioRow.append(scenBefore, scenAfter, lockBtn);
-  header.append(brand, label, scenarioRow, statusBox, actions);
+  const panelRow = el('div', { class: 'tool-group panel-row', role: 'group', 'aria-label': '패널' });
+  const leftToggle = button('toggle-left', '');
+  const rightToggle = button('toggle-right', '');
+  panelRow.append(leftToggle, rightToggle);
+  header.append(brand, label, scenarioRow, panelRow, statusBox, actions);
   const notice = el('p', { class: 'notice', testid: 'notice' });
 
   // 왼쪽: 도구·화면
@@ -159,7 +164,8 @@ function renderShell(root) {
   canvasWrap.innerHTML = '<svg id="plan" role="img" aria-label="창고 배치 도면" data-testid="plan"></svg>';
   const plan = canvasWrap.firstElementChild;
   const hint = el('p', { class: 'canvas-hint', testid: 'canvas-hint' }, '원점: 좌상단 · X → / Y ↓ · 단위 m');
-  canvasWrap.append(hint);
+  const legendBox = el('div', { class: 'legend', testid: 'legend' });
+  canvasWrap.append(hint, legendBox);
 
   // 오른쪽: 선택·요약
   const right = el('aside', { class: 'side right', 'aria-label': '선택 정보' });
@@ -169,7 +175,18 @@ function renderShell(root) {
   const inspector = el('div', { class: 'inspector', testid: 'inspector' });
   const summary = el('p', { class: 'summary', testid: 'summary' });
   const note = el('p', { class: 'muted' }, '재구축 진행 중: 객체 추가·이동·속성 편집까지 포함되었습니다. 크기 조절 핸들·정렬은 다음 단계입니다. 이 PC·브라우저 저장이며 클라우드 동기화가 아닙니다.');
-  right.append(el('h2', {}, '선택'), selStatus, selList, selWarn, inspector, el('h2', {}, '요약'), summary, note);
+  const section = (title, testid, open = true) => {
+    const d = el('details', { class: 'side-section', testid });
+    if (open) d.open = true;
+    d.append(el('summary', {}, title));
+    const body = el('div', { class: 'section-body' });
+    d.append(body);
+    return [d, body];
+  };
+  const [statsBox, statsBody] = section('배치 통계', 'stats-section');
+  const [warnBox, warnBody] = section('공간 경고', 'warnings-section');
+  const [listBox, listBody] = section('랙 목록', 'racklist-section');
+  right.append(el('h2', {}, '선택'), selStatus, selList, selWarn, inspector, statsBox, warnBox, listBox, el('h2', {}, '요약'), summary, note);
 
   const main = el('div', { class: 'workspace' });
   main.append(left, canvasWrap, right);
@@ -180,7 +197,7 @@ function renderShell(root) {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
-    scenBefore, scenAfter, lockBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
+    scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
@@ -206,6 +223,15 @@ async function start() {
   let preview = null; // 드래그 이동 중 미리보기 { layout, guides }
   let clipboard = [];
   let toastTimer = 0;
+  const panels = createPanels({ stats: ui.statsBody, warnings: ui.warnBody, list: ui.listBody, legend: ui.legendBox }, {
+    onFocus: (ids) => {
+      const existing = new Set(layout().objects.map((o) => o.id));
+      commitSelection(new Set(ids.filter((id) => existing.has(id))));
+      const box = selectionBox(layout().objects.filter((o) => selected.has(o.id)));
+      if (box) commitView(focusBox(view, box, W(), size()));
+    },
+    onView: (v) => pref({ panels: { view: v } }),
+  });
   const groupDialog = createGroupDialog({
     getProject: () => project(),
     getSelection: () => selectedRackIds(),
@@ -240,13 +266,14 @@ async function start() {
     const p = project();
     if (!p) return;
     const l = layout();
-    const key = [l, p.settings, p.theme, p.precision, p.scenarioMeta, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
+    const key = [l, p.settings, p.theme, p.precision, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
     if (!force && sceneKey && key.every((k, i) => k === sceneKey[i])) return;
     sceneKey = key;
-    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: view ? pixelsPerMeter(view, l.warehouse, size()) : 20, resize: isLocked(p) ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText } });
+    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: view ? pixelsPerMeter(view, l.warehouse, size()) : 20, resize: isLocked(p) ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view });
     sceneWarnings = r.warnings;
     ui.plan.innerHTML = r.svg;
     renderSelection();
+    if (!preview) panels.render({ layout: l, project: p, selected, warnings: r.warnings });
   }
 
   function renderSelection() {
@@ -369,6 +396,11 @@ async function start() {
     ui.saveBtn.disabled = s.status === 'saving' || s.status === 'loading';
     if (!s.project) return;
     ui.allowWarnings.checked = s.project.editing.allowWarnings;
+    const pn = s.project.panels;
+    ui.main.classList.toggle('left-closed', !pn.leftOpen);
+    ui.main.classList.toggle('right-closed', !pn.rightOpen);
+    ui.leftToggle.textContent = pn.leftOpen ? '◧ 도구 접기' : '◧ 도구 펼치기';
+    ui.rightToggle.textContent = pn.rightOpen ? '◨ 정보 접기' : '◨ 정보 펼치기';
     ui.scenBefore.classList.toggle('active', s.project.settings.scenario === 'before');
     ui.scenAfter.classList.toggle('active', s.project.settings.scenario === 'after');
     ui.lockBtn.textContent = s.project.scenarioMeta.before.locked ? '🔒 BEFORE 잠금 해제' : '🔓 BEFORE 잠그기';
@@ -380,7 +412,11 @@ async function start() {
       // 프로젝트를 처음 불러오거나 실행취소 등으로 바뀌면 저장된 선택·카메라를 따른다(조작 중이면 조작이 우선).
       const ids = new Set(s.project.scenarios[s.project.settings.scenario].objects.map((o) => o.id));
       selected = lastProject === null ? restoreSelection(s.project) : new Set([...selected].filter((id) => ids.has(id)));
-      if (!gesture) view = withFitScale(s.project.viewport, s.project.scenarios[s.project.settings.scenario].warehouse, size());
+      // 저장된 viewport에 fitScale이 아직 없으면(처음 연 프로젝트) 화면에서 정한 fitScale을 계속 쓴다.
+      // 그렇지 않으면 패널 접기 같은 다른 변경 때 현재 화면 크기로 다시 계산되어 축척이 바뀐다.
+      const pv = s.project.viewport;
+      const sameBase = view && pv.zoom === view.zoom && pv.panX === view.panX && pv.panY === view.panY && pv.centerLocked === view.centerLocked;
+      if (!gesture && !(sameBase && !(pv.fitScale > 0) && view.fitScale > 0)) view = withFitScale(pv, s.project.scenarios[s.project.settings.scenario].warehouse, size());
       lastProject = s.project;
     }
     renderPlan();
@@ -426,6 +462,8 @@ async function start() {
     selected = new Set();
     pref({ scenario: k });
   };
+  ui.leftToggle.addEventListener('click', () => pref({ panels: { leftOpen: !project().panels.leftOpen } }));
+  ui.rightToggle.addEventListener('click', () => pref({ panels: { rightOpen: !project().panels.rightOpen } }));
   ui.scenBefore.addEventListener('click', () => switchScenario('before'));
   ui.scenAfter.addEventListener('click', () => switchScenario('after'));
   ui.lockBtn.addEventListener('click', () => {

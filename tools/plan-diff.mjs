@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
-import { cameraCases } from '../tests/golden/plan-cases.js';
+import { cameraCases, listCases } from '../tests/golden/plan-cases.js';
 
 const baseline = process.env.BASELINE_REPO;
 if (!baseline) {
@@ -28,7 +28,7 @@ page.on('pageerror', (e) => errors.push(String(e)));
 await page.goto(pathToFileURL(path.join(baseline, 'dist', stem + '.html')).href);
 await page.waitForSelector('#vStorage', { state: 'visible' });
 
-const out = await page.evaluate(({ text, cases }) => {
+const out = await page.evaluate(({ text, cases, listCases }) => {
   const load = () => {
     P = JSON.parse(text);
     M.ensure(P);
@@ -63,8 +63,26 @@ const out = await page.evaluate(({ text, cases }) => {
     return { id: g.dataset.id, transform: g.getAttribute('transform'), tag: s.tagName, x: a('x'), y: a('y'), width: a('width'), height: a('height'), points: a('points'), rx: a('rx'), strokeWidth: a('stroke-width'), dash: a('stroke-dasharray') };
   });
   const overlays = [...host.querySelectorAll('.m-overlay')].map((g) => g.outerHTML);
-  return { camera, scene: { selected: [...selected], shapes, overlays } };
-}, { text: projectText, cases: cameraCases });
+  const sceneSelected = [...selected];
+  // 통계·범례·랙 목록·흐림(Phase 4)
+  load();
+  renderAll();
+  const stats = {};
+  for (const k of ['before', 'after']) stats[k] = JSON.parse(JSON.stringify(metrics(P.scenarios[k])));
+  const legendText = [...$('legend').children].map((e) => e.textContent);
+  const lists = listCases.map((c) => {
+    $('search').value = c.rackSearch ?? '';
+    $('typeFilter').value = c.type ?? '';
+    $('loadFilter').value = c.load ?? 'all';
+    $('bRackSort').value = c.rackSort ?? 'original';
+    renderList();
+    const host2 = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    host2.innerHTML = scene(display());
+    const dim = [...host2.querySelectorAll(':scope > g[data-id]')].filter((g) => g.getAttribute('opacity') !== '1').map((g) => g.dataset.id);
+    return { name: c.name, ids: [...$('rackList').querySelectorAll('[data-rack]')].map((e) => e.dataset.rack), texts: [...$('rackList').querySelectorAll('[data-rack]')].map((e) => e.textContent), dim };
+  });
+  return { camera, scene: { selected: sceneSelected, shapes, overlays }, panels: { stats, legendText, lists } };
+}, { text: projectText, cases: cameraCases, listCases });
 await browser.close();
 if (errors.length) {
   console.error('page errors', errors);

@@ -37,7 +37,7 @@ body {
 .status-badge[data-state="saved"] { color: #6fcf97; }
 .status-badge[data-state="unsaved"], .status-badge[data-state="saving"] { color: #f2c94c; }
 .status-badge[data-state="error"] { color: #eb5757; }
-.status-detail { color: var(--muted); margin: 0; font-size: 12px; overflow-wrap: anywhere; }
+.status-detail { color: var(--muted); margin: 0; font-size: 12px; overflow-wrap: anywhere; word-break: keep-all; }
 .notice { border-left: 3px solid #f2c94c; padding: 6px 12px; margin: 0; background: rgba(242, 201, 76, 0.08); }
 .notice[hidden] { display: none; }
 
@@ -119,3 +119,38 @@ button[data-testid="save"] { background: var(--accent); border-color: var(--acce
 .warn-line { color: #ff9aa5; margin: 2px 0; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #0b1220; }
 @media (max-width: 760px) { .group-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Phase 4: 통계·경고·랙 목록·범례·패널 접기 */
+.workspace.left-closed { grid-template-columns: 0 minmax(0, 1fr) 260px; }
+.workspace.right-closed { grid-template-columns: 240px minmax(0, 1fr) 0; }
+.workspace.left-closed.right-closed { grid-template-columns: 0 minmax(0, 1fr) 0; }
+/* 접힌 패널은 격자 칸(0px)을 유지해 도면이 다른 칸으로 밀리지 않게 한다 */
+.workspace.left-closed .side.left, .workspace.right-closed .side.right { visibility: hidden; padding: 0; border: 0; overflow: hidden; }
+.side-section { border-top: 1px solid var(--line); padding: 6px 0; }
+.side-section > summary { cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 600; }
+.section-body { padding-top: 6px; }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+.kpis div { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; display: grid; }
+.kpis span { font-size: 11px; color: var(--muted); }
+.kpis strong { font-size: 14px; font-variant-numeric: tabular-nums; }
+.metricline { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 2px 0; }
+.unit-load { font-size: 12px; margin: 0 0 6px; }
+.warning-list { margin: 0; padding-left: 18px; font-size: 12px; max-height: 26vh; overflow: auto; }
+.warning-list li { cursor: pointer; padding: 2px 0; }
+.warning-list li:hover, .warning-list li:focus { color: var(--accent); }
+.list-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.list-filters input { grid-column: 1 / -1; }
+.list-filters input, .list-filters select { padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--text); font: inherit; font-size: 12px; min-width: 0; }
+.list-count { margin: 6px 0 4px; }
+.rack-list { max-height: 34vh; overflow: auto; }
+.rack-row { display: flex; justify-content: space-between; gap: 6px; padding: 3px 4px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+.rack-row:hover, .rack-row:focus { background: var(--card); }
+.rack-row[aria-selected="true"] { outline: 1px solid var(--accent); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.legend { position: absolute; right: 8px; bottom: 6px; max-width: min(520px, calc(100% - 16px)); display: flex; flex-wrap: wrap; gap: 2px 10px; padding: 4px 8px; font-size: 11px; background: rgba(17, 24, 33, 0.85); border: 1px solid var(--line); border-radius: 6px; pointer-events: none; }
+.legend strong { flex-basis: 100%; font-size: 11px; }
+@media (max-width: 900px) {
+  .workspace.left-closed, .workspace.right-closed, .workspace.left-closed.right-closed { grid-template-columns: minmax(0, 1fr); }
+  .legend { left: 8px; max-width: none; }
+  .canvas-hint { display: none; }
+}
