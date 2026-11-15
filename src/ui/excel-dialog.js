@@ -4,7 +4,8 @@ import { esc } from '../cad/scene.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { readWorkbook, sheetMatrix, encodeCol } from '../excel/xlsx.js';
 import { FIELDS, detectHeaderRow, autoMap, analyzeSheet } from '../excel/analyze.js';
-import { readExcelConfig, buildProposal } from '../excel/proposal.js';
+import { readExcelConfig } from '../excel/proposal.js';
+import { buildCandidates } from '../autolayout/candidates.js';
 import { buildScene } from '../cad/scene.js';
 import { warnings as spatialWarnings } from '../warehouse/constraints.js';
 
@@ -38,6 +39,8 @@ const MARKUP = `<div class="dialog-head"><h2>Excel 가져오기 · 분석</h2><b
 <label>열 순서(비우면 자동)<input name="order" placeholder="예: B, A"></label>
 <label>누락 랙<select name="missingPolicy"><option value="mark">유지 + 이번 파일 미등록 표시</option><option value="keep">기존 정보 그대로 유지</option><option value="delete">직접 체크한 누락 랙만 삭제</option></select></label>
 <label>재가져오기 규격<select name="specPolicy"><option value="keep">기존 설계 규격 유지(원본 규격만 갱신)</option><option value="source">새 Excel 규격을 설계에도 적용</option></select></label>
+<label>배치 방式<select name="autoMode"><option value="inside">창고 내부 수용 우선</option><option value="order">로케이션 순서 우선</option><option value="aisle">통로 확보 우선</option></select></label>
+<label class="check"><input type="checkbox" name="allowRotation"> 자동 90° 회전 허용</label>
 <label class="check"><input type="checkbox" name="keepManual" checked> 기존 수동 랙 위치 유지</label>
 <label class="check"><input type="checkbox" name="preserveStructures" checked> 전체 교체 시 구조물 유지</label>
 <label class="check"><input type="checkbox" name="empty"> 빈 번호 후보 생성</label>
@@ -107,14 +110,18 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
       if (a.issues.some((i) => i.type === 'error') && !f.skip.checked) throw new Error('오류 행을 수정하거나 제외 허용을 직접 선택하세요.');
       if (!a.racks.length) throw new Error('유효한 랙이 없습니다.');
       const raw = Object.fromEntries([...new FormData(f).entries()]);
-      for (const k of ['keepManual', 'preserveStructures', 'empty']) raw[k] = f[k].checked;
-      Object.assign(raw, { perColumnSettings: state.perColumnSettings, autoMode: 'inside', allowRotation: false, allowWarnings: true, recordLayout: $('[data-record]').checked });
+      for (const k of ['keepManual', 'preserveStructures', 'empty', 'allowRotation']) raw[k] = f[k].checked;
+      Object.assign(raw, { perColumnSettings: state.perColumnSettings, allowWarnings: true, recordLayout: $('[data-record]').checked });
       const c = readExcelConfig(raw);
       const p = getProject();
-      const pr = buildProposal(p, a, c, { nextId, filename: state.filename, sheet: state.sheetName });
+      const res = buildCandidates(p, a, c, { nextId, filename: state.filename, sheet: state.sheetName });
+      const cand = res.candidates[res.choice];
+      const pr = { ...res.proposal, layout: cand.layout };
       const ws = spatialWarnings(pr.layout, p);
       pr.warnings = ws;
       state.proposal = pr;
+      state.candidates = res.candidates;
+      state.choice = res.choice;
       state.proposalProject = p;
       const key = JSON.stringify([c, ws.map((w) => w.text)]);
       if (state.ackKey !== key) {
@@ -126,7 +133,8 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
       svg.setAttribute('viewBox', `-1.2 -1.2 ${c.width + 2.4} ${c.depth + 2.4}`);
       svg.innerHTML = buildScene(pr.layout, p, { tool: 'none' }).svg;
       const racks = (l) => l.objects.filter((o) => o.kind === 'rack').length;
-      $('[data-pstats]').textContent = `대상 ${c.target.toUpperCase()} · 기존 ${racks(p.scenarios[c.target])}랙 / Excel 고유 ${a.racks.length}랙 / 적용 후 ${racks(pr.layout)}랙 · 일치 ${pr.changes.updated} / 오류 ${a.issues.filter((i) => i.type === 'error').length} / 경고 ${ws.length}`;
+      const cn = cand.result.counts;
+      $('[data-pstats]').textContent = `선택 후보: ${cand.name} · 내부 정상 ${cn.validInside}/${cn.total} · 대기 ${cn.waiting} | 대상 ${c.target.toUpperCase()} · 기존 ${racks(p.scenarios[c.target])}랙 / Excel 고유 ${a.racks.length}랙 / 적용 후 ${racks(pr.layout)}랙 · 일치 ${pr.changes.updated} / 오류 ${a.issues.filter((i) => i.type === 'error').length} / 경고 ${ws.length}`;
       $('[data-changes]').textContent = `신규 ${pr.changes.added} / 기존 갱신 ${pr.changes.updated} / 규격 후보 ${pr.changes.dimensions} / 누락 ${pr.changes.missing} / 제거 승인 후보 ${pr.changes.deleted}랙 + 구조물 ${pr.changes.structuresDeleted || 0} / 업데이트 모드 신규 제외 ${pr.changes.skippedNew} · 자재 추가 ${pr.changes.itemsAdded} / 제거 ${pr.changes.itemsRemoved} / 값 변경 ${pr.changes.itemsChanged}`;
       $('[data-spatial]').innerHTML = ws.map((w) => `<div class="issue-warning">${esc(w.text)}</div>`).join('') || '<p class="info">설정 기준 공간 경고 없음</p>';
     } catch (err) {
@@ -159,7 +167,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal }) 
       msg.textContent = '최종 적용 확인을 취소했습니다. 기존 배치는 유지됩니다.';
       return;
     }
-    const r = await applyProposal(pr, { filename: state.filename, sheet: state.sheetName, analysis: structuredClone(state.analysis), acknowledged: $('[data-ack]').checked, candidate: '기존 배치 규칙' });
+    const r = await applyProposal(pr, { filename: state.filename, sheet: state.sheetName, analysis: structuredClone(state.analysis), acknowledged: $('[data-ack]').checked, candidate: state.candidates[state.choice].name });
     if (r?.ok) {
       msg.textContent = '';
       dialog.close();

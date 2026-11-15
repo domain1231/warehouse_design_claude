@@ -30,8 +30,8 @@
 | F-020 | 색상 범례·3종 지표 | 75-storage-appearance | 임계값·색상 | 지표 분리 표시 | theme, settings | warehouse/appearance, ui/inspector | L2, E2E colors | IMPLEMENTING | 표시 모드 4종·높이 집계 3정책·임계값/색·사용자 지정 색·기본 색 복원·실행취소 기준본 일치(L2 13사례). 남음: UI 색(vThemeFields·프리셋), 복원 미리보기 대화상자 |
 | F-021 | Excel 읽기·매핑·로케이션 | 40-excel EX.readFile | XLSX/CSV, 머리글, 매핑 | 원본 의미 보존, null 유지 | excelSnapshots | excel/xlsx, excel/analyze, ui/excel-dialog | XL01–XL05, XL10, X1, unit xlsx, E2E excel | DONE | XLSX·CSV 읽기, 머리글 탐지, 자동 매핑, 분석·규격 충돌 선택 기준본 일치(X1 6사례). 값 없는 매핑 요약 복사 추가 |
 | F-022 | 건물별 코드·기존 랙 매칭 | 70-scenarios EX.proposal (BUG-EXCEL-CODE-001) | 건물 설정 | ID·사용자 이름 보존 | R.key | excel/proposal | XL06–XL09, X2 | DONE | 생성·건물 키 매칭·병합/갱신·규격 재가져오기·누락 정책·보호 랙·구조물 기준본 W.base 일치(X2 6사례) |
-| F-023 | Excel 미리보기·적용 승인 | 90-auto-layout W.readiness/proof, EX.apply | 후보·경고 확인 | 승인 후보=적용 후보 | autoPlacement | ui/excel-dialog, excel/apply | XL11–XL13, E2E excel | IMPLEMENTING | 미리보기·경고 확인·잠금/최종 확인·미리보기 후 변경 감지 구현. 대안 후보(W.pack 5종)·후보 비교표는 Phase 6 |
-| F-024 | 기존 자동 배치 모드 | 90-auto-layout W.fits/scan/pack | 배치 설정 | 기존 후보 재현 | autoPlacement | placement/* | AL01–AL03 | NOT STARTED | — |
+| F-023 | Excel 미리보기·적용 승인 | 90-auto-layout W.readiness/proof, EX.apply | 후보·경고 확인 | 승인 후보=적용 후보 | autoPlacement | ui/excel-dialog, excel/apply | XL11–XL13, E2E excel | IMPLEMENTING | 미리보기·경고 확인·잠금/최종 확인·미리보기 후 변경 감지, 대안 후보 자동 선택(D-021). 후보 비교표·직접 선택은 Phase 6b |
+| F-024 | 기존 자동 배치 모드 | 90-auto-layout W.fits/scan/pack | 배치 설정 | 기존 후보 재현 | autoPlacement | autolayout/candidates | AL01–AL03, X2 | DONE | 내부·순서·통로 방식 후보 5~6종 생성·점수·선택 기준본 일치(X2 후보 10사례, 대기열 포함) |
 | F-025 | 열 우선 최대 수용 | 92-column-layout C.search | 열 우선 모드 | 열·번호 순서, 부분 수용 | autoPlacement | placement/column-layout | AL04–AL06, AL12, AL14 | NOT STARTED | — |
 | F-026 | 외부 대기·재수용 | 92-column-layout C.queue | 재수용 버튼 | 겹침 없음, 규격 유지 | objects | placement/external-queue | AL07–AL11, AL13 | NOT STARTED | — |
 | F-027 | BEFORE/AFTER·잠금·비교 | 70-scenarios | 잠금, 복제, 비교 | 독립성, 비교 출력 | scenarios | scenarios/* | SV09 | NOT STARTED | — |
