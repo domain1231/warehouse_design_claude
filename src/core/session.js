@@ -10,11 +10,28 @@
 // 편집은 검증에 실패하면 적용하지 않는다(프로젝트·이력 불변).
 import { createProject, validateProject, assertIndependent } from './project.js';
 import { createHistory } from './history.js';
+import { scanLayout, layoutSignature } from '../warehouse/constraints.js';
 
 export function projectValidator(p) {
   const v = validateProject(p);
   assertIndependent(v);
   return v;
+}
+
+/**
+ * 기준본 V.write 래퍼(90 W.storeResults)와 같이 저장 직전에 BEFORE/AFTER 배치 검사 결과를 프로젝트에 기록한다.
+ * 배치 지문이 같으면 기존 결과(검사 시각 포함)를 유지해 내용이 같은 저장이 생략되도록 한다.
+ * 열 우선 모드 배치의 확장 검사는 Phase 6 전까지 기존 결과를 그대로 둔다.
+ */
+export function storeScanResults(project, { now } = {}) {
+  const results = project.autoPlacement.results;
+  for (const k of ['before', 'after']) {
+    const layout = project.scenarios[k];
+    if (layout.autoPlacementRules?.mode === 'column') continue;
+    if (results[k]?.fingerprint === layoutSignature(layout, project)) continue;
+    results[k] = JSON.parse(JSON.stringify(scanLayout(layout, project, now ? { now } : undefined)));
+  }
+  return project;
 }
 
 export function createSession({ store, nextId, today, historyLimit = 60, autosave = true }) {
@@ -71,6 +88,7 @@ export function createSession({ store, nextId, today, historyLimit = 60, autosav
     state.status = 'saving';
     emit();
     try {
+      storeScanResults(state.project);
       const r = await store.save(state.project, { force, replaceCorrupt });
       state.project.persistence = structuredClone(r.persistence);
       state.status = 'saved';

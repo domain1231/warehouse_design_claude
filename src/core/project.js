@@ -9,6 +9,7 @@
 // - Golden Master G5(샘플·빈 프로젝트)와 일치해야 한다(tests/golden/G5-project.test.js).
 // - 아직 이식하지 않은 부분: 열 우선 모드 프로젝트의 검사 결과 재계산(92, W.scan 필요 — Phase 2·6).
 import { createIdGenerator } from './ids.js';
+import { isSimplePolygon } from '../geometry/polygons.js';
 
 export const SCHEMA_VERSION = '2.3.6';
 export const SUPPORTED_VERSIONS = Object.freeze([1, '2.0', '2.2', '2.3.1', '2.3.2', '2.3.3', '2.3.4', '2.3.5', '2.3.6']);
@@ -237,22 +238,6 @@ export function createProject({ sample = true, nextId = createIdGenerator(), tod
 }
 
 // ---------- 검증 ----------
-
-function isSimplePolygon(v) {
-  const n = v.length;
-  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-  const intersects = (a, b, c, d) => {
-    const d1 = cross(c, d, a), d2 = cross(c, d, b), d3 = cross(a, b, c), d4 = cross(a, b, d);
-    return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
-  };
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      if (j === i + 1 || (i === 0 && j === n - 1)) continue;
-      if (intersects(v[i], v[(i + 1) % n], v[j], v[(j + 1) % n])) return false;
-    }
-  }
-  return true;
-}
 
 function validateColumnOptions(o) { // 92 C.validateOptions
   if (!isPlain(o)) fail('열 배치 기준 형식 오류');

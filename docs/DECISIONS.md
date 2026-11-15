@@ -51,3 +51,11 @@
 ## D-010 편집 세션과 자동 저장 (2026-11-11, Phase 1b-2)
 - 결정: `src/core/session.js`가 편집 확정(복사본 수정 → 검증 → 실행취소 기록 → 자동 저장)과 저장 상태(saved/unsaved/saving/error)를 담당한다. 검증 실패 편집은 적용·기록·저장하지 않는다. 저장 실패 시 편집은 메모리에 남고 상태는 error(code: QUOTA/CONFLICT/CORRUPT/VERIFY/…)이다.
 - 기준본과 같이 편집마다 자동 저장한다. 기준본 데이터로 시작하면 안내를 표시하고 첫 저장 전까지 unsaved로 둔다.
+
+## D-011 공간검사: 기준본 래퍼 체인을 결과 기준으로 펼침 (2026-11-11, Phase 2)
+- 기준본 `warnings`(10 기본 → 40 이격·외벽 → 50 통로 유효/목표 폭·침범·출입문 연결)와 `W.scan`/`W.signature`(90, 92 래핑)를 `src/warehouse/constraints.js` 한 모듈로 펼쳤다. 다각형·충돌·통로 유효 폭은 `src/geometry/{polygons,collision,clearance}.js` 순수 함수.
+- 동등성 기준은 기준본 결과 자체다: 경고 문구·순서·지문, 집계(counts), 대기·설계 간격까지 `tools/spatial-diff.mjs`로 기준본 일반본에서 받은 판정(`fixtures/legacy/spatial-cases.json`)과 비교한다(G2 11, S1 21사례). 숫자 표기는 기준본 `fmt`(ko-KR)를 `src/core/format.js`로 옮겼다.
+- 저장 직전에 BEFORE/AFTER 검사 결과를 기록한다(기준본 V.write 래퍼 `W.storeResults`). 배치 지문이 같으면 이전 결과를 유지해 내용이 같은 저장은 UNCHANGED로 생략된다.
+- 열 우선(column) 배치의 확장 검사·결과 재계산(92)은 자동 배치와 함께 Phase 6에서 이식한다. 그 전까지 `scanLayout`은 column 모드에서 오류를 던지고, 저장 시에는 기존 결과를 건드리지 않는다.
+- 성능: 랙 500 + 벽 6 + 통로 4 배치 검사 중앙값 약 35ms(Linux, Node 24, 7회). 브라우저·Windows는 NOT RUN.
+

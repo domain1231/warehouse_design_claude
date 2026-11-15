@@ -1,0 +1,1863 @@
+{
+ "baseline": "v2.4.1 normal build",
+ "note": "SYNTHETIC; regenerate with tools/spatial-diff.mjs when cases change",
+ "results": [
+  {
+   "name": "내부 벽 이격 0.1m, 기준 0.3m (BUG-SCAN-001)",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 1,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 1,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "2724c9b059607038:515",
+    "footprint": 0.72,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "actualDistance": 0.1,
+        "blocking": true,
+        "key": "wall-clearance:R1:W1",
+        "rackCode": "R1",
+        "rackId": "R1",
+        "requiredDistance": 0.3,
+        "rule": "wallClearance",
+        "shortfall": 0.2,
+        "targets": [
+         {
+          "code": "W1",
+          "id": "W1"
+         }
+        ],
+        "text": "R1 · 내부 벽 최소 이격 미달 · 기준 0.3m / 실제 0.1m / 부족 0.2m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1",
+       "W1"
+      ],
+      "key": "wall-clearance:R1:W1",
+      "spatial": true,
+      "text": "R1 · 내부 벽 최소 이격 미달"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1",
+      "W1"
+     ],
+     "key": "wall-clearance:R1:W1",
+     "spatial": true,
+     "text": "R1 · 내부 벽 최소 이격 미달"
+    }
+   ]
+  },
+  {
+   "name": "회전 벽·회전 랙 이격",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 1,
+     "validInside": 1,
+     "waiting": 0
+    },
+    "fingerprint": "ac883ee5c80ccf59:517",
+    "footprint": 0.72,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": []
+   },
+   "warnings": []
+  },
+  {
+   "name": "벽과 겹침(구조 충돌)",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 1,
+     "total": 1,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "5c06b9cf3b2b5f13:515",
+    "footprint": 0.72,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "pair:R1:W1",
+        "targets": [
+         {
+          "code": "W1",
+          "id": "W1"
+         }
+        ],
+        "text": "R1 ↔ W1 · 객체 충돌",
+        "type": "structureCollision"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1",
+       "W1"
+      ],
+      "key": "pair:R1:W1",
+      "spatial": true,
+      "text": "R1 ↔ W1 · 객체 충돌"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1",
+      "W1"
+     ],
+     "key": "pair:R1:W1",
+     "spatial": true,
+     "text": "R1 ↔ W1 · 객체 충돌"
+    }
+   ]
+  },
+  {
+   "name": "외벽 이격 부족",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 1,
+     "gap": 2,
+     "inside": 2,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 3,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "5d774335d29bef37:608",
+    "footprint": 2.16,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "actualDistance": 0.05,
+        "blocking": true,
+        "key": "clearance:R1",
+        "rackCode": "R1",
+        "rackId": "R1",
+        "requiredDistance": 0.2,
+        "rule": "outerWallClearance",
+        "shortfall": 0.15,
+        "targets": [],
+        "text": "R1 · 외벽 최소 이격 0.2m 미달 · 기준 0.2m / 실제 0.05m / 부족 0.15m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 50,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "boundary:R2",
+        "targets": [],
+        "text": "R2 · 창고 경계 이탈",
+        "type": "boundary"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R3",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R3",
+      "issues": [
+       {
+        "actualDistance": 0.15,
+        "blocking": true,
+        "key": "clearance:R3",
+        "rackCode": "R3",
+        "rackId": "R3",
+        "requiredDistance": 0.2,
+        "rule": "outerWallClearance",
+        "shortfall": 0.05,
+        "targets": [],
+        "text": "R3 · 외벽 최소 이격 0.2m 미달 · 기준 0.2m / 실제 0.15m / 부족 0.05m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R2"
+      ],
+      "key": "boundary:R2",
+      "spatial": true,
+      "text": "R2 · 창고 경계 이탈"
+     },
+     {
+      "ids": [
+       "R1"
+      ],
+      "key": "clearance:R1",
+      "spatial": true,
+      "text": "R1 · 외벽 최소 이격 0.2m 미달"
+     },
+     {
+      "ids": [
+       "R3"
+      ],
+      "key": "clearance:R3",
+      "spatial": true,
+      "text": "R3 · 외벽 최소 이격 0.2m 미달"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R2"
+     ],
+     "key": "boundary:R2",
+     "spatial": true,
+     "text": "R2 · 창고 경계 이탈"
+    },
+    {
+     "ids": [
+      "R1"
+     ],
+     "key": "clearance:R1",
+     "spatial": true,
+     "text": "R1 · 외벽 최소 이격 0.2m 미달"
+    },
+    {
+     "ids": [
+      "R3"
+     ],
+     "key": "clearance:R3",
+     "spatial": true,
+     "text": "R3 · 외벽 최소 이격 0.2m 미달"
+    }
+   ]
+  },
+  {
+   "name": "랙 회전 충돌",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 2,
+     "rackCollision": 1,
+     "structureCollision": 0,
+     "total": 2,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "9ce40eae30ea33c2:522",
+    "footprint": 1.44,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "pair:R1:R2",
+        "targets": [
+         {
+          "code": "R2",
+          "id": "R2"
+         }
+        ],
+        "text": "R1 ↔ R2 · 객체 충돌",
+        "type": "rackCollision"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "pair:R1:R2",
+        "targets": [
+         {
+          "code": "R1",
+          "id": "R1"
+         }
+        ],
+        "text": "R1 ↔ R2 · 객체 충돌",
+        "type": "rackCollision"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1",
+       "R2"
+      ],
+      "key": "pair:R1:R2",
+      "spatial": true,
+      "text": "R1 ↔ R2 · 객체 충돌"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1",
+      "R2"
+     ],
+     "key": "pair:R1:R2",
+     "spatial": true,
+     "text": "R1 ↔ R2 · 객체 충돌"
+    }
+   ]
+  },
+  {
+   "name": "기둥·보관불가·출입문 충돌",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 3,
+     "rackCollision": 0,
+     "structureCollision": 3,
+     "total": 3,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "1a7302d154fedf5d:859",
+    "footprint": 2.16,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "pair:R1:C1",
+        "targets": [
+         {
+          "code": "C1",
+          "id": "C1"
+         }
+        ],
+        "text": "R1 ↔ C1 · 객체 충돌",
+        "type": "structureCollision"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "pair:R2:B1",
+        "targets": [
+         {
+          "code": "B1",
+          "id": "B1"
+         }
+        ],
+        "text": "R2 ↔ B1 · 객체 충돌",
+        "type": "structureCollision"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R3",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R3",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "pair:R3:D1",
+        "targets": [
+         {
+          "code": "D1",
+          "id": "D1"
+         }
+        ],
+        "text": "R3 ↔ D1 · 출입문 개방 안전 구역 침범",
+        "type": "structureCollision"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1",
+       "C1"
+      ],
+      "key": "pair:R1:C1",
+      "spatial": true,
+      "text": "R1 ↔ C1 · 객체 충돌"
+     },
+     {
+      "ids": [
+       "R2",
+       "B1"
+      ],
+      "key": "pair:R2:B1",
+      "spatial": true,
+      "text": "R2 ↔ B1 · 객체 충돌"
+     },
+     {
+      "ids": [
+       "R3",
+       "D1"
+      ],
+      "key": "pair:R3:D1",
+      "spatial": true,
+      "text": "R3 ↔ D1 · 출입문 개방 안전 구역 침범"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1",
+      "C1"
+     ],
+     "key": "pair:R1:C1",
+     "spatial": true,
+     "text": "R1 ↔ C1 · 객체 충돌"
+    },
+    {
+     "ids": [
+      "R2",
+      "B1"
+     ],
+     "key": "pair:R2:B1",
+     "spatial": true,
+     "text": "R2 ↔ B1 · 객체 충돌"
+    },
+    {
+     "ids": [
+      "R3",
+      "D1"
+     ],
+     "key": "pair:R3:D1",
+     "spatial": true,
+     "text": "R3 ↔ D1 · 출입문 개방 안전 구역 침범"
+    }
+   ]
+  },
+  {
+   "name": "작업 공간과 겹친 랙은 경고 없음",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 1,
+     "validInside": 1,
+     "waiting": 0
+    },
+    "fingerprint": "ebd1df5dc5a0c7df:514",
+    "footprint": 0.72,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": []
+   },
+   "warnings": []
+  },
+  {
+   "name": "통로 침범(유효 폭 부족)",
+   "scan": {
+    "counts": {
+     "aisle": 2,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 1,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "20fd87f35fb5e227:518",
+    "footprint": 0.96,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "aisle-effective:A1",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "A1 · 통로 폭 부족 1m / 최소 1.2m · 부족 0.2m",
+        "type": "aisle"
+       },
+       {
+        "blocking": true,
+        "key": "aisle-intrusion:A1:R1",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "R1 → A1 · 보호 통로 침범 (유효 폭 1m)",
+        "type": "aisle"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "A1",
+       "R1"
+      ],
+      "key": "aisle-effective:A1",
+      "spatial": true,
+      "text": "A1 · 통로 폭 부족 1m / 최소 1.2m · 부족 0.2m"
+     },
+     {
+      "ids": [
+       "A1",
+       "R1"
+      ],
+      "key": "aisle-intrusion:A1:R1",
+      "spatial": true,
+      "text": "R1 → A1 · 보호 통로 침범 (유효 폭 1m)"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "A1",
+      "R1"
+     ],
+     "key": "aisle-effective:A1",
+     "spatial": true,
+     "text": "A1 · 통로 폭 부족 1m / 최소 1.2m · 부족 0.2m"
+    },
+    {
+     "ids": [
+      "A1",
+      "R1"
+     ],
+     "key": "aisle-intrusion:A1:R1",
+     "spatial": true,
+     "text": "R1 → A1 · 보호 통로 침범 (유효 폭 1m)"
+    }
+   ]
+  },
+  {
+   "name": "좁은 통로(최소 폭 미달)",
+   "scan": {
+    "counts": {
+     "aisle": 1,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 0,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 0,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "67541bfe1f694d1a:433",
+    "footprint": 0,
+    "rows": [],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "A1"
+      ],
+      "key": "aisle-effective:A1",
+      "spatial": true,
+      "text": "A1 · 통로 폭 부족 0.9m / 최소 1.2m · 부족 0.3m"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "A1"
+     ],
+     "key": "aisle-effective:A1",
+     "spatial": true,
+     "text": "A1 · 통로 폭 부족 0.9m / 최소 1.2m · 부족 0.3m"
+    }
+   ]
+  },
+  {
+   "name": "통로 목표 폭 미달(검토 경고)",
+   "scan": {
+    "counts": {
+     "aisle": 1,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 0,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 0,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "935f3c47f12ec11:433",
+    "footprint": 0,
+    "rows": [],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "A1"
+      ],
+      "key": "aisle-effective-target:A1",
+      "spatial": false,
+      "text": "A1 · 유효 폭 1.3m / 목표 1.5m 미달"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "A1"
+     ],
+     "key": "aisle-effective-target:A1",
+     "spatial": false,
+     "text": "A1 · 유효 폭 1.3m / 목표 1.5m 미달"
+    }
+   ]
+  },
+  {
+   "name": "L자 다각형 통로와 장애물",
+   "scan": {
+    "counts": {
+     "aisle": 3,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 1,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "eddb749ea4cfffe6:646",
+    "footprint": 0.72,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "aisle-effective:A1",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         },
+         {
+          "code": "C1",
+          "id": "C1"
+         }
+        ],
+        "text": "A1 · 통로 폭 부족 1.1m / 최소 1.2m · 부족 0.1m",
+        "type": "aisle"
+       },
+       {
+        "blocking": true,
+        "key": "aisle-intrusion:A1:R1",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "R1 → A1 · 보호 통로 침범 (유효 폭 1.1m)",
+        "type": "aisle"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "A1",
+       "R1",
+       "C1"
+      ],
+      "key": "aisle-effective:A1",
+      "spatial": true,
+      "text": "A1 · 통로 폭 부족 1.1m / 최소 1.2m · 부족 0.1m"
+     },
+     {
+      "ids": [
+       "A1",
+       "R1"
+      ],
+      "key": "aisle-intrusion:A1:R1",
+      "spatial": true,
+      "text": "R1 → A1 · 보호 통로 침범 (유효 폭 1.1m)"
+     },
+     {
+      "ids": [
+       "A1",
+       "C1"
+      ],
+      "key": "aisle-intrusion:A1:C1",
+      "spatial": true,
+      "text": "C1 → A1 · 보호 통로 침범 (유효 폭 1.1m)"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "A1",
+      "R1",
+      "C1"
+     ],
+     "key": "aisle-effective:A1",
+     "spatial": true,
+     "text": "A1 · 통로 폭 부족 1.1m / 최소 1.2m · 부족 0.1m"
+    },
+    {
+     "ids": [
+      "A1",
+      "R1"
+     ],
+     "key": "aisle-intrusion:A1:R1",
+     "spatial": true,
+     "text": "R1 → A1 · 보호 통로 침범 (유효 폭 1.1m)"
+    },
+    {
+     "ids": [
+      "A1",
+      "C1"
+     ],
+     "key": "aisle-intrusion:A1:C1",
+     "spatial": true,
+     "text": "C1 → A1 · 보호 통로 침범 (유효 폭 1.1m)"
+    }
+   ]
+  },
+  {
+   "name": "출입문 연결 통로: 연결됨·끊김",
+   "scan": {
+    "counts": {
+     "aisle": 1,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 0,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 0,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "e34db980b47bea04:601",
+    "footprint": 0,
+    "rows": [],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "A2",
+       "D1"
+      ],
+      "key": "aisle-door-link:A2",
+      "spatial": true,
+      "text": "A2 · 지정 출입문 개방 구역과 연결되지 않음"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "A2",
+      "D1"
+     ],
+     "key": "aisle-door-link:A2",
+     "spatial": true,
+     "text": "A2 · 지정 출입문 개방 구역과 연결되지 않음"
+    }
+   ]
+  },
+  {
+   "name": "통로 검사 범위 지정(scopeIds)",
+   "scan": {
+    "counts": {
+     "aisle": 2,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 2,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 2,
+     "validInside": 1,
+     "waiting": 0
+    },
+    "fingerprint": "56b397715ded5285:605",
+    "footprint": 1.92,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "aisle-effective:A1",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "A1 · 통로 폭 부족 1m / 최소 1.2m · 부족 0.2m",
+        "type": "aisle"
+       },
+       {
+        "blocking": true,
+        "key": "aisle-intrusion:A1:R2",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "R2 → A1 · 보호 통로 침범 (유효 폭 1m)",
+        "type": "aisle"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "A1",
+       "R2"
+      ],
+      "key": "aisle-effective:A1",
+      "spatial": true,
+      "text": "A1 · 통로 폭 부족 1m / 최소 1.2m · 부족 0.2m"
+     },
+     {
+      "ids": [
+       "A1",
+       "R2"
+      ],
+      "key": "aisle-intrusion:A1:R2",
+      "spatial": true,
+      "text": "R2 → A1 · 보호 통로 침범 (유효 폭 1m)"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "A1",
+      "R2"
+     ],
+     "key": "aisle-effective:A1",
+     "spatial": true,
+     "text": "A1 · 통로 폭 부족 1m / 최소 1.2m · 부족 0.2m"
+    },
+    {
+     "ids": [
+      "A1",
+      "R2"
+     ],
+     "key": "aisle-intrusion:A1:R2",
+     "spatial": true,
+     "text": "R2 → A1 · 보호 통로 침범 (유효 폭 1m)"
+    }
+   ]
+  },
+  {
+   "name": "적재율 초과·천장 높이 초과",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 0,
+     "inside": 2,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 2,
+     "validInside": 2,
+     "waiting": 0
+    },
+    "fingerprint": "ec17f114bc39dbb4:517",
+    "footprint": 1.44,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1"
+      ],
+      "key": "over:R1",
+      "spatial": false,
+      "text": "R1 · 적재율 120% 초과"
+     },
+     {
+      "ids": [
+       "R2"
+      ],
+      "key": "height:R2",
+      "spatial": false,
+      "text": "R2 · 천장 높이 초과"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1"
+     ],
+     "key": "over:R1",
+     "spatial": false,
+     "text": "R1 · 적재율 120% 초과"
+    },
+    {
+     "ids": [
+      "R2"
+     ],
+     "key": "height:R2",
+     "spatial": false,
+     "text": "R2 · 천장 높이 초과"
+    }
+   ]
+  },
+  {
+   "name": "경계 이탈(일반·회전)",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 3,
+     "gap": 0,
+     "inside": 0,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 3,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "6af025349b0509c6:608",
+    "footprint": 2.16,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 300,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "boundary:R1",
+        "targets": [],
+        "text": "R1 · 창고 경계 이탈",
+        "type": "boundary"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 736.396103068,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "boundary:R2",
+        "targets": [],
+        "text": "R2 · 창고 경계 이탈",
+        "type": "boundary"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R3",
+      "excess": {
+       "bottom": 300,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R3",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "boundary:R3",
+        "targets": [],
+        "text": "R3 · 창고 경계 이탈",
+        "type": "boundary"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1"
+      ],
+      "key": "boundary:R1",
+      "spatial": true,
+      "text": "R1 · 창고 경계 이탈"
+     },
+     {
+      "ids": [
+       "R2"
+      ],
+      "key": "boundary:R2",
+      "spatial": true,
+      "text": "R2 · 창고 경계 이탈"
+     },
+     {
+      "ids": [
+       "R3"
+      ],
+      "key": "boundary:R3",
+      "spatial": true,
+      "text": "R3 · 창고 경계 이탈"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1"
+     ],
+     "key": "boundary:R1",
+     "spatial": true,
+     "text": "R1 · 창고 경계 이탈"
+    },
+    {
+     "ids": [
+      "R2"
+     ],
+     "key": "boundary:R2",
+     "spatial": true,
+     "text": "R2 · 창고 경계 이탈"
+    },
+    {
+     "ids": [
+      "R3"
+     ],
+     "key": "boundary:R3",
+     "spatial": true,
+     "text": "R3 · 창고 경계 이탈"
+    }
+   ]
+  },
+  {
+   "name": "최소 간격 0.3: 0.299 위반, 0.3 충족",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 1,
+     "inside": 4,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 4,
+     "validInside": 2,
+     "waiting": 0
+    },
+    "fingerprint": "a67d4dfc8676979:689",
+    "footprint": 2.88,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "gap:R1:R2",
+        "targets": [
+         {
+          "code": "R2",
+          "id": "R2"
+         }
+        ],
+        "text": "R1 ↔ R2 · 여유 0.3m < 0.3m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "gap:R1:R2",
+        "targets": [
+         {
+          "code": "R1",
+          "id": "R1"
+         }
+        ],
+        "text": "R1 ↔ R2 · 여유 0.3m < 0.3m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R3",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R3",
+      "issues": [],
+      "waiting": false
+     },
+     {
+      "code": "R4",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R4",
+      "issues": [],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1",
+       "R2"
+      ],
+      "key": "gap:R1:R2",
+      "spatial": true,
+      "text": "R1 ↔ R2 · 여유 0.3m < 0.3m"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1",
+      "R2"
+     ],
+     "key": "gap:R1:R2",
+     "spatial": true,
+     "text": "R1 ↔ R2 · 여유 0.3m < 0.3m"
+    }
+   ]
+  },
+  {
+   "name": "배치 규칙 설계 간격(열 내·열 간)",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 3,
+     "inside": 3,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 3,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "c90c650badaf2901:675",
+    "footprint": 2.16,
+    "rows": [
+     {
+      "code": "A1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "A1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "design-gap:A1:A2",
+        "targets": [
+         {
+          "code": "A2",
+          "id": "A2"
+         }
+        ],
+        "text": "지정 랙/열 간격 0.3m 미달",
+        "type": "gap"
+       },
+       {
+        "blocking": true,
+        "key": "design-gap:A1:B1",
+        "targets": [
+         {
+          "code": "B1",
+          "id": "B1"
+         }
+        ],
+        "text": "지정 랙/열 간격 0.6m 미달",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "A2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "A2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "design-gap:A1:A2",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "지정 랙/열 간격 0.3m 미달",
+        "type": "gap"
+       },
+       {
+        "blocking": true,
+        "key": "design-gap:A2:B1",
+        "targets": [
+         {
+          "code": "B1",
+          "id": "B1"
+         }
+        ],
+        "text": "지정 랙/열 간격 0.6m 미달",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "B1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "B1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "design-gap:A1:B1",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "지정 랙/열 간격 0.6m 미달",
+        "type": "gap"
+       },
+       {
+        "blocking": true,
+        "key": "design-gap:A2:B1",
+        "targets": [
+         {
+          "code": "A2",
+          "id": "A2"
+         }
+        ],
+        "text": "지정 랙/열 간격 0.6m 미달",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": []
+   },
+   "warnings": []
+  },
+  {
+   "name": "배치 규칙 통로 모드(aisleTarget 적용)",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 1,
+     "inside": 2,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 2,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "991e8f2ce064cc42:591",
+    "footprint": 1.44,
+    "rows": [
+     {
+      "code": "A1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "A1",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "design-gap:A1:A2",
+        "targets": [
+         {
+          "code": "A2",
+          "id": "A2"
+         }
+        ],
+        "text": "지정 랙/열 간격 1.2m 미달",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "A2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "A2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "design-gap:A1:A2",
+        "targets": [
+         {
+          "code": "A1",
+          "id": "A1"
+         }
+        ],
+        "text": "지정 랙/열 간격 1.2m 미달",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": []
+   },
+   "warnings": []
+  },
+  {
+   "name": "외벽 이격 중복 제거(전역 0.2 + 규칙 0.4)",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 1,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 1,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "b3849b60dec63566:509",
+    "footprint": 0.72,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "actualDistance": 0.1,
+        "blocking": true,
+        "key": "clearance:R1",
+        "rackCode": "R1",
+        "rackId": "R1",
+        "requiredDistance": 0.4,
+        "rule": "outerWallClearance",
+        "shortfall": 0.3,
+        "targets": [],
+        "text": "외벽 최소 이격 미달 · 기준 0.4m / 실제 0.1m / 부족 0.3m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1"
+      ],
+      "key": "clearance:R1",
+      "spatial": true,
+      "text": "R1 · 외벽 최소 이격 0.2m 미달"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1"
+     ],
+     "key": "clearance:R1",
+     "spatial": true,
+     "text": "R1 · 외벽 최소 이격 0.2m 미달"
+    }
+   ]
+  },
+  {
+   "name": "외부 대기 랙",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 1,
+     "gap": 0,
+     "inside": 1,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 2,
+     "validInside": 1,
+     "waiting": 1
+    },
+    "fingerprint": "b6e440c98db59dff:515",
+    "footprint": 1.44,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 3200,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "blocking": true,
+        "key": "boundary:R2",
+        "targets": [],
+        "text": "R2 · 창고 경계 이탈",
+        "type": "boundary"
+       },
+       {
+        "blocking": true,
+        "key": "waiting:R2",
+        "targets": [],
+        "text": "외부 대기 · 실제 창고 구역 아님",
+        "type": "waiting"
+       }
+      ],
+      "waiting": true
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R2"
+      ],
+      "key": "boundary:R2",
+      "spatial": true,
+      "text": "R2 · 창고 경계 이탈"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R2"
+     ],
+     "key": "boundary:R2",
+     "spatial": true,
+     "text": "R2 · 창고 경계 이탈"
+    }
+   ]
+  },
+  {
+   "name": "배치 단위 벽 이격(layout.wallGap)",
+   "scan": {
+    "counts": {
+     "aisle": 0,
+     "boundary": 0,
+     "gap": 2,
+     "inside": 2,
+     "rackCollision": 0,
+     "structureCollision": 0,
+     "total": 2,
+     "validInside": 0,
+     "waiting": 0
+    },
+    "fingerprint": "78cd63267e4acf2e:600",
+    "footprint": 1.44,
+    "rows": [
+     {
+      "code": "R1",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R1",
+      "issues": [
+       {
+        "actualDistance": 0.3,
+        "blocking": true,
+        "key": "clearance:R1",
+        "rackCode": "R1",
+        "rackId": "R1",
+        "requiredDistance": 0.5,
+        "rule": "outerWallClearance",
+        "shortfall": 0.2,
+        "targets": [],
+        "text": "R1 · 외벽 최소 이격 0.5m 미달 · 기준 0.5m / 실제 0.3m / 부족 0.2m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     },
+     {
+      "code": "R2",
+      "excess": {
+       "bottom": 0,
+       "left": 0,
+       "right": 0,
+       "top": 0
+      },
+      "id": "R2",
+      "issues": [
+       {
+        "actualDistance": 0.3,
+        "blocking": true,
+        "key": "wall-clearance:R2:W1",
+        "rackCode": "R2",
+        "rackId": "R2",
+        "requiredDistance": 0.5,
+        "rule": "wallClearance",
+        "shortfall": 0.2,
+        "targets": [
+         {
+          "code": "W1",
+          "id": "W1"
+         }
+        ],
+        "text": "R2 · 내부 벽 최소 이격 미달 · 기준 0.5m / 실제 0.3m / 부족 0.2m",
+        "type": "gap"
+       }
+      ],
+      "waiting": false
+     }
+    ],
+    "warehouseArea": 240,
+    "warnings": [
+     {
+      "ids": [
+       "R1"
+      ],
+      "key": "clearance:R1",
+      "spatial": true,
+      "text": "R1 · 외벽 최소 이격 0.5m 미달"
+     },
+     {
+      "ids": [
+       "R2",
+       "W1"
+      ],
+      "key": "wall-clearance:R2:W1",
+      "spatial": true,
+      "text": "R2 · 내부 벽 최소 이격 미달"
+     }
+    ]
+   },
+   "warnings": [
+    {
+     "ids": [
+      "R1"
+     ],
+     "key": "clearance:R1",
+     "spatial": true,
+     "text": "R1 · 외벽 최소 이격 0.5m 미달"
+    },
+    {
+     "ids": [
+      "R2",
+      "W1"
+     ],
+     "key": "wall-clearance:R2:W1",
+     "spatial": true,
+     "text": "R2 · 내부 벽 최소 이격 미달"
+    }
+   ]
+  }
+ ]
+}

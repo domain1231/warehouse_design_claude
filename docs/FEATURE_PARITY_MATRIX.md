@@ -20,10 +20,10 @@
 | F-010 | 정밀 좌표·스냅·키보드 이동 | 80-precision-labels | 방향키, 스냅 간격 | 1mm 정확 이동 | x/y | geometry/tolerance ✚, cad/snapping | CAD09 | NOT STARTED | — |
 | F-011 | 카메라·휠 확대 | 50-editor M.handleWheel/flushWheel | 휠, 핀치, 패널 스크롤 | 좌표 불변, 패널 스크롤 분리 | viewport | cad/camera | CAD10, CAD11 | NOT STARTED | — |
 | F-012 | 참고 도면·두 점 축척 | 35-reference | 이미지, 두 점+거리 | 축척 계산 | background | cad/reference | CAD12 | NOT STARTED | — |
-| F-013 | 회전 충돌 (SAT) | 10-geometry overlaps | — | 정확한 겹침 판정, 접촉은 충돌 아님(D-004) | objects | geometry/polygons, geometry/collision | GEO01, GEO08, G1 | IMPLEMENTING | G1 일치(기본연산 421쌍) — 경고 통합 전 |
-| F-014 | 간격·이격 (다각형 최소거리) | 10-geometry gap, warnings | 간격 설정 | 실제/요구/부족 거리 | settings | geometry/collision(gap), geometry/clearance | GEO02–GEO05, G1, G2 | IMPLEMENTING | G1 gap 일치 — 경고(G2) 전 |
-| F-015 | 경계 초과·통로 최소 폭 | 10-geometry warnings | 통로 설정 | 경고·차단 구분 | aisles | geometry/clearance | GEO06, GEO07 | NOT STARTED | — |
-| F-016 | 경고 중복 제거·분류 | 90-auto-layout W.scan (BUG-SCAN-001) | — | 중복 집계 없음 | warnings | warehouse/constraints | GEO09, GEO10 | NOT STARTED | — |
+| F-013 | 회전 충돌 (SAT) | 10-geometry overlaps | — | 정확한 겹침 판정, 접촉은 충돌 아님(D-004) | objects | geometry/polygons, geometry/collision | GEO01, GEO08, G1, G2, S1 | IMPLEMENTED | G1 421쌍·G2·S1(회전 랙·벽·기둥 충돌) 기준본 일치 |
+| F-014 | 간격·이격 (다각형 최소거리) | 10-geometry gap, warnings | 간격 설정 | 실제/요구/부족 거리 | settings | geometry/collision(gap), geometry/clearance | GEO02–GEO05, G1, G2, S1 | IMPLEMENTED | G1 gap·G2·S1(최소 간격 경계값, 벽·외벽 이격, 설계 간격) 기준본 일치 |
+| F-015 | 경계 초과·통로 최소 폭 | 10-geometry warnings | 통로 설정 | 경고·차단 구분 | aisles | geometry/clearance, warehouse/constraints | GEO06, GEO07, G2, S1 | IMPLEMENTED | 경계 이탈·통로 최소/목표 폭·침범·L자 통로·출입문 연결·scopeIds 기준본 일치. 경고/차단 정책 UI 전 |
+| F-016 | 경고 중복 제거·분류 | 90-auto-layout W.scan (BUG-SCAN-001) | — | 중복 집계 없음 | warnings | warehouse/constraints | GEO09, GEO10, G2, S1 | IMPLEMENTING | W.scan 집계·중복 제거(BUG-SCAN-001)·지문 기준본 일치. 열 우선 확장(92)은 Phase 6 |
 | F-017 | 원본/설계 규격 | 60-specifications | 규격 편집 | 원본 보존, 차이 표시 | spec | warehouse/racks | — (Phase 0 배정) | IMPLEMENTING | 기본값·검증(originalSpec/designSpec) G5·V1 일치 — 편집 UI 전 |
 | F-018 | 랙 상세 인포그래픽 | 65-panels-details | 더블클릭 | 선반별 자재·지표 | shelves | ui/panels | UI08 | NOT STARTED | — |
 | F-019 | ZONE·랙 번호 라벨 | 80-precision-labels | 라벨 설정 | 정방향·외부 표시 | rackLabels | cad/labels | UI09 | NOT STARTED | — |
