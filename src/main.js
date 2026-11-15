@@ -12,9 +12,11 @@ import { rackLabelParts, labelStatusText } from './cad/labels.js';
 import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js';
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
 import { pixelsPerMeter } from './cad/camera.js';
-import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
+import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, setLimit, setAspectLock, setAisleField, setReviewMark, LIMIT_COMMAND, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { setObjectColor, setColorMode, applyThresholdColors, resetColors } from './warehouse/appearance.js';
 import { renderInspector } from './ui/inspector.js';
+import { selectedCsvRows, SELECTED_CSV_NAME } from './warehouse/group-panel.js';
+import { parseScope } from './warehouse/inspector-info.js';
 import { createRoomPanel } from './ui/room-panel.js';
 import { applyRoom } from './warehouse/room.js';
 import { createAisleDialog } from './ui/aisle-dialog.js';
@@ -111,11 +113,8 @@ function renderShell(root) {
   const colorInputs = Object.fromEntries(['empty', 'low', 'mid', 'high', 'over', 'unknown'].map((k) => [k, $('color' + k[0].toUpperCase() + k.slice(1))]));
 
   // 오른쪽(기준본 sidebar.right): 선택 객체·공간 지표
-  const inspectorBox = $('inspector');
-  const inspector = el('div', { class: 'inspector', testid: 'inspector' });
-  const selWarn = el('div', { testid: 'selection-warnings' });
-  const detailBtn = button('open-detail', '선반별 자재 상세');
-  inspectorBox.append(inspector, detailBtn, selWarn);
+  const inspector = $('inspector');
+  inspector.dataset.testid = 'inspector';
   const selList = el('ul'); // 기준본에 없는 선택 목록: 화면에는 두지 않는다
 
   // 하단(기준본 sBottom): 재고기록·배치 이력 / 랙 목록·공간 검토
@@ -151,10 +150,10 @@ function renderShell(root) {
     labelMode: $('vLabelMode'), labelLayout: $('qLabelLayout'), labelPadding: $('qNumberPadding'), labelStatus: $('vLabelStatus'),
     vizMode: $('exViz'), heightPolicy: $('exHeightPolicy'), colorMode: $('vColorMode'), themeBtn: $('vThemeOpen'), applyColorsBtn: $('applyColors'),
     thrLow: $('thresholdLow'), thrHigh: $('thresholdHigh'), colorInputs,
-    wheelSelect, wheelReset: $('mWheelReset'), wheelStatus: $('mWheelStatus'), canvasWrap: $('canvasWrap'), plan: $('plan'), hint: $('canvasHint'), selStatus: $('selectionStatus'), selCount: $('selectedCount'), selList, selWarn,
+    wheelSelect, wheelReset: $('mWheelReset'), wheelStatus: $('mWheelStatus'), canvasWrap: $('canvasWrap'), plan: $('plan'), hint: $('canvasHint'), selStatus: $('selectionStatus'), selCount: $('selectedCount'), selList,
     scenBefore: $('rBefore'), scenAfter: $('rAfter'), rActive: $('rActive'), lockBtn: $('rLock'), lockState: $('rLockState'), cloneBtn: $('rClone'), seedAfter: $('seedAfter'), scenarioSelect: $('scenario'), compareBtn: $('compareBtn'), historyBtn: $('rHistory'),
     leftToggle: $('mLeftPanel'), rightToggle: $('mRightPanel'), bothClose: $('mBothClose'), bothOpen: $('mBothOpen'), bottomToggle: $('sBottomToggle'), bottomDefault: $('bDefaultLayout'), bottomGrip: $('sGrip'), bottom: $('sBottom'),
-    bottomSections: { inventory: invBox, layout: snapBox, racks: listBox, space: warnBox }, exportBtns, main: $('app'), metricsBody: $('spaceMetrics'), warnBody, listBody, legendBox: $('legend'), invBody, snapBody, detailBtn, excelBtn: $('exOpen'), alignXBtn: $('alignX'), alignYBtn: $('alignY'), distributeBtn: $('distribute'), distributeGap: $('distributeGap'),
+    bottomSections: { inventory: invBox, layout: snapBox, racks: listBox, space: warnBox }, exportBtns, main: $('app'), metricsBody: $('spaceMetrics'), warnBody, listBody, legendBox: $('legend'), invBody, snapBody, excelBtn: $('exOpen'), alignXBtn: $('alignX'), alignYBtn: $('alignY'), distributeBtn: $('distribute'), distributeGap: $('distributeGap'),
     name: $('projectName'), roomBody: $('roomBody'), refBody: $('refBody'), histDate: $('historyDate'), histSlider: $('dateSlider'), histMode: $('historyMode'), liveBtn: $('liveBtn'), histStatus: $('historyStatus'), toolButtons, rackType: $('newRackType'), newWidth: $('newWidth'), newDepth: $('newDepth'), newHeight: $('newHeight'), newUnit: $('newUnit'),
     rotateBtn: $('rotate'), duplicateBtn: $('duplicate'), deleteBtn: $('delete'), allowWarnings: $('mAllowWarnings'), snapOn: $('qSnap'), snapStep: $('qSnapStep'), keyStep: $('qKeyStep'), inspector, toast: $('toast'),
   };
@@ -182,6 +181,8 @@ async function start() {
   let sceneKey = null;
   let sceneScale = null;
   let sceneWarnings = [];
+  let lastScan = null; // 마지막 배치 검사 결과(선택 정보 패널의 위치·배치 검사 칸)
+  let multiTouch = false; // 기준본 multiTouchSelect: 켜면 클릭이 선택 토글
   const tracker = createWheelTracker();
   const wheel = { pending: 0, clientX: 0, clientY: 0, frame: 0 };
   const touches = new Map();
@@ -296,7 +297,7 @@ async function start() {
     if (scaleOnly) return;
     // 기준본 W.top: 현재(또는 과거 조회) 도면 재검사 한 줄 요약
     if (!preview) {
-      const chk = scanLayout(l, p);
+      const chk = lastScan = scanLayout(l, p);
       ui.wSummary.textContent = candidateSummary(chk);
       ui.wSummary.className = chk.rows?.some((x) => x.issues?.length) ? 'w-warning' : '';
       ui.wNote.textContent = '실제 설치 검토 전 설계안 · ' + (historyDate ? '과거 도면 재검사' : '현재 도면 재검사');
@@ -327,7 +328,6 @@ async function start() {
     const rs = os.filter((o) => o.kind === 'rack');
     ui.selStatus.textContent = rs.length ? `${rs.length}개 랙 · 면적 ${fmt(rs.reduce((a, o) => a + o.width * o.depth, 0), 3)}㎡` : `${os.length}개 객체 선택`;
     ui.selCount.textContent = String(os.length);
-    ui.detailBtn.hidden = !(os.length === 1 && rs.length === 1);
     const lockedNow = !!historyDate || isLocked(project());
     for (const b of ui.nudgeBtns) b.disabled = !os.length || lockedNow;
     ui.rackPalette.disabled = lockedNow;
@@ -336,17 +336,13 @@ async function start() {
     ui.excelStatus.textContent = linked.length ? `${linked.length}개 연결 랙 · ${linked.reduce((n, o) => n + rackItems(o).length, 0)}개 자재 위치` : '랙 → 선반 → 자재 계층으로 연결합니다.';
     ui.selList.replaceChildren(...os.slice(0, 50).map((o) => el('li', {}, `${o.code} · ${o.kind === 'rack' ? '랙' : o.kind}`)));
     if (os.length > 50) ui.selList.append(el('li', { class: 'muted' }, `외 ${os.length - 50}개`));
-    const ws = sceneWarnings.filter((w) => w.ids.some((id) => selected.has(id)));
-    ui.selWarn.innerHTML = !os.length ? '<div class="empty">도면에서 객체를 선택하세요.<br>좌표는 회전 전 좌상단 기준입니다.</div>'
-      : ws.length ? `<div class="warnbox">${ws.map((w) => esc(w.text)).join('<br>')}</div>` : '<p class="info">선택 객체에 공간 경고가 없습니다.</p>';
     ui.focus.disabled = !os.length;
     const locked = isLocked(project());
     const ro = locked || !!historyDate;
     for (const b of [ui.rotateBtn, ui.duplicateBtn, ui.deleteBtn]) b.disabled = !os.length || ro;
     const rackCount = os.filter((o) => o.kind === 'rack').length;
-    ui.detailBtn.disabled = !(os.length === 1 && os[0].kind === 'rack');
     for (const b of [ui.alignXBtn, ui.alignYBtn, ui.distributeBtn]) b.disabled = rackCount < 2 || ro;
-    if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)), objectColor: os.length === 1 ? { value: project().theme.objectColors[project().settings.scenario][os[0].id] || OBJECT_COLORS[os[0].kind] || project().settings.colors.unknown, onSet: (c) => editObjectColor(os[0].id, c) } : undefined, zone: os.length === 1 && os[0].kind === 'rack' ? rackLabelParts(os[0], project(), project().settings.scenario) : undefined, onZone: (name) => editZone(os[0], name) });
+    if (!preview) renderInspector(ui.inspector, { objects: os, layout: layout(), project: project(), selected, history: !!historyDate, locked, multiTouch, warnings: sceneWarnings, scan: lastScan, on: inspectorHandlers });
   }
 
   function showToast(text) {
@@ -441,6 +437,38 @@ async function start() {
     const dim = (field === 'width' || field === 'depth') && selected.size === 1;
     (dim ? command(DIMENSION_COMMAND, setDimension(id, field, raw), DIMENSION_COMMAND) : command('객체 수정', setField(id, field, fieldValue(field, raw, isNumber)))).then(() => renderPlan(true));
   }
+  // 선택 정보 패널(ui/inspector.js)의 동작. 모두 command(applyCommand)를 거쳐 실행취소에 기록되고, 실패하면 '전체 취소: …'를 알린다.
+  const redraw = (r) => { renderPlan(true); return r; };
+  const inspectorHandlers = {
+    change: editField,
+    limit: (id, key, raw) => command(LIMIT_COMMAND, setLimit(id, key, Number(raw)), LIMIT_COMMAND).then(redraw),
+    aspect: (id, v) => command('폭·깊이 비율 잠금', setAspectLock(id, v)).then(redraw),
+    lock: (id, v) => command('위치 잠금', setPositionLock(id, v)).then(redraw),
+    review: (id, on) => command(on ? '검토 중 표시' : '검토 중 표시 해제', setReviewMark(id, on)).then(redraw),
+    zone: (name) => editZone([...selected].map((id) => layout().objects.find((o) => o.id === id))[0], name),
+    color: (c) => editObjectColor([...selected][0], c),
+    openInfo: (id) => rackDetail.open(id),
+    physical: (id) => {
+      if (!confirm('현재 설계 치수를 실제 설비 변경으로 확인하여 기록합니까? Excel 원본 규격은 그대로 보존됩니다.')) return;
+      command(PHYSICAL_COMMAND, confirmPhysical(id, new Date().toISOString(), session.nextId()), PHYSICAL_COMMAND).then(redraw);
+    },
+    aisle: (id, key, raw) => {
+      let value = raw;
+      if (key === 'scopeIds') {
+        value = parseScope(raw, layout().objects);
+        if (!value) { showToast('검사 대상 랙 번호를 확인하세요.'); return renderPlan(true); }
+      }
+      return command('통로 검사 설정', setAisleField(id, key, value)).then(redraw);
+    },
+    multi: (v) => { multiTouch = v; },
+    group: (action) => groupDialog.open(action),
+    duplicate: () => duplicate(selectedObjects()),
+    remove: () => deleteSelected(),
+    undo: () => { if (!historyDate) guard(() => session.undo()); },
+    check: () => aisleDialog.open(),
+    compare: () => scenarioDialogs.openCompare(),
+    exportCsv: (racks) => csv(SELECTED_CSV_NAME, selectedCsvRows(racks)),
+  };
   async function addAt(kind, point) {
     const p = project();
     const add = addObjectAt(p, kind, point, { nextId: session.nextId, rack: { width: Number(ui.newWidth.value), depth: Number(ui.newDepth.value), height: Number(ui.newHeight.value), type: ui.rackType.value, unit: ui.newUnit.value } });
@@ -723,7 +751,6 @@ async function start() {
   ui.seedAfter.addEventListener('click', () => scenarioDialogs.openClone());
   ui.compareBtn.addEventListener('click', () => scenarioDialogs.openCompare());
   ui.historyBtn.addEventListener('click', () => scenarioDialogs.openHistory());
-  ui.detailBtn.addEventListener('click', () => rackDetail.open([...selected][0]));
   ui.alignXBtn.addEventListener('click', () => groupDialog.open('left'));
   ui.alignYBtn.addEventListener('click', () => groupDialog.open('top'));
   ui.distributeBtn.addEventListener('click', () => groupDialog.open('spaceX', { gap: ui.distributeGap.value }));
@@ -996,7 +1023,7 @@ async function start() {
     }
     const hit = e.target.closest?.('[data-id]')?.dataset.id;
     if (hit) {
-      const toggle = e.ctrlKey || e.metaKey, add = e.shiftKey;
+      const toggle = e.ctrlKey || e.metaKey || multiTouch, add = e.shiftKey;
       commitSelection(clickSelect(selected, hit, { toggle, add }));
       if (toggle || add || isLocked(project())) return;
       const p = toWorld(e.clientX, e.clientY);
