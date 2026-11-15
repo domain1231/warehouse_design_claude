@@ -81,6 +81,7 @@ test('확대율이 바뀌면 라벨이 다시 배치된다(화면 px 기준 크�
 
 test('ZONE 표시 이름: 적용·원본 복원·실행취소(Control+z), Excel 식별자는 그대로', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await page.locator('[data-testid=rack-list] [data-rack]').first().click();
   const id = await page.evaluate(() => window.__warehouseView.selected[0]);
   const raw = (await labels(page)).find((l) => l.labelFor === id).zone;
@@ -117,6 +118,7 @@ test('ZONE 표시 이름: 적용·원본 복원·실행취소(Control+z), Excel 
 
 test('최소 표시: 선택한 랙에만 라벨이 있고, 선택을 풀면 사라진다', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await pick(page, 'label-layout', 'minimal');
   assert.equal((await labels(page)).length, 0);
   await page.locator('[data-testid=rack-list] [data-rack]').first().click();

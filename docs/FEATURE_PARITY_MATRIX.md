@@ -40,9 +40,9 @@
 | F-030 | Quota 처리·백업 순환 | 75 V.track/V.restore (BUG-STORAGE-001) | — | 정상본 보존, 3/6개 순환 | layoutBackups | persistence/backups | SV04–SV07, SV12 | IMPLEMENTED | 최신 3개 전체 프로젝트 백업 링·배치 백업 6개 순환·Quota 안내·저장 실패 시 백업 되돌리기(D-026, 단위·E2E) |
 | F-031 | 저장소 진단·복구 다운로드 | 75 V.measureStorage/storageSnapshot | 저장소 관리 | 크기·단계 표시 | — | persistence/diagnostics | — (Phase 0 배정) | IMPLEMENTED | 저장소 관리 대화상자·복구 JSON 내려받기(D-026, E2E storage2) |
 | F-032 | JSON 내보내기·불러오기 | 30-editor-io | 파일 | 2.3.6 무손실 왕복 | Project | exports/json, persistence/migration | SV08, SV10 | IMPLEMENTED | JSON 불러오기(12MB·교체 보호·백업 후 교체·실행취소)·날짜 붙은 내보내기, 기준본 저장 형식 양방향 호환(D-026) |
-| F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | NOT STARTED | — |
+| F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | IMPLEMENTED | 랙 목록·이력·양식·비교 요약 CSV, 보고서 SVG·PNG·인쇄 기준본 일치(X3 4사례, D-028) |
 | F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | warehouse/records, ui/records-panel | UI04, P3, E1, E2E details | IMPLEMENTED |재고 기록 조회(범위·검색·null 보존), 배치 이력 기록·복원·비교 기준본 일치 — 과거 날짜 읽기 전용 조회 모드(Phase 7) 전 · 과거 날짜 조회 모드(읽기 전용) 기준본 일치(H1 7사례, D-025) |
-| F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels, main | UI06, UI07, E2E panels | IMPLEMENTING | 좌우 패널 접기·저장·축척 불변(E2E) — 하단 패널(재고·배치 이력) 전 |
+| F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels, main | UI06, UI07, E2E panels | IMPLEMENTED | 좌우 패널 접기·하단 패널(접기·복원·구역·높이 조절) 저장(D-028) |
 | F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | IMPLEMENTED | 단위(2단계 감지·경쟁) + 브라우저 E2E(알림·차단·확인 후 덮어쓰기) |
 | F-036 | 프로그램 정보·버전 표시 | 99-bootstrap | — | 앱/스키마 버전 분리 | — | main | smoke E2E | IMPLEMENTED | TESTING |
 
@@ -50,6 +50,6 @@
 | F-039 | 휠 감도 설정·저장 | 50-editor M.setWheelMode | 감도 선택 | 프로젝트와 독립 저장, 손상 시 안전 기본값 | 별도 키 | cad/wheel-settings | unit plan, E2E plan | IMPLEMENTED | 저장·쓰기 후 읽기·손상 시 기본값·기준본 키 읽기 전용 |
 | F-040 | 탐색 예산·중단 사유 | 92 C.limits/C.check | — | probe 상한, 사유 표시(D-005 결정적) | autoPlacement | placement/candidates | AL12 | IMPLEMENTED | 탐색 예산(probe·시작점·오프셋·후보)만으로 중단, 중단 사유 표시, 시간 상한 제거(D-023, 사용자 확정) |
 | F-041 | 파생 검사 결과 재계산 | 92 JSON 복원 후 재검사 | JSON 불러오기 | 저장된 집계 불신, 현재 좌표로 재계산 | autoPlacement | placement/diagnostics | — | NOT STARTED | — |
-| F-042 | 모바일 드로어·레이아웃 | shell, 65 | 좁은 화면 | 가로 넘침 없음, 드로어 동작 | — | ui/panels | — | NOT STARTED | — |
+| F-042 | 모바일 드로어·레이아웃 | shell, 65 | 좁은 화면 | 가로 넘침 없음, 드로어 동작 | — | ui/panels | — | DEFERRED | 사용자 지시(2026-11-15)로 요청 전까지 개발·검사 보류 |
 
 ✚ 기반 모듈 구현됨 (`src/geometry/tolerance.js`, `src/core/ids.js`). 기능 행 자체는 아직 NOT STARTED.

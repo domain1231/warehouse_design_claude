@@ -93,6 +93,7 @@ test('임계값·색 적용: 범례 문구가 바뀌고, 60/60은 거부되어 �
 
 test('객체별 지정색: 적용하면 사용자 지정 모드·채움색이 바뀌고 Control+z로 복원, 해제는 항목만 지운다', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await page.locator('[data-testid=rack-list] [data-rack]').first().click();
   const id = await page.evaluate(() => window.__warehouseView.selected[0]);
   const before = await rackFill(page, id);
@@ -120,6 +121,7 @@ test('객체별 지정색: 적용하면 사용자 지정 모드·채움색이 �
 
 test('전체 복원: 확인 후 기본 색·기준·지정색·데이터 기반 모드로 돌아가고, 취소하면 그대로', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await page.locator('[data-testid=threshold-low]').fill('30');
   await page.locator('[data-testid=color-over]').fill('#010203');
   await page.locator('[data-testid=apply-colors]').click();
