@@ -1,9 +1,9 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#21은 main에 병합됨.
+- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#26은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 106 + Golden 278(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 63. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -112,6 +112,9 @@
 ## Phase 8 결과 (2026-11-15, feature/phase8-backups, PR #23 위에 쌓음)
 - `src/persistence/backups.js`, 세션 백업 연결·replaceProject·recoveryText, `src/ui/storage-dialogs.js`(D-026). 단위 backups 5 + session-backups 5, E2E storage2 5.
 - 원격의 `feature/phase8-storage`는 폐기된 이전 브랜치(강제 푸시 금지로 새 이름 사용). 삭제는 사용자 판단.
+
+## 매트릭스 감사·잔여 기능 (2026-11-15, chore/matrix-audit)
+- D-030: F-010 거리 표시(Q1), F-020 UI 색·복원 미리보기, F-041 검사 결과 재계산. 42개 중 40개 구현, F-042 보류, 나머지 0.
 
 ## 다음 작업
 - Phase 9a 완료(D-029, feature/phase9a-room-reference). 남은 Phase 9b(선택): 미뤄 둔 UI(색 직접 입력·미수용 상세·모든 랙 보기·첨부 도면 사용). 모바일(F-042)은 정책상 보류.

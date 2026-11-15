@@ -23,13 +23,18 @@ export function projectValidator(p) {
 /**
  * 기준본 V.write 래퍼(90 W.storeResults)와 같이 저장 직전에 BEFORE/AFTER 배치 검사 결과를 프로젝트에 기록한다.
  * 배치 지문이 같으면 기존 결과(검사 시각 포함)를 유지해 내용이 같은 저장이 생략되도록 한다.
- * 열 우선 모드 배치의 확장 검사는 Phase 6 전까지 기존 결과를 그대로 둔다.
+ * 열 우선 모드 배치는 열 조건 보강 검사(autolayout/column.js 등록)의 지문으로 비교한다(기준본 92 validateProject 래퍼).
+ * 불러올 때(init)도 호출해 저장된 결과가 현재 배치와 다르면 다시 계산한다(F-041). 지문이 같으면 그대로 둔다.
  */
 export function storeScanResults(project, { now } = {}) {
   const results = project.autoPlacement.results;
   for (const k of ['before', 'after']) {
     const layout = project.scenarios[k];
-    if (layout.autoPlacementRules?.mode === 'column') continue;
+    if (layout.autoPlacementRules?.mode === 'column') {
+      const scan = scanLayout(layout, project, now ? { now } : undefined);
+      if (results[k]?.fingerprint !== scan.fingerprint) results[k] = JSON.parse(JSON.stringify(scan));
+      continue;
+    }
     if (results[k]?.fingerprint === layoutSignature(layout, project)) continue;
     results[k] = JSON.parse(JSON.stringify(scanLayout(layout, project, now ? { now } : undefined)));
   }
@@ -69,6 +74,11 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     const r = await store.load();
     if (r.status === 'loaded') {
       state.project = r.project;
+      try {
+        storeScanResults(state.project); // 저장된 검사 결과가 현재 배치와 다르면 다시 계산(F-041). 다음 저장 때 기록된다.
+      } catch {
+        // 검사 모듈이 없는 환경(열 우선 미등록 등)에서는 저장된 결과를 그대로 둔다.
+      }
       state.source = r.source;
       state.status = r.source === 'legacy' ? 'unsaved' : 'saved';
       if (r.source === 'legacy') state.notice = '기준본(v2.4.1) 저장 데이터를 불러왔습니다. 저장하면 새 저장 영역에 기록하며 기준본 데이터는 그대로 둡니다.';

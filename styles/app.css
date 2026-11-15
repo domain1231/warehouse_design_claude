@@ -6,7 +6,12 @@
   --line: #34465a;
   --text: #e5edf6;
   --muted: #91a6be;
-  --accent: #80b3f1;
+  --blue: #80b3f1;
+  --accent: var(--blue);
+  --selected: #c4ddff;
+  --header: #162130;
+  --floor: #152231;
+  --control: #111c29;
   --canvas: #101a25;
   --warn: #ff7885;
 }
@@ -27,7 +32,7 @@ body {
 
 .topbar {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
-  padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+  padding: 8px 16px; background: var(--header); border-bottom: 1px solid var(--line);
 }
 .brand h1 { margin: 0; font-size: 16px; }
 .versions { color: var(--muted); margin: 0; font-size: 12px; }
@@ -45,13 +50,13 @@ body {
 .field { display: grid; gap: 4px; margin: 0 0 10px; font-size: 13px; }
 .field input, .field select {
   padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--bg); color: var(--text); font: inherit;
+  background: var(--control); color: var(--text); font: inherit;
 }
 .check { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; font-size: 13px; }
 
 button {
   padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--card); color: var(--text); font: inherit; cursor: pointer;
+  background: var(--control); color: var(--text); font: inherit; cursor: pointer;
 }
 button:disabled { opacity: 0.45; cursor: default; }
 button.active { border-color: var(--accent); color: var(--accent); }
@@ -246,3 +251,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
   #printArea svg { width: 100%; height: auto; }
   @page { size: landscape; margin: 8mm; }
 }
+
+.theme-dialog { width: min(800px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
+.theme-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.theme-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.theme-fields input[type=color] { height: 36px; width: 100%; }
+.theme-swatch { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--line); vertical-align: middle; margin: 3px; }
+.theme-preview { max-height: 30vh; overflow: auto; font-size: 12px; }

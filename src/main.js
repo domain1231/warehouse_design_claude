@@ -23,6 +23,7 @@ import { createRackDetail } from './ui/rack-detail.js';
 import { createRecordsPanel } from './ui/records-panel.js';
 import { createExcelDialog } from './ui/excel-dialog.js';
 import { createScenarioDialogs } from './ui/scenario-dialogs.js';
+import { createThemeDialog, applyTheme } from './ui/theme-dialog.js';
 import { createStorageDialogs, QUOTA_TEXT } from './ui/storage-dialogs.js';
 import { compareRows, cloneBeforeToAfter, restoreBackup, CLONE_COMMAND, RESTORE_COMMAND } from './warehouse/scenarios.js';
 import { applyExcelProposal, EXCEL_APPLY_COMMAND } from './excel/apply.js';
@@ -205,8 +206,7 @@ function renderShell(root) {
   const thrLow = thr('threshold-low', '보통 시작 (%)', 1, 98), thrHigh = thr('threshold-high', '주의 시작 (%)', 2, 100);
   const colorInputs = Object.entries({ empty: '빈 랙', low: '여유', mid: '보통', high: '주의', over: '초과', unknown: '정보 없음' }).map(([k, t]) => [k, wrap(t, el('input', { type: 'color', testid: 'color-' + k }))]);
   const applyColorsBtn = button('apply-colors', '색상 기준 적용');
-  const resetScope = labelSelect('reset-scope', '복원 범위', [['ui', 'UI 기본 테마만 복원'], ['occupancy', '적재율 기본 색상·기준만 복원'], ['all', '모든 색상 설정 복원 (양쪽 객체 지정색 포함)']]);
-  const resetBtn = button('reset-colors', '기본 색상 복원');
+  const themeBtn = button('theme-open', 'UI 색상 · 기본 색상 복원');
   const histDate = el('input', { type: 'date', testid: 'history-date', 'aria-label': '조회 날짜' });
   const histSlider = el('input', { type: 'range', min: '0', max: '0', step: '1', value: '0', testid: 'history-slider', 'aria-label': '이력 날짜 선택' });
   const histMode = el('select', { testid: 'history-mode', 'aria-label': '배치 이력 모드' });
@@ -214,7 +214,7 @@ function renderShell(root) {
   const liveBtn = button('history-live', '현재 편집으로');
   const histStatus = el('p', { class: 'muted', testid: 'history-status', role: 'status' });
   left.append(el('h2', {}, '과거 조회'), wrap('조회 날짜', histDate), histSlider, histMode, liveBtn, histStatus);
-  left.append(el('h2', {}, '색상'), vizMode, heightPolicy, thrLow, thrHigh, ...colorInputs.map((c) => c[1]), applyColorsBtn, colorMode, resetScope, resetBtn);
+  left.append(el('h2', {}, '색상'), vizMode, heightPolicy, thrLow, thrHigh, ...colorInputs.map((c) => c[1]), applyColorsBtn, colorMode, themeBtn);
   left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus, el('h2', {}, '라벨'), labelMode, labelLayout, labelPadding, labelStatus);
 
   // 가운데: 도면
@@ -267,7 +267,7 @@ function renderShell(root) {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, importBtn, importInput, versionsBtn, storageBtn, recoveryBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     labelMode: labelMode.querySelector('select'), labelLayout: labelLayout.querySelector('select'), labelPadding: labelPadding.querySelector('select'), labelStatus,
-    vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: colorMode.querySelector('select'), resetScope: resetScope.querySelector('select'), resetBtn, applyColorsBtn,
+    vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: colorMode.querySelector('select'), themeBtn, applyColorsBtn,
     thrLow: thrLow.querySelector('input'), thrHigh: thrHigh.querySelector('input'), colorInputs: Object.fromEntries(colorInputs.map(([k, l]) => [k, l.querySelector('input')])),
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
     scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn, leftToggle, rightToggle, bottomToggle, bottomDefault, bottomGrip, bottom, bottomSections, exportBtns, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
@@ -388,19 +388,21 @@ async function start() {
     renderPlan();
   }
 
+  let appliedTheme = null;
   function renderPlan(force = false) {
     const p = project();
     if (!p) return;
+    if (p.theme !== appliedTheme) { appliedTheme = p.theme; applyTheme(p); }
     const l = layout();
     const u = view ? pixelsPerMeter(view, l.warehouse, size()) : 20;
-    const key = [l, !!historyDate, p.settings, p.theme, p.precision, p.rackLabels, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
+    const key = [l, !!historyDate, p.settings, p.theme, p.precision, p.rackLabels, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview, gesture && gesture.kind !== 'move' ? gesture.kind : null];
     const same = !force && sceneKey && key.every((k, i) => k === sceneKey[i]);
     if (same && u === sceneScale) return;
     // 확대율만 바뀌면 라벨 크기·배치(화면 px 기준)만 다시 계산하고 선택·패널은 그대로 둔다.
     const scaleOnly = same;
     sceneKey = key;
     sceneScale = u;
-    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: u, resize: isLocked(p) || historyDate ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view, warnings: scaleOnly ? sceneWarnings : undefined });
+    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: u, gesture: gesture?.kind, resize: isLocked(p) || historyDate ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view, warnings: scaleOnly ? sceneWarnings : undefined });
     sceneWarnings = r.warnings;
     ui.plan.innerHTML = r.svg;
     ui.labelStatus.textContent = labelStatusText(r.labelHidden);
@@ -497,6 +499,10 @@ async function start() {
     for (const [k, i] of Object.entries(ui.colorInputs)) i.value = st.colors[k];
   }
   const colorEdit = (label, mutate) => labelEdit(label, mutate).then(syncColorInputs);
+  const themeDialog = createThemeDialog({
+    project, resetColors,
+    edit: (label, mutate) => session.edit(label, mutate).then(() => { renderPlan(true); syncColorInputs(); return true; }).catch((e) => { showToast(`색상·표시 설정 취소: ${e.message}`); renderPlan(true); return false; }),
+  });
   function editObjectColor(id, color) {
     colorEdit('객체 표시 색상', (d) => setObjectColor(d, id, color));
   }
@@ -792,11 +798,7 @@ async function start() {
   ui.heightPolicy.addEventListener('change', () => colorEdit('높이 집계 정책', (d) => { d.settings.heightPolicy = ui.heightPolicy.value; }));
   ui.colorMode.addEventListener('change', () => colorEdit('색상 표시', (d) => setColorMode(d, ui.colorMode.value)));
   ui.applyColorsBtn.addEventListener('click', () => colorEdit('적재율 색상 기준', (d) => applyThresholdColors(d, { low: ui.thrLow.value, high: ui.thrHigh.value, colors: Object.fromEntries(Object.entries(ui.colorInputs).map(([k, i]) => [k, i.value])) })));
-  ui.resetBtn.addEventListener('click', () => {
-    const scope = ui.resetScope.value;
-    if (scope === 'all' && !confirm('색상 설정만 변경됩니다. BEFORE·AFTER의 사용자 지정 객체색까지 기본값으로 복원합니까? 창고 데이터는 유지됩니다.')) return;
-    colorEdit('기본 색상 복원', (d) => resetColors(d, scope));
-  });
+  ui.themeBtn.addEventListener('click', () => { if (project()) themeDialog.open(); });
   ui.snapOn.addEventListener('change', () => pref({ snap: ui.snapOn.checked }));
   ui.snapStep.addEventListener('change', () => pref({ precision: { snapStep: Number(ui.snapStep.value) } }));
   ui.keyStep.addEventListener('change', () => {
