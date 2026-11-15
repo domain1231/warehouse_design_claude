@@ -55,3 +55,24 @@ export function meetsClearance(actual, required) {
 export function clearanceShortfall(actual, required) {
   return meetsClearance(actual, required) ? 0 : addPrecise(required, -actual);
 }
+
+// ── 기준본 v2.4.1 정밀 편집(80 Q.add, snapped)과 같은 결과를 내는 연산 ──
+// 편집 결과가 기준본과 바이트 단위로 같아야 하므로(이동·스냅 후 저장 JSON) 위 snapTo/addPrecise와 따로 둔다.
+
+/** mm 정렬 판정 허용(mm 단위 1e-6). */
+const MM_ALIGN_EPS = 1e-6;
+
+/** 좌표 + 이동량. 둘 다 1mm 단위면 정수 mm로 더해 잡음 없이, 아니면 소수 12자리로 정리한다(기존 소수 좌표 보존). */
+export function addMm(n, delta) {
+  const a = n * 1e3, b = delta * 1e3;
+  return Math.abs(a - Math.round(a)) < MM_ALIGN_EPS && Math.abs(b - Math.round(b)) < MM_ALIGN_EPS ? (Math.round(a) + Math.round(b)) / 1e3 : Number((n + delta).toFixed(12));
+}
+
+/** mm 반올림(기준본 Q.roundMm). 스냅을 끈 드래그 종료 위치에만 쓴다. */
+export const roundMm = (n) => Math.round(n * 1e3) / 1e3;
+
+/** 스냅 간격(m, 1mm 단위)에 맞춘다(기준본 snapped). */
+export function snapToStep(n, step) {
+  const mm = Math.round(step * 1e3);
+  return (Math.round((n * 1e3) / mm) * mm) / 1e3;
+}

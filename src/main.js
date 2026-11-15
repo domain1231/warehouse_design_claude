@@ -1,4 +1,4 @@
-// 앱 진입점. 저장소·프로젝트 모델·편집 세션(Phase 1)과 SVG 도면 보기·선택(Phase 3a)을 화면에 연결한다.
+// 앱 진입점. 저장소·프로젝트 모델·편집 세션(Phase 1), SVG 도면 보기·선택(Phase 3a), 객체 편집(Phase 3b)을 화면에 연결한다.
 // 계산은 src/cad/*(카메라·선택·도면 문자열)에 있고, 이 파일은 DOM 이벤트를 그 함수들에 연결만 한다.
 // __APP_VERSION__ / __SCHEMA_VERSION__ 은 빌드 시 package.json에서 주입된다.
 import { createSession, projectValidator } from './core/session.js';
@@ -8,6 +8,11 @@ import { viewBox, zoomBy, panFrom, pinchFrom, centerView, focusBox, withFitScale
 import { buildScene, selectionBox, esc } from './cad/scene.js';
 import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js';
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
+import { pixelsPerMeter } from './cad/camera.js';
+import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
+import { renderInspector } from './ui/inspector.js';
+import { OBJECT_TYPES } from './core/project.js';
+import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
 
 export const APP_VERSION = __APP_VERSION__;
 export const SCHEMA_VERSION = __SCHEMA_VERSION__;
@@ -28,9 +33,11 @@ const ERROR_HINT = {
   STORAGE: '브라우저 저장소를 사용할 수 없습니다.',
 };
 const TOOL_HELP = {
-  select: '클릭 선택 · Shift 추가 · Ctrl/⌘ 토글 · 빈 곳 드래그 영역 선택',
+  select: '클릭 선택 · 드래그 이동 · Shift 추가 · Ctrl/⌘ 토글 · 빈 곳 드래그 영역 선택 · 방향키 미세 이동',
   pan: '드래그하여 화면 이동',
 };
+const ADD_TOOLS = [['rack', '▤ 랙'], ['wall', '━ 내부 벽'], ['column', '▪ 기둥'], ['door', '◴ 출입문'], ['aisle', '▭ 통로'], ['blocked', '▧ 보관 불가'], ['work', '▱ 작업 공간']];
+const RACK_TYPES = ['중량랙', '경량랙', '팔레트랙', '일반 선반', '사용자 지정 랙'];
 
 function el(tag, attrs = {}, text) {
   const node = document.createElement(tag);
@@ -83,7 +90,36 @@ function renderShell(root) {
   const toolSelect = button('tool-select', '선택', { 'data-tool': 'select' });
   const toolPan = button('tool-pan', '화면 이동', { 'data-tool': 'pan' });
   tools.append(toolSelect, toolPan);
+  const addTools = el('div', { class: 'tool-group', role: 'group', 'aria-label': '추가 도구' });
+  const toolButtons = [toolSelect, toolPan];
+  for (const [kind, text] of ADD_TOOLS) {
+    const b = button(`tool-${kind}`, text, { 'data-tool': kind });
+    toolButtons.push(b);
+    addTools.append(b);
+  }
   const toolHelp = el('p', { class: 'muted', testid: 'tool-help' });
+  const rackBox = el('details', { class: 'box' });
+  rackBox.append(el('summary', {}, '추가할 랙'));
+  const rackType = el('select', { testid: 'new-rack-type' });
+  for (const t of RACK_TYPES) rackType.append(el('option', { value: t }, t));
+  const num = (testid, value, min = '0.05') => el('input', { type: 'number', min, step: '0.1', value, testid });
+  const newWidth = num('new-width', String(RACK_DEFAULTS.width)), newDepth = num('new-depth', String(RACK_DEFAULTS.depth)), newHeight = num('new-height', String(RACK_DEFAULTS.height));
+  const newUnit = el('input', { value: RACK_DEFAULTS.unit, maxlength: '20', testid: 'new-unit' });
+  const wrap = (text, input) => { const l = el('label', { class: 'field' }, text); l.append(input); return l; };
+  rackBox.append(wrap('종류', rackType), wrap('폭 (m)', newWidth), wrap('깊이 (m)', newDepth), wrap('높이 (m)', newHeight), wrap('단위', newUnit));
+  const editRow = el('div', { class: 'tool-group', role: 'group', 'aria-label': '선택 객체 편집' });
+  const rotateBtn = button('rotate', '↻ 90° 회전'), duplicateBtn = button('duplicate', '⧉ 복제'), deleteBtn = button('delete', '✕ 삭제');
+  editRow.append(rotateBtn, duplicateBtn, deleteBtn);
+  const allowLabel = el('label', { class: 'check' });
+  const allowWarnings = el('input', { type: 'checkbox', testid: 'allow-warnings' });
+  allowLabel.append(allowWarnings, ' 공간 경고 허용(끄면 새 경고가 생기는 편집을 전체 취소)');
+  const snapLabel = el('label', { class: 'check' });
+  const snapOn = el('input', { type: 'checkbox', testid: 'snap' });
+  snapLabel.append(snapOn, ' 배치 스냅');
+  const snapStep = el('select', { testid: 'snap-step' });
+  for (const v of SNAP_STEPS_M) snapStep.append(el('option', { value: String(v) }, String(v)));
+  const keyStep = el('select', { testid: 'key-step' });
+  for (const v of SNAP_STEPS_M.filter((x) => x <= 0.1)) keyStep.append(el('option', { value: String(v) }, String(v)));
   const zoomRow = el('div', { class: 'tool-group', role: 'group', 'aria-label': '확대' });
   const zoomOut = button('zoom-out', '－', { 'aria-label': '축소' });
   const zoomLabel = el('output', { class: 'zoom-label', testid: 'zoom-label' });
@@ -104,7 +140,7 @@ function renderShell(root) {
   wheelLabel.append(wheelSelect);
   const wheelReset = button('wheel-reset', '휠 감도 기본값');
   const wheelStatus = el('p', { class: 'muted', testid: 'wheel-status', role: 'status' });
-  left.append(el('h2', {}, '도구'), tools, toolHelp, el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus);
+  left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus);
 
   // 가운데: 도면
   const canvasWrap = el('div', { class: 'canvas-wrap', testid: 'canvas-wrap' });
@@ -119,18 +155,21 @@ function renderShell(root) {
   const selStatus = el('p', { class: 'sel-status', testid: 'selection-status' });
   const selList = el('ul', { class: 'sel-list', testid: 'selection-list' });
   const selWarn = el('div', { testid: 'selection-warnings' });
+  const inspector = el('div', { class: 'inspector', testid: 'inspector' });
   const summary = el('p', { class: 'summary', testid: 'summary' });
-  const note = el('p', { class: 'muted' }, '재구축 진행 중: 도면 보기·선택까지 포함되었고 객체 편집은 아직 없습니다. 이 PC·브라우저 저장이며 클라우드 동기화가 아닙니다.');
-  right.append(el('h2', {}, '선택'), selStatus, selList, selWarn, el('h2', {}, '요약'), summary, note);
+  const note = el('p', { class: 'muted' }, '재구축 진행 중: 객체 추가·이동·속성 편집까지 포함되었습니다. 크기 조절 핸들·정렬은 다음 단계입니다. 이 PC·브라우저 저장이며 클라우드 동기화가 아닙니다.');
+  right.append(el('h2', {}, '선택'), selStatus, selList, selWarn, inspector, el('h2', {}, '요약'), summary, note);
 
   const main = el('div', { class: 'workspace' });
   main.append(left, canvasWrap, right);
-  app.append(header, notice, main);
+  const toast = el('p', { class: 'toast', testid: 'toast', role: 'alert', hidden: '' });
+  app.append(header, notice, main, toast);
   root.replaceChildren(app);
   return {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
+    toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
 
@@ -152,6 +191,9 @@ async function start() {
   const wheel = { pending: 0, clientX: 0, clientY: 0, frame: 0 };
   const touches = new Map();
   let wheelMode = loadWheelMode(window.localStorage);
+  let preview = null; // 드래그 이동 중 미리보기 { layout, guides }
+  let clipboard = [];
+  let toastTimer = 0;
 
   const project = () => session.state.project;
   const layout = () => project().scenarios[project().settings.scenario];
@@ -180,10 +222,10 @@ async function start() {
     const p = project();
     if (!p) return;
     const l = layout();
-    const key = [l, p.settings, p.theme, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee)];
+    const key = [l, p.settings, p.theme, p.precision, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
     if (!force && sceneKey && key.every((k, i) => k === sceneKey[i])) return;
     sceneKey = key;
-    const r = buildScene(l, p, { selected, tool, marquee });
+    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: view ? pixelsPerMeter(view, l.warehouse, size()) : 20 });
     sceneWarnings = r.warnings;
     ui.plan.innerHTML = r.svg;
     renderSelection();
@@ -198,13 +240,73 @@ async function start() {
     ui.selWarn.innerHTML = !os.length ? '<p class="muted">도면에서 객체를 선택하세요. 좌표는 회전 전 좌상단 기준입니다.</p>'
       : ws.length ? `<div class="warnbox">${ws.map((w) => esc(w.text)).join('<br>')}</div>` : '<p class="info">선택 객체에 공간 경고가 없습니다.</p>';
     ui.focus.disabled = !os.length;
+    const locked = isLocked(project());
+    for (const b of [ui.rotateBtn, ui.duplicateBtn, ui.deleteBtn]) b.disabled = !os.length || locked;
+    if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)) });
+  }
+
+  function showToast(text) {
+    ui.toast.textContent = text;
+    ui.toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { ui.toast.hidden = true; }, 6000);
+  }
+
+  /** 편집 명령 실행: 실패하면 이유를 알린다(기준본 toast '전체 취소: …'). */
+  async function run(label, compute) {
+    try {
+      const r = await session.apply(label, compute);
+      if (r && !r.ok) showToast(`전체 취소: ${r.reason}`);
+      return r;
+    } catch (e) {
+      showToast(`편집을 적용하지 않았습니다: ${e.message}`);
+      return null;
+    }
+  }
+  // 명령 기록 이름은 기준본처럼 따로 지정한 것 외에는 '객체 수정'이다. label은 실행취소 표시용.
+  const command = (label, mutate, name = COMMAND_DEFAULT) => run(label, (p, ctx) => applyCommand(p, mutate, { command: name, selection: [...selected], ...ctx }));
+
+  function editField(id, field, raw, isNumber) {
+    if (selected.size === 1 && MM_INPUT_FIELDS.has(field) && !isMmInput(raw)) {
+      showToast(MM_INPUT_MESSAGE);
+      renderPlan(true);
+      return;
+    }
+    const dim = (field === 'width' || field === 'depth') && selected.size === 1;
+    (dim ? command(DIMENSION_COMMAND, setDimension(id, field, raw), DIMENSION_COMMAND) : command('객체 수정', setField(id, field, fieldValue(field, raw, isNumber)))).then(() => renderPlan(true));
+  }
+  async function addAt(kind, point) {
+    const p = project();
+    const add = addObjectAt(p, kind, point, { nextId: session.nextId, rack: { width: Number(ui.newWidth.value), depth: Number(ui.newDepth.value), height: Number(ui.newHeight.value), type: ui.rackType.value, unit: ui.newUnit.value } });
+    if (!add) return;
+    const r = await command('객체 추가', add.mutate);
+    if (r?.ok) commitSelection(new Set([add.id]));
+  }
+  const selectedObjects = () => layout().objects.filter((o) => selected.has(o.id));
+  async function deleteSelected() {
+    if (!selected.size) return;
+    const r = await command('객체 삭제', deleteObjects([...selected]));
+    if (r?.ok) commitSelection(new Set());
+  }
+  async function duplicate(source) {
+    if (!source.length) return;
+    const d = duplicateObjects(source, { nextId: session.nextId });
+    const r = await command('객체 복제', d.mutate);
+    if (r?.ok) commitSelection(new Set(d.ids));
+  }
+  const rotateSelected = () => selected.size && command('객체 회전', rotateObjects([...selected]));
+  function nudge(dx, dy, fast) {
+    if (!selected.size || tool !== 'select') return;
+    const n = nudgeObjects(project(), [...selected], dx, dy, fast);
+    const name = `키보드 미세 이동 ${fmt(n.step, 3)}m`;
+    command(name, n.mutate, name);
   }
 
   function setTool(t) {
     tool = t;
-    for (const b of [ui.toolSelect, ui.toolPan]) b.classList.toggle('active', b.dataset.tool === t);
-    ui.toolHelp.textContent = TOOL_HELP[t];
-    ui.plan.style.cursor = t === 'pan' ? 'grab' : 'default';
+    for (const b of ui.toolButtons) b.classList.toggle('active', b.dataset.tool === t);
+    ui.toolHelp.textContent = TOOL_HELP[t] ?? `${OBJECT_TYPES[t]}를 배치할 위치를 클릭하세요.`;
+    ui.plan.style.cursor = t === 'pan' ? 'grab' : t === 'select' ? 'default' : 'crosshair';
     renderPlan();
   }
 
@@ -241,6 +343,10 @@ async function start() {
     ui.redoBtn.disabled = !s.canRedo || s.status === 'saving';
     ui.saveBtn.disabled = s.status === 'saving' || s.status === 'loading';
     if (!s.project) return;
+    ui.allowWarnings.checked = s.project.editing.allowWarnings;
+    ui.snapOn.checked = s.project.settings.snap;
+    ui.snapStep.value = String(s.project.precision.snapStep);
+    ui.keyStep.value = String(s.project.precision.keyStep);
     if (s.project !== lastProject) {
       // 프로젝트를 처음 불러오거나 실행취소 등으로 바뀌면 저장된 선택·카메라를 따른다(조작 중이면 조작이 우선).
       const ids = new Set(s.project.scenarios[s.project.settings.scenario].objects.map((o) => o.id));
@@ -281,8 +387,18 @@ async function start() {
 
   // ── 화면 명령(기준본 fit/zoomIn/zoomOut/mZoom50/mZoom200/mCenterLock/focusSelection) ──
   const W = () => layout().warehouse;
-  ui.toolSelect.addEventListener('click', () => setTool('select'));
-  ui.toolPan.addEventListener('click', () => setTool('pan'));
+  for (const b of ui.toolButtons) b.addEventListener('click', () => setTool(b.dataset.tool));
+  ui.rotateBtn.addEventListener('click', () => rotateSelected());
+  ui.duplicateBtn.addEventListener('click', () => duplicate(selectedObjects()));
+  ui.deleteBtn.addEventListener('click', () => deleteSelected());
+  const pref = (v) => { try { session.setView(v, { delay: 0 }); } catch (e) { showToast(e.message); } };
+  ui.allowWarnings.addEventListener('change', () => pref({ allowWarnings: ui.allowWarnings.checked }));
+  ui.snapOn.addEventListener('change', () => pref({ snap: ui.snapOn.checked }));
+  ui.snapStep.addEventListener('change', () => pref({ precision: { snapStep: Number(ui.snapStep.value) } }));
+  ui.keyStep.addEventListener('change', () => {
+    const k = Number(ui.keyStep.value);
+    pref({ precision: { keyStep: k, fastStep: Math.max(k, project().precision.fastStep) } });
+  });
   ui.zoomIn.addEventListener('click', () => { cancelWheel(); commitView(zoomBy(view, 0.8, null, W(), size())); });
   ui.zoomOut.addEventListener('click', () => { cancelWheel(); commitView(zoomBy(view, 1.25, null, W(), size())); });
   ui.fit.addEventListener('click', () => { cancelWheel(); tracker.reset(); commitView(centerView(view, true, W(), size())); });
@@ -354,9 +470,14 @@ async function start() {
     } else if (g.kind === 'pan' || g.kind === 'pinch') {
       view = g.viewport;
       applyCamera();
+    } else if (g.kind === 'move') {
+      preview = null; // 기준본 Esc: 기록 없이 이동 전으로
+      renderPlan();
     }
   }
   ui.plan.addEventListener('pointerdown', (e) => {
+    // 도면을 누르면 입력 칸 포커스를 풀어 방향키·Delete 단축키가 도면에 적용되게 한다(입력 칸 안에서는 단축키 무시).
+    if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) document.activeElement.blur();
     tracker.reset();
     cancelWheel();
     if (!project()) return;
@@ -374,6 +495,11 @@ async function start() {
     }
     if (e.button !== 0 || gesture) return;
     e.preventDefault();
+    if (tool !== 'select' && tool !== 'pan') {
+      const p = toWorld(e.clientX, e.clientY);
+      addAt(tool, { x: p.x, y: p.y });
+      return;
+    }
     capture(e);
     if (tool === 'pan') {
       gesture = { kind: 'pan', pointer: e.pointerId, start: { x: e.clientX, y: e.clientY }, viewport: view, matrix: ui.plan.getScreenCTM().inverse() };
@@ -381,7 +507,12 @@ async function start() {
     }
     const hit = e.target.closest?.('[data-id]')?.dataset.id;
     if (hit) {
-      commitSelection(clickSelect(selected, hit, { toggle: e.ctrlKey || e.metaKey, add: e.shiftKey }));
+      const toggle = e.ctrlKey || e.metaKey, add = e.shiftKey;
+      commitSelection(clickSelect(selected, hit, { toggle, add }));
+      if (toggle || add || isLocked(project())) return;
+      const p = toWorld(e.clientX, e.clientY);
+      const originals = layout().objects.filter((o) => selected.has(o.id));
+      gesture = { kind: 'move', pointer: e.pointerId, start: { x: p.x, y: p.y }, originals, dx: 0, dy: 0, moved: false };
       return;
     }
     const p = toWorld(e.clientX, e.clientY);
@@ -411,6 +542,21 @@ async function start() {
       applyCamera();
       return;
     }
+    if (g.kind === 'move') {
+      const p = toWorld(e.clientX, e.clientY);
+      const pr = project(), l = layout();
+      let { dx, dy } = dragDelta(pr, g.originals[0], g.start, p);
+      const a = alignmentGuides(pr, l, g.originals, dx, dy, pixelsPerMeter(view, l.warehouse, size()));
+      ({ dx, dy } = a);
+      if (!g.moved && Math.abs(dx) + Math.abs(dy) < EPS) return;
+      g.moved = true;
+      g.dx = dx;
+      g.dy = dy;
+      preview = { layout: movedLayout(l, g.originals.map((o) => o.id), dx, dy), guides: a.guides };
+      renderPlan();
+      ui.selStatus.textContent = `${g.originals.length}개 객체 · ΔX ${fmt(dx)}m / ΔY ${fmt(dy)}m`;
+      return;
+    }
     if (g.kind === 'marquee') {
       const p = toWorld(e.clientX, e.clientY);
       marquee = { a: g.start, b: { x: p.x, y: p.y } };
@@ -430,6 +576,17 @@ async function start() {
       return;
     }
     if (g.pointer !== e.pointerId) return;
+    if (g.kind === 'move') {
+      gesture = null;
+      const ids = g.originals.map((o) => o.id);
+      if (!g.moved) return; // 움직이지 않았으면 기록 없음(기준본 M.finish)
+      // pointercancel은 기준본처럼 '사용자 취소' 실패 기록을 남긴다(Esc 취소는 기록 없음).
+      run(g.originals.length > 1 ? '그룹 이동' : '객체 이동', (p, ctx) => applyMove(p, ids, g.dx, g.dy, { cancel, ...ctx })).finally(() => {
+        preview = null;
+        renderPlan(true);
+      });
+      return;
+    }
     if (cancel) return abortGesture();
     gesture = null;
     if (g.kind === 'pan') commitView(view, 0);
@@ -441,7 +598,42 @@ async function start() {
   ui.plan.addEventListener('pointerup', (e) => finish(e, false));
   ui.plan.addEventListener('pointercancel', (e) => finish(e, true));
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && gesture) abortGesture();
+    cancelWheel();
+    if (document.querySelector('dialog[open]') || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable || !project()) return;
+    const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+    const dir = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
+    if (dir && !mod && !e.altKey) {
+      if (!selected.size || tool !== 'select') return;
+      e.preventDefault();
+      nudge(dir[0], dir[1], e.shiftKey);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      abortGesture();
+      touches.clear();
+      setTool('select');
+      commitSelection(new Set());
+    } else if (mod && k === 'a') {
+      e.preventDefault();
+      commitSelection(selectAllRacks(layout()));
+    } else if (mod && k === 'z') {
+      e.preventDefault();
+      guard(() => (e.shiftKey ? session.redo() : session.undo()));
+    } else if (mod && k === 'y') {
+      e.preventDefault();
+      guard(() => session.redo());
+    } else if (e.key === 'Delete') {
+      e.preventDefault();
+      deleteSelected();
+    } else if (k === 'r' && !mod) {
+      rotateSelected();
+    } else if (mod && k === 'c') {
+      e.preventDefault();
+      clipboard = structuredClone(selectedObjects());
+      showToast(`${clipboard.length}개 객체 복사`);
+    } else if (mod && k === 'v') {
+      e.preventDefault();
+      duplicate(clipboard);
+    }
   });
   new ResizeObserver(() => applyCamera()).observe(ui.canvasWrap);
 

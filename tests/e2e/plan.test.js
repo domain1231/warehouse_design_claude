@@ -130,6 +130,9 @@ test('화면 이동 도구 드래그·Esc 취소·전체 보기·50%/200%·선�
   await page.keyboard.press('Escape');
   await page.mouse.up();
   assert.deepEqual((await view(page)).viewport, v0);
+  // 기준본처럼 Esc는 선택 도구로 돌아간다
+  assert.equal(await page.locator('[data-testid=tool-select]').getAttribute('class'), 'active');
+  await page.locator('[data-testid=tool-pan]').click();
   await page.mouse.move(c.x, c.y);
   await page.mouse.down();
   await page.mouse.move(c.x + 100, c.y + 50, { steps: 5 });

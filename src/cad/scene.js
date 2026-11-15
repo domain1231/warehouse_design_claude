@@ -58,10 +58,11 @@ function objectShape(o, fill, stroke, sel, aisle) {
  * 배치 하나의 SVG 내용.
  * @param {object} layout  project.scenarios[scope]
  * @param {object} project 설정·테마·간격 기준
- * @param {{ scope?: 'before'|'after', selected?: Set<string>, tool?: string, marquee?: {a,b}|null, warnings?: object[] }} opt
+ * @param {{ scope?: 'before'|'after', selected?: Set<string>, tool?: string, marquee?: {a,b}|null, warnings?: object[], guides?: object[], pixelsPerMeter?: number }} opt
+ *   guides: 드래그 중 정렬 가이드(commands.alignmentGuides). 선 굵기·글자 크기는 화면 px 기준이라 pixelsPerMeter가 필요하다.
  * @returns {{ svg: string, warnings: object[] }}
  */
-export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings } = {}) {
+export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20 } = {}) {
   const W = layout.warehouse, st = project.settings;
   const ws = warnings ?? spatialWarnings(layout, project);
   const bad = new Set(ws.flatMap((w) => w.ids));
@@ -108,5 +109,22 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     const { a, b } = marquee;
     s += `<rect id="mSelectionBox" class="m-overlay" pointer-events="none" x="${Math.min(a.x, b.x)}" y="${Math.min(a.y, b.y)}" width="${Math.abs(a.x - b.x)}" height="${Math.abs(a.y - b.y)}" fill="#80b3f1" fill-opacity=".15" stroke="#a8d2ff" stroke-width=".035" stroke-dasharray=".1 .06"/>`;
   }
+  if (guides.length && project.precision?.guides) s += guideSvg(guides, pixelsPerMeter);
   return { svg: s, warnings: ws };
+}
+
+/** 정렬 가이드(기준본 Q.guideSvg 중 가이드 부분). 가까운 랙 거리 표시(Q.nearest)는 아직 옮기지 않았다. */
+function guideSvg(guides, pixelsPerMeter) {
+  const u = Math.max(0.01, pixelsPerMeter), font = 11 / u;
+  let out = '<g class="q-guide" pointer-events="none">';
+  for (const g of guides) {
+    if (g.type === 'x' || g.type === 'y') {
+      const x = g.type === 'x' ? g.value : g.from, y = g.type === 'x' ? g.from : g.value;
+      out += `<path data-guide="${g.type}" d="${g.type === 'x' ? `M ${g.value} ${g.from} V ${g.to}` : `M ${g.from} ${g.value} H ${g.to}`}" stroke="#75f0d4" stroke-width="${1.2 / u}" stroke-dasharray="${5 / u} ${3 / u}" fill="none"/><text x="${x + 4 / u}" y="${y - 4 / u}" fill="#b3fbea" font-size="${font}">${esc(g.label)} · 차이 ${fmt(Math.abs(g.delta), 3)}m</text>`;
+    } else {
+      const b = g.bounds;
+      out += `<text data-guide="${g.type}" x="${b.cx}" y="${b.maxY + 0.25}" text-anchor="middle" fill="#a9f2dc" font-size="${font}">${esc(g.label)} · 차이 ${fmt(Math.abs(g.delta) * 2, 3)}m</text>`;
+    }
+  }
+  return out + '</g>';
 }
