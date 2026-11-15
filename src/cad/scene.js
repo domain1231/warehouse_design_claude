@@ -2,7 +2,7 @@
 // 카메라(viewBox)는 여기서 다루지 않는다. 화면은 배치·선택이 바뀔 때만 내용을 다시 만들고, 확대·이동은 viewBox만 바꾼다.
 //
 // 랙·ZONE 라벨(V.labels, F-019)은 labels.js. 랙 전체 이름 툴팁(V.fullLabel)은 labels.js rackFullLabel(화면 연결은 후속).
-// 아직 옮기지 않은 것(후속 단계): 참고 도면 이미지(F-012), 측정점.
+// 아직 옮기지 않은 것(후속 단계): 측정점.
 import { warnings as spatialWarnings, ratio } from '../warehouse/constraints.js';
 import { aisleClearance } from '../geometry/clearance.js';
 import { HANDLE_DIRECTIONS, handlePoint } from '../warehouse/commands.js';
@@ -74,6 +74,8 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
   const gid = report ? 'rgrid' : 'pgrid'; // 보고서 SVG는 화면 도면과 같은 문서에 들어가도 id가 겹치지 않는다(기준본)
   let s = `<defs><pattern id="${gid}" width="${st.grid}" height="${st.grid}" patternUnits="userSpaceOnUse"><path d="M ${st.grid} 0 L 0 0 0 ${st.grid}" fill="none" stroke="#2a3c51" stroke-width=".012"/></pattern></defs>`;
   s += `<rect x="0" y="0" width="${W.width}" height="${W.height}" fill="${project.theme?.customColors?.floor || THEME_DEFAULT.floor}"/>`;
+  const bg = st.background;
+  if (bg?.show && bg.data) s += `<image href="${esc(bg.data)}" x="${bg.x}" y="${bg.y}" width="${bg.width}" height="${bg.height}" opacity="${bg.opacity}" preserveAspectRatio="none"/>`; // 가져온 JSON의 문자열이 속성을 벗어나지 않게 이스케이프
   if (st.gridOn) s += `<rect width="${W.width}" height="${W.height}" fill="url(#${gid})" pointer-events="none"/>`;
   s += `<rect width="${W.width}" height="${W.height}" fill="none" stroke="#9fb4cc" stroke-width=".1"/>`;
   s += `<text x="${W.width / 2}" y="-.45" text-anchor="middle" font-size=".3" fill="#a7bfdc">${fmt(W.width)} m</text>`;

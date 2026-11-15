@@ -10,16 +10,16 @@
 |---|---|---|---|---|---|---|---|---|---|
 | F-001 | 프로젝트 생성·검증 | 00-core makeProject, validateProject | 새 프로젝트 | 스키마 2.3.6 유효 프로젝트 | Project 전체 | core/project | SV10 | IMPLEMENTED | G5 일치, 기준본 대조 V1 70사례 일치 — 열 우선 결과 재계산 제외 |
 | F-002 | Undo/Redo | 00-core commit/undo (전체 JSON 60개) | Ctrl+Z/Y, 버튼 | 원상복원, 이력 필드 보존 | undo/redo | core/history, core/session | CAD08 | IMPLEMENTING | patch 이력 단위 검사(무작위 200단계 왕복), 저장 E2E — 도면 편집 UI 전 |
-| F-003 | 창고 치수 적용·면적 역산 | 70-scenarios R.updateRoomApplyState | 가로·세로·면적 | 경계만 갱신, 랙 불변 | warehouse | warehouse/constraints, ui | UI01–UI05 | NOT STARTED | — |
+| F-003 | 창고 치수 적용·면적 역산 | 70-scenarios R.updateRoomApplyState | 가로·세로·면적 | 경계만 갱신, 랙 불변 | warehouse | warehouse/constraints, ui | UI01–UI05 | IMPLEMENTED | 치수 적용 사유·적용·차단·실행취소, 면적 역산 기준본 일치(R1, D-029) |
 | F-004 | SVG 렌더링·통계 | 20-renderer renderScene | — | 미터 좌표 기준 도면 | objects | cad/scene, warehouse/metrics, ui/panels | CAD10, P1, P2, E2E panels | IMPLEMENTING | 도형·겹침 표시(P1), 통계·범례·검색 흐림(P2) 기준본 일치. 라벨·Excel 색·참고 도면 전 |
 | F-005 | 객체 생성·삭제·복제 | 30-editor-io | 도구 선택·클릭 | 객체 추가/삭제 | objects | warehouse/commands | CAD01, E1, E2E edit | IMPLEMENTED | 추가(7종)·삭제·복제·회전·복사/붙여넣기 기준본 일치(E1). 다각형 통로·팔레트 끌어놓기 전 |
 | F-006 | 드래그 이동·그룹 이동 | 50-editor | 마우스 드래그 | 좌표 정확, 상대 위치 유지 | objects | warehouse/commands | CAD02, CAD07, E1, E2E edit | IMPLEMENTED | 단일·그룹 드래그, 스냅·mm 정리, 경고 차단, 포인터 취소, 위치 잠금 기준본 일치(E1). 실제 마우스 NOT RUN |
-| F-007 | 회전 (90°·임의 각도) | 50-editor, 10-geometry polygon | 회전 입력 | 규격 보존, 실제 형상 | rotation | geometry/rotation | CAD03, CAD04 | NOT STARTED | — |
+| F-007 | 회전 (90°·임의 각도) | 50-editor, 10-geometry polygon | 회전 입력 | 규격 보존, 실제 형상 | rotation | geometry/rotation | CAD03, CAD04 | IMPLEMENTED | 90° 버튼·R 키·그룹 회전(Phase 3b) + 속성 창 임의 각도(D-029) |
 | F-008 | 8방향 크기 조절 | 50-editor | 핸들 드래그 | 로컬 좌표계 크기 변경 | width/depth | warehouse/commands(resized), cad/scene(핸들) | CAD05, E1, E2E edit2 | IMPLEMENTED | 8방향·회전 로컬 축·스냅·최소 크기·비율 고정·차단 기준본 일치(E1). 실제 마우스 NOT RUN |
 | F-009 | 다중 선택·정렬 | 50-editor | Shift 클릭, 정렬 버튼 | 선택 집합 편집 | selection | cad/selection, warehouse/commands(calculateGroup), ui/group-dialog | CAD06, E1, E2E plan·edit2 | IMPLEMENTED | 선택 + 정렬 6종·일렬·간격(고정/균등)·그룹 이동·그룹 회전·순서(직접 지정 포함)·위반 허용 기준본 일치(E1) |
 | F-010 | 정밀 좌표·스냅·키보드 이동 | 80-precision-labels | 방향키, 스냅 간격 | 1mm 정확 이동 | x/y | geometry/tolerance(addMm·snapToStep), warehouse/commands | CAD09, E1, unit commands | IMPLEMENTING | 방향키 0.01/Shift 0.1m, 1mm 입력 검사, 스냅 간격·정렬 가이드 — 가이드 흡착은 단위 검사만, 거리 표시 전 |
 | F-011 | 카메라·휠 확대 | 50-editor M.handleWheel/flushWheel | 휠, 핀치, 패널 스크롤 | 좌표 불변, 패널 스크롤 분리 | viewport | cad/camera | CAD10, CAD11, P1, E2E plan | IMPLEMENTED | 카메라 13사례 기준본 일치, 휠 기준점·패널 스크롤 분리·팬·Esc 취소 E2E(합성 이벤트). 실제 마우스·터치패드·핀치 NOT RUN |
-| F-012 | 참고 도면·두 점 축척 | 35-reference | 이미지, 두 점+거리 | 축척 계산 | background | cad/reference | CAD12 | NOT STARTED | — |
+| F-012 | 참고 도면·두 점 축척 | 35-reference | 이미지, 두 점+거리 | 축척 계산 | background | cad/reference | CAD12 | IMPLEMENTED | 참고 도면 불러오기·표시·투명도·두 점 축척·지우기, 렌더 순서 기준본 일치(R1, D-029) |
 | F-013 | 회전 충돌 (SAT) | 10-geometry overlaps | — | 정확한 겹침 판정, 접촉은 충돌 아님(D-004) | objects | geometry/polygons, geometry/collision | GEO01, GEO08, G1, G2, S1 | IMPLEMENTED | G1 421쌍·G2·S1(회전 랙·벽·기둥 충돌) 기준본 일치 |
 | F-014 | 간격·이격 (다각형 최소거리) | 10-geometry gap, warnings | 간격 설정 | 실제/요구/부족 거리 | settings | geometry/collision(gap), geometry/clearance | GEO02–GEO05, G1, G2, S1 | IMPLEMENTED | G1 gap·G2·S1(최소 간격 경계값, 벽·외벽 이격, 설계 간격) 기준본 일치 |
 | F-015 | 경계 초과·통로 최소 폭 | 10-geometry warnings | 통로 설정 | 경고·차단 구분 | aisles | geometry/clearance, warehouse/constraints | GEO06, GEO07, G2, S1 | IMPLEMENTED | 경계 이탈·통로 최소/목표 폭·침범·L자 통로·출입문 연결·scopeIds 기준본 일치. 경고/차단 정책 UI 전 |
