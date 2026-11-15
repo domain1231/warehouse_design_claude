@@ -2,15 +2,16 @@
 // 카메라(viewBox)는 여기서 다루지 않는다. 화면은 배치·선택이 바뀔 때만 내용을 다시 만들고, 확대·이동은 viewBox만 바꾼다.
 //
 // 랙·ZONE 라벨(V.labels, F-019)은 labels.js. 랙 전체 이름 툴팁(V.fullLabel)은 labels.js rackFullLabel(화면 연결은 후속).
-// 아직 옮기지 않은 것(후속 단계): 참고 도면 이미지(F-012), 측정점, Excel 상태 색(EX.color 표시 모드).
+// 아직 옮기지 않은 것(후속 단계): 참고 도면 이미지(F-012), 측정점.
 import { warnings as spatialWarnings, ratio } from '../warehouse/constraints.js';
 import { aisleClearance } from '../geometry/clearance.js';
 import { HANDLE_DIRECTIONS, handlePoint } from '../warehouse/commands.js';
 import { matchRack } from '../warehouse/racklist.js';
 import { bounds, triangles } from '../geometry/polygons.js';
-import { OBJECT_TYPES, COLORS_DEFAULT } from '../core/project.js';
+import { OBJECT_TYPES } from '../core/project.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { rackLabelsSvg } from './labels.js';
+import { rackColor, customColor } from '../warehouse/appearance.js';
 
 /** 기준본 V.objectDefault: 랙 외 객체 기본 색. */
 export const OBJECT_COLORS = Object.freeze({ wall: '#9aaec7', column: '#b1c2d5', aisle: '#19423d', work: '#364663', blocked: '#665041', door: '#374b67' });
@@ -28,11 +29,6 @@ export function loadState(o, settings) {
   return r === null ? 'unknown' : r === 0 ? 'empty' : r < settings.low ? 'low' : r < settings.high ? 'mid' : r <= 100 ? 'high' : 'over';
 }
 
-/** 사용자 지정 색(theme.colorMode === 'custom')이 있으면 우선한다(기준본 V.fill). */
-function customFill(project, scope, o, fallback) {
-  return (project.theme?.colorMode === 'custom' && project.theme.objectColors?.[scope]?.[o.id]) || fallback;
-}
-
 /** 선택된 객체들의 외곽 상자(기준본 M.box). */
 export function selectionBox(objects) {
   if (!objects.length) return null;
@@ -42,11 +38,12 @@ export function selectionBox(objects) {
   return { minX, maxX, minY, maxY, width: maxX - minX, depth: maxY - minY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
 }
 
-function objectShape(o, fill, stroke, sel, aisle) {
+function objectShape(o, fill, stroke, sel, aisle, custom) {
   if (o.kind === 'aisle' && aisle) {
     fill = aisle.severity === 'bad' ? '#8d3543' : aisle.severity === 'target' ? '#98612e' : '#24615b';
     stroke = aisle.severity === 'bad' ? '#ff7c8b' : aisle.severity === 'target' ? '#ffc078' : sel ? '#c4ddff' : '#64b9b1';
   }
+  if (custom && o.kind !== 'rack') fill = custom; // 기준본 M.objectSvg: 통로 상태 색 뒤에 지정 색 적용
   const props = `fill="${fill}" fill-opacity="${o.kind === 'rack' ? 1 : 0.4}" stroke="${stroke}" stroke-width="${sel ? 0.075 : 0.035}" ${DASHED.has(o.kind) ? 'stroke-dasharray=".13 .08"' : ''}`;
   if (o.vertices) {
     const raw = o.vertices.map(([u, v]) => [o.x + u * o.width, o.y + v * o.depth]);
@@ -73,7 +70,6 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
   const ws = warnings ?? spatialWarnings(layout, project);
   const bad = new Set(ws.flatMap((w) => w.ids));
   const aisles = new Map(layout.objects.filter((o) => o.kind === 'aisle').map((o) => [o.id, aisleClearance(o, layout)]));
-  const colors = { ...COLORS_DEFAULT, ...st.colors };
   const selColor = project.theme?.customColors?.selected || THEME_DEFAULT.selected;
   let s = `<defs><pattern id="pgrid" width="${st.grid}" height="${st.grid}" patternUnits="userSpaceOnUse"><path d="M ${st.grid} 0 L 0 0 0 ${st.grid}" fill="none" stroke="#2a3c51" stroke-width=".012"/></pattern></defs>`;
   s += `<rect x="0" y="0" width="${W.width}" height="${W.height}" fill="${project.theme?.customColors?.floor || THEME_DEFAULT.floor}"/>`;
@@ -84,9 +80,9 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
   const cursor = tool === 'select' ? 'grab' : 'crosshair';
   for (const o of [...layout.objects].sort((a, b) => ORDER[a.kind] - ORDER[b.kind])) {
     const sel = selected.has(o.id), cx = o.x + o.width / 2, cy = o.y + o.depth / 2, isRack = o.kind === 'rack';
-    const fill = customFill(project, scope, o, isRack ? colors[loadState(o, st)] : OBJECT_COLORS[o.kind]);
+    const fill = isRack ? rackColor(o, project, scope) : OBJECT_COLORS[o.kind];
     const stroke = bad.has(o.id) ? '#ff7885' : sel ? selColor : isRack ? '#a4c7ed' : '#627d97';
-    s += `<g data-id="${esc(o.id)}" opacity="${filter && !matchRack(o, filter) ? 0.2 : 1}" transform="rotate(${o.rotation} ${cx} ${cy})" style="cursor:${cursor}"><title>${esc(o.code + ' · ' + OBJECT_TYPES[o.kind])}</title>${objectShape(o, fill, stroke, sel, aisles.get(o.id))}`;
+    s += `<g data-id="${esc(o.id)}" opacity="${filter && !matchRack(o, filter) ? 0.2 : 1}" transform="rotate(${o.rotation} ${cx} ${cy})" style="cursor:${cursor}"><title>${esc(o.code + ' · ' + OBJECT_TYPES[o.kind])}</title>${objectShape(o, fill, stroke, sel, aisles.get(o.id), customColor(project, scope, o))}`;
     if (isRack) {
       s += `<path d="M ${o.x + 0.05} ${o.y + 0.12} H ${o.x + o.width - 0.05}" stroke="#d9e8ff" stroke-opacity=".35" stroke-width=".025"/>`;
       if (bad.has(o.id)) s += `<g transform="rotate(${-o.rotation} ${cx} ${cy})" pointer-events="none"><text x="${cx}" y="${cy - 0.12}" fill="#ff7885" font-size=".18">⚠</text></g>`;
@@ -98,7 +94,7 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     if (!isRack && !o.vertices) s += `<g transform="rotate(${-o.rotation} ${cx} ${cy})"><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" fill="#c7d9ed" font-size="${Math.min(0.22, o.width / (Math.max(o.code.length, 4) * 0.7))}">${esc(o.code)}</text></g>`;
     s += '</g>';
   }
-  const labels = rackLabelsSvg(layout, project, { scope, selected, pixelsPerMeter, report, mini, fillOf: (o) => customFill(project, scope, o, colors[loadState(o, st)]) });
+  const labels = rackLabelsSvg(layout, project, { scope, selected, pixelsPerMeter, report, mini, fillOf: (o) => rackColor(o, project, scope) });
   s += labels.svg;
   // 겹침 표시(기준본 M.overlay): 통로 최소 유효 폭 선, 다중 선택 상자, 영역 선택 사각형.
   for (const r of aisles.values()) {

@@ -36,6 +36,8 @@ export function rackRows(layout, view) {
   return rows;
 }
 
+export const HEIGHT_POLICY_NOTES = Object.freeze({ weightedMax: '선반별 최대 자재 높이 합 ÷ 선반 높이 합', meanMax: '선반별 최대 자재 높이 비율의 단순 평균', max: '모든 등록 선반의 최대 자재 높이 비율 중 최댓값' });
+
 /** 범례 제목·항목(기준본 40 EX.legend + 80 범위 문구). vizMode: inventory | height | registered | management. */
 export function legend(settings) {
   const mode = settings.vizMode ?? 'inventory';
@@ -47,5 +49,5 @@ export function legend(settings) {
     if (mode === 'registered') return k === 'low' ? '자재 위치 등록' : '등록/실존 미확인';
     return k === 'mid' ? '관리 정보 있음' : '관리 정보 없음';
   };
-  return { title, items: keys.map((k) => ({ key: k, color: settings.colors[k], text: text(k) })), note: mode === 'height' ? '집계 정책 기준 · 동일 선반 자재 높이는 합산하지 않음 · 실재고/부피 비율과 별개' : '' };
+  return { title, items: keys.map((k) => ({ key: k, color: settings.colors[k], text: text(k) })), note: mode === 'height' ? `집계: ${HEIGHT_POLICY_NOTES[settings.heightPolicy] ?? HEIGHT_POLICY_NOTES.weightedMax} · 동일 선반 자재 높이는 합산하지 않음 · 실재고/부피 비율과 별개` : '' };
 }
