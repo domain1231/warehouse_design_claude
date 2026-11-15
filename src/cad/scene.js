@@ -10,7 +10,7 @@ import { matchRack } from '../warehouse/racklist.js';
 import { bounds, triangles } from '../geometry/polygons.js';
 import { OBJECT_TYPES } from '../core/project.js';
 import { formatNumber as fmt } from '../core/format.js';
-import { rackLabelsSvg } from './labels.js';
+import { rackLabelsSvg, rackFullLabel } from './labels.js';
 import { rackColor, customColor } from '../warehouse/appearance.js';
 
 /** 기준본 V.objectDefault: 랙 외 객체 기본 색. */
@@ -71,9 +71,10 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
   const bad = new Set(ws.flatMap((w) => w.ids));
   const aisles = new Map(layout.objects.filter((o) => o.kind === 'aisle').map((o) => [o.id, aisleClearance(o, layout)]));
   const selColor = project.theme?.customColors?.selected || THEME_DEFAULT.selected;
-  let s = `<defs><pattern id="pgrid" width="${st.grid}" height="${st.grid}" patternUnits="userSpaceOnUse"><path d="M ${st.grid} 0 L 0 0 0 ${st.grid}" fill="none" stroke="#2a3c51" stroke-width=".012"/></pattern></defs>`;
+  const gid = report ? 'rgrid' : 'pgrid'; // 보고서 SVG는 화면 도면과 같은 문서에 들어가도 id가 겹치지 않는다(기준본)
+  let s = `<defs><pattern id="${gid}" width="${st.grid}" height="${st.grid}" patternUnits="userSpaceOnUse"><path d="M ${st.grid} 0 L 0 0 0 ${st.grid}" fill="none" stroke="#2a3c51" stroke-width=".012"/></pattern></defs>`;
   s += `<rect x="0" y="0" width="${W.width}" height="${W.height}" fill="${project.theme?.customColors?.floor || THEME_DEFAULT.floor}"/>`;
-  if (st.gridOn) s += `<rect width="${W.width}" height="${W.height}" fill="url(#pgrid)" pointer-events="none"/>`;
+  if (st.gridOn) s += `<rect width="${W.width}" height="${W.height}" fill="url(#${gid})" pointer-events="none"/>`;
   s += `<rect width="${W.width}" height="${W.height}" fill="none" stroke="#9fb4cc" stroke-width=".1"/>`;
   s += `<text x="${W.width / 2}" y="-.45" text-anchor="middle" font-size=".3" fill="#a7bfdc">${fmt(W.width)} m</text>`;
   s += `<text x="-.5" y="${W.height / 2}" text-anchor="middle" transform="rotate(-90 -.5 ${W.height / 2})" font-size=".3" fill="#a7bfdc">${fmt(W.height)} m</text>`;
@@ -82,7 +83,7 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     const sel = selected.has(o.id), cx = o.x + o.width / 2, cy = o.y + o.depth / 2, isRack = o.kind === 'rack';
     const fill = isRack ? rackColor(o, project, scope) : OBJECT_COLORS[o.kind];
     const stroke = bad.has(o.id) ? '#ff7885' : sel ? selColor : isRack ? '#a4c7ed' : '#627d97';
-    s += `<g data-id="${esc(o.id)}" opacity="${filter && !matchRack(o, filter) ? 0.2 : 1}" transform="rotate(${o.rotation} ${cx} ${cy})" style="cursor:${cursor}"><title>${esc(o.code + ' · ' + OBJECT_TYPES[o.kind])}</title>${objectShape(o, fill, stroke, sel, aisles.get(o.id), customColor(project, scope, o))}`;
+    s += `<g data-id="${esc(o.id)}" opacity="${filter && !matchRack(o, filter) ? 0.2 : 1}" transform="rotate(${o.rotation} ${cx} ${cy})" style="cursor:${cursor}"><title>${esc(isRack ? rackFullLabel(o, project, scope) : o.code + ' · ' + OBJECT_TYPES[o.kind])}</title>${objectShape(o, fill, stroke, sel, aisles.get(o.id), customColor(project, scope, o))}`;
     if (isRack) {
       s += `<path d="M ${o.x + 0.05} ${o.y + 0.12} H ${o.x + o.width - 0.05}" stroke="#d9e8ff" stroke-opacity=".35" stroke-width=".025"/>`;
       if (bad.has(o.id)) s += `<g transform="rotate(${-o.rotation} ${cx} ${cy})" pointer-events="none"><text x="${cx}" y="${cy - 0.12}" fill="#ff7885" font-size=".18">⚠</text></g>`;
@@ -96,6 +97,9 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
   }
   const labels = rackLabelsSvg(layout, project, { scope, selected, pixelsPerMeter, report, mini, fillOf: (o) => rackColor(o, project, scope) });
   s += labels.svg;
+  // 북쪽 표시(기준본 40 scene 래퍼): 라벨 뒤, 겹침 표시 앞.
+  const na = (layout.northRotation ?? project.locationLayout?.northRotation ?? 0) * Math.PI / 180, nx = W.width - 0.65, ny = 0.8, ndx = Math.sin(na) * 0.45, ndy = -Math.cos(na) * 0.45;
+  s += `<g pointer-events="none"><path d="M ${nx} ${ny} l ${ndx} ${ndy}" stroke="#e1e9f5" stroke-width=".06"/><circle cx="${nx + ndx}" cy="${ny + ndy}" r=".065" fill="#e1e9f5"/><text x="${nx + ndx + 0.1}" y="${ny + ndy}" font-size=".22" fill="#e1e9f5">N</text></g>`;
   // 겹침 표시(기준본 M.overlay): 통로 최소 유효 폭 선, 다중 선택 상자, 영역 선택 사각형.
   for (const r of aisles.values()) {
     if (!r.line || !r.enabled) continue;

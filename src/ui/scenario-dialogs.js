@@ -36,7 +36,7 @@ const dlg = (cls, testid, html) => {
 };
 
 /** @param {{ getProject: () => object, toast: (t: string) => void, apply: (label: string, compute: Function) => Promise<any>, download: Function, cloneBeforeToAfter: Function, restoreBackup: Function, cloneCommand: string, restoreCommand: string }} deps */
-export function createScenarioDialogs({ getProject, toast, apply, download, cloneBeforeToAfter, restoreBackup, cloneCommand, restoreCommand }) {
+export function createScenarioDialogs({ getProject, toast, apply, download, jsonName, cloneBeforeToAfter, restoreBackup, cloneCommand, restoreCommand }) {
   const failed = (r) => r && !r.ok && toast('ROLLED_BACK · 전체 취소: ' + r.reason);
 
   // ── 복제 ──
@@ -80,7 +80,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, clon
     q(md, '[data-rows]').innerHTML = `<p class="info">${noBefore ? '개선 전 기준 도면이 없어 배치 개선 효과를 비교할 수 없습니다.' : p.scenarios.before.referenceSample ? 'BEFORE는 참고 샘플입니다. 실제 기준 도면으로 확정하지 마세요.' : '공통 원점·동일 배율 비교입니다. 위치·치수 근거와 창고/층의 동일성을 확인하세요.'}</p><p class="muted">녹색: 신규 / 빨강 점선: 제거 / 파랑·화살표: 이동 / R: 회전 / 주황: 설계 규격 · 내부 채움은 기존 재고 색상</p>` + table([['랙', '변경 유형 (복수)', 'BEFORE X/Y/° · 설계 m', 'AFTER X/Y/° · 설계 m', '원본 규격 m'], ...diffRows(d)]);
   };
   q(md, '[data-mode]').addEventListener('change', drawCompare);
-  q(md, '[data-save]').addEventListener('click', () => download('warehouse_comparison_project.json', JSON.stringify(getProject(), null, 2), 'application/json'));
+  q(md, '[data-save]').addEventListener('click', () => download(jsonName(), JSON.stringify(getProject(), null, 2), 'application/json'));
   q(md, '[data-csv]').addEventListener('click', () => { const p = getProject(); download('warehouse_rack_changes.csv', csvEncode([DIFF_CSV_HEADER, ...diffRows(rackDiff(p.scenarios.before, p.scenarios.after))]), 'text/csv;charset=utf-8'); });
   const openCompare = () => { drawCompare(); if (!md.open) md.showModal(); };
 

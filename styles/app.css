@@ -229,3 +229,20 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .storage-dialog .version-row { padding: 10px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
 .storage-dialog .version-row button { margin: 4px 4px 0 0; }
 .storage-dialog th { text-align: left; font-weight: 600; padding-right: 12px; }
+
+/* Phase 10: 내보내기 줄·하단 패널·인쇄 */
+.export-row { margin: 0 0 10px; }
+.bottom-grip { height: 8px; cursor: ns-resize; background: var(--line); touch-action: none; flex: none; }
+.bottom-grip:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.bottom-grip[hidden], .bottom[hidden] { display: none; }
+.bottom { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; min-height: 0; overflow: hidden; background: var(--panel); }
+.bottom > .side-section { overflow: auto; min-width: 0; padding: 6px 10px; border-top: 0; border-left: 1px solid var(--line); }
+.bottom > .side-section:first-child { border-left: 0; }
+.bottom > .side-section:not([open]) { overflow: hidden; }
+#printArea { display: none; }
+@media print {
+  #app, dialog { display: none !important; }
+  #printArea { display: block; }
+  #printArea svg { width: 100%; height: auto; }
+  @page { size: landscape; margin: 8mm; }
+}

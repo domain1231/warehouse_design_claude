@@ -36,7 +36,6 @@ const rackBox = (page, id) => page.locator(`[data-testid=plan] g[data-id="${id}"
 /** 11-01에 배치 기록 → 랙 이동 + 11-02 재고 기록. 반환: 이동한 랙(기록 시점 좌표). */
 async function prepare(page) {
   await T(page, 'allow-warnings').check();
-  await page.locator('[data-testid=snapshots-section] > summary').click();
   await T(page, 'snap-date').fill('2026-11-01');
   await T(page, 'snap-name').fill('기준 배치');
   await T(page, 'snap-save').click();
@@ -55,6 +54,7 @@ const planX = (page, id) => page.evaluate((id) => {
 
 test('날짜 조회: 상태 문구·그날 배치 표시, 모드 current, 읽기 전용 차단, 현재 편집 복귀', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   const rack = await prepare(page);
   const live = await planX(page, rack.id);
   await T(page, 'history-date').fill('2026-11-01');
@@ -99,6 +99,7 @@ test('날짜 조회: 상태 문구·그날 배치 표시, 모드 current, 읽기
 
 test('배치 이력 행의 조회 버튼은 해당 날짜 저장 배치로 조회를 시작한다', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await prepare(page);
   await page.locator('[data-testid=snap-rows] [data-view]').click();
   assert.equal(await T(page, 'history-date').inputValue(), '2026-11-01');

@@ -22,12 +22,14 @@ import { createRecordsPanel } from './ui/records-panel.js';
 import { createExcelDialog } from './ui/excel-dialog.js';
 import { createScenarioDialogs } from './ui/scenario-dialogs.js';
 import { createStorageDialogs, QUOTA_TEXT } from './ui/storage-dialogs.js';
-import { cloneBeforeToAfter, restoreBackup, CLONE_COMMAND, RESTORE_COMMAND } from './warehouse/scenarios.js';
+import { compareRows, cloneBeforeToAfter, restoreBackup, CLONE_COMMAND, RESTORE_COMMAND } from './warehouse/scenarios.js';
 import { applyExcelProposal, EXCEL_APPLY_COMMAND } from './excel/apply.js';
 import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
 import { saveSnapshot, restoreSnapshot, historyLayout, historyDates, historyStatusText, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
 import { OBJECT_TYPES } from './core/project.js';
+import { rackCsvRows, historyCsvRows, templateCsvRows, reportSvg } from './exports/report.js';
+import { csvEncode } from './warehouse/rackinfo.js';
 import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
 
 export const APP_VERSION = __APP_VERSION__;
@@ -115,6 +117,12 @@ function renderShell(root) {
   const leftToggle = button('toggle-left', '');
   const rightToggle = button('toggle-right', '');
   panelRow.append(leftToggle, rightToggle);
+  const bottomToggle = button('bottom-toggle', '하단 전체 접기');
+  const bottomDefault = button('bottom-default', '기본 레이아웃 복원');
+  panelRow.append(bottomToggle, bottomDefault);
+  const exportRow = el('div', { class: 'tool-group export-row', role: 'group', 'aria-label': '내보내기' });
+  const exportBtns = Object.fromEntries([['svg', 'SVG'], ['png', 'PNG'], ['print', '인쇄'], ['racks-csv', '랙 목록 CSV'], ['history-csv', '이력 CSV'], ['template-csv', 'CSV 양식'], ['compare-csv', '비교 요약 CSV']].map(([k, t]) => [k, button('export-' + k, t)]));
+  exportRow.append(...Object.values(exportBtns));
   header.append(brand, label, scenarioRow, panelRow, statusBox, actions);
   const notice = el('p', { class: 'notice', testid: 'notice' });
 
@@ -234,15 +242,20 @@ function renderShell(root) {
   const [statsBox, statsBody] = section('배치 통계', 'stats-section');
   const [warnBox, warnBody] = section('공간 경고', 'warnings-section');
   const [listBox, listBody] = section('랙 목록', 'racklist-section');
-  const [invBox, invBody] = section('재고 기록', 'inventory-section', false);
-  const [snapBox, snapBody] = section('배치 이력', 'snapshots-section', false);
+  const [invBox, invBody] = section('재고 기록', 'inventory-section');
+  const [snapBox, snapBody] = section('배치 이력', 'snapshots-section');
+  // 하단 패널(기준본 65 sBottom): 재고 기록·배치 이력·랙 목록·공간 검토. 구역 키는 project.panels.bottomSections와 같다.
+  const bottomSections = { inventory: invBox, layout: snapBox, racks: listBox, space: warnBox };
+  const bottomGrip = el('div', { class: 'bottom-grip', role: 'separator', 'aria-orientation': 'horizontal', 'aria-label': '하단 패널 높이 조절', 'aria-valuemin': '160', 'aria-valuemax': '600', tabindex: '0', title: '위아래로 끌어 높이 조절 · 방향키 20px', testid: 'bottom-grip' });
+  const bottom = el('section', { class: 'bottom', 'aria-label': '하단 패널', testid: 'bottom-panel' });
+  bottom.append(...Object.values(bottomSections));
   const detailBtn = button('open-detail', '▤ 랙 상세(더블클릭)');
-  right.append(el('h2', {}, '선택'), selStatus, selList, detailBtn, selWarn, inspector, statsBox, warnBox, listBox, invBox, snapBox, el('h2', {}, '요약'), summary, note);
+  right.append(el('h2', {}, '선택'), selStatus, selList, detailBtn, selWarn, inspector, statsBox, el('h2', {}, '내보내기'), exportRow, el('h2', {}, '요약'), summary, note);
 
   const main = el('div', { class: 'workspace' });
   main.append(left, canvasWrap, right);
   const toast = el('p', { class: 'toast', testid: 'toast', role: 'alert', hidden: '' });
-  app.append(header, notice, main, toast);
+  app.append(header, notice, main, bottomGrip, bottom, toast);
   root.replaceChildren(app);
   return {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, importBtn, importInput, versionsBtn, storageBtn, recoveryBtn, summary,
@@ -251,13 +264,15 @@ function renderShell(root) {
     vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: colorMode.querySelector('select'), resetScope: resetScope.querySelector('select'), resetBtn, applyColorsBtn,
     thrLow: thrLow.querySelector('input'), thrHigh: thrHigh.querySelector('input'), colorInputs: Object.fromEntries(colorInputs.map(([k, l]) => [k, l.querySelector('input')])),
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
-    scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
+    scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn, leftToggle, rightToggle, bottomToggle, bottomDefault, bottomGrip, bottom, bottomSections, exportBtns, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     histDate, histSlider, histMode, liveBtn, histStatus, toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
 
 async function start() {
   const ui = renderShell(document.getElementById('app'));
+  const printArea = el('div', { id: 'printArea', 'aria-hidden': 'true' });
+  document.body.append(printArea);
   const store = createProjectStore({ storage: window.localStorage, validate: projectValidator });
   const ids = createIdGenerator();
   // 주요 작업 전 전체 프로젝트 백업 링(기준본 V.checkpoint, D-026). 지문은 저장 메타(persistence)를 뺀 프로젝트 JSON.
@@ -321,7 +336,7 @@ async function start() {
   });
   const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => historyBlocked() || session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)) });
   const scenarioDialogs = createScenarioDialogs({
-    getProject: () => project(), toast: (t) => showToast(t), download, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
+    getProject: () => project(), toast: (t) => showToast(t), download, jsonName: () => `warehouse_project_v${SCHEMA_VERSION.replaceAll('.', '_')}_${today()}.json`, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
     apply: (label, compute) => historyBlocked() || session.apply(label, compute),
   });
   const groupDialog = createGroupDialog({
@@ -576,6 +591,12 @@ async function start() {
     const pn = s.project.panels;
     ui.main.classList.toggle('left-closed', !pn.leftOpen);
     ui.main.classList.toggle('right-closed', !pn.rightOpen);
+    ui.bottom.hidden = ui.bottomGrip.hidden = !pn.bottomOpen;
+    ui.bottom.style.height = pn.bottomHeight + 'px';
+    ui.bottomGrip.setAttribute('aria-valuenow', String(pn.bottomHeight));
+    ui.bottomToggle.textContent = pn.bottomOpen ? '하단 전체 접기' : '하단 전체 펼치기';
+    ui.bottomToggle.setAttribute('aria-expanded', String(pn.bottomOpen));
+    for (const [k, box] of Object.entries(ui.bottomSections)) if (box.open !== pn.bottomSections[k]) box.open = pn.bottomSections[k];
     ui.leftToggle.textContent = pn.leftOpen ? '◧ 도구 접기' : '◧ 도구 펼치기';
     ui.rightToggle.textContent = pn.rightOpen ? '◨ 정보 접기' : '◨ 정보 펼치기';
     ui.scenBefore.classList.toggle('active', s.project.settings.scenario === 'before');
@@ -633,6 +654,58 @@ async function start() {
   ui.undoBtn.addEventListener('click', () => guard(() => session.undo()));
   ui.redoBtn.addEventListener('click', () => guard(() => session.redo()));
   ui.exportBtn.addEventListener('click', () => { if (project()) storageDialogs.exportCurrent(); });
+  // 내보내기(기준본 30): 현재 화면의 배치(과거 조회 중이면 그 날짜의 배치)를 쓴다. SVG·PNG·인쇄는 같은 reportSvg.
+  const csv = (name, rows) => download(name, csvEncode(rows), 'text/csv;charset=utf-8');
+  const report = () => reportSvg(project(), { layout: layout(), historyDate, today: today() });
+  ui.exportBtns.svg.addEventListener('click', () => download('warehouse_layout.svg', report(), 'image/svg+xml;charset=utf-8'));
+  ui.exportBtns.png.addEventListener('click', async () => {
+    let url = '';
+    try {
+      url = URL.createObjectURL(new Blob([report()], { type: 'image/svg+xml' }));
+      const img = new Image();
+      await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = () => reject(new Error('SVG 이미지 변환 실패')); img.src = url; });
+      const c = document.createElement('canvas');
+      c.width = img.width;
+      c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+      const blob = await new Promise((resolve) => c.toBlob(resolve, 'image/png'));
+      if (!blob) throw new Error('PNG 변환 실패');
+      download('warehouse_layout.png', blob);
+      showToast('PNG 보고서를 저장했습니다.');
+    } catch (e) {
+      showToast('PNG 출력 실패: ' + e.message + ' · SVG 출력을 이용하세요.');
+    } finally {
+      if (url) URL.revokeObjectURL(url);
+    }
+  });
+  ui.exportBtns.print.addEventListener('click', () => { printArea.innerHTML = report(); window.print(); });
+  ui.exportBtns['racks-csv'].addEventListener('click', () => csv('warehouse_racks.csv', rackCsvRows(layout())));
+  ui.exportBtns['history-csv'].addEventListener('click', () => csv('inventory_history.csv', historyCsvRows(project())));
+  ui.exportBtns['template-csv'].addEventListener('click', () => csv('inventory_template.csv', templateCsvRows(layout(), today())));
+  ui.exportBtns['compare-csv'].addEventListener('click', () => csv('warehouse_comparison.csv', compareRows(project())));
+
+  // 하단 패널(기준본 65): 접기·기본 복원·구역 접기·높이 조절. 화면 상태이므로 실행취소에 넣지 않는다.
+  const panelsOf = () => project().panels;
+  ui.bottomToggle.addEventListener('click', () => pref({ panels: { bottomOpen: !panelsOf().bottomOpen } }));
+  ui.bottomDefault.addEventListener('click', () => {
+    pref({ panels: { leftOpen: true, rightOpen: true, bottomOpen: false, bottomSections: { inventory: true, layout: true, racks: true, space: true }, bottomHeight: 300, panelHeights: { upper: 126, lower: 174 }, layoutPreset: 'restored-default' } });
+    showToast('화면 구성만 초기화됩니다. 창고 데이터는 유지됩니다.');
+  });
+  for (const [k, box] of Object.entries(ui.bottomSections)) {
+    box.addEventListener('toggle', () => { if (project() && box.open !== panelsOf().bottomSections[k]) pref({ panels: { bottomSections: { ...panelsOf().bottomSections, [k]: box.open }, layoutPreset: 'custom' } }); });
+  }
+  const setBottomHeight = (h) => { const v = Math.max(160, Math.min(600, Math.round(h))); pref({ panels: { bottomHeight: v, panelHeights: { upper: Math.round(v * 0.42), lower: Math.round(v * 0.58) }, layoutPreset: 'custom' } }); };
+  let gripDrag = null;
+  ui.bottomGrip.addEventListener('pointerdown', (e) => { if (e.button !== 0) return; e.preventDefault(); gripDrag = { y: e.clientY, h: panelsOf().bottomHeight, id: e.pointerId }; ui.bottomGrip.setPointerCapture(e.pointerId); });
+  ui.bottomGrip.addEventListener('pointermove', (e) => { if (gripDrag && e.pointerId === gripDrag.id) ui.bottom.style.height = Math.max(160, Math.min(600, gripDrag.h + gripDrag.y - e.clientY)) + 'px'; });
+  const gripEnd = (e) => { if (!gripDrag) return; const d = gripDrag; gripDrag = null; if (e.type === 'pointerup') setBottomHeight(d.h + d.y - e.clientY); else ui.bottom.style.height = d.h + 'px'; };
+  ui.bottomGrip.addEventListener('pointerup', gripEnd);
+  ui.bottomGrip.addEventListener('pointercancel', gripEnd);
+  ui.bottomGrip.addEventListener('keydown', (e) => {
+    if (!['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    setBottomHeight(e.key === 'Home' ? 160 : e.key === 'End' ? 600 : panelsOf().bottomHeight + (e.key === 'ArrowUp' ? 20 : -20));
+  });
   ui.importBtn.addEventListener('click', () => ui.importInput.click());
   ui.importInput.addEventListener('change', async () => {
     const f = ui.importInput.files[0];

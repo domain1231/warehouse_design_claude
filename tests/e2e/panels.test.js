@@ -46,6 +46,7 @@ test('통계·범례: 샘플 배치의 면적·랙 수·경고 수, 범례 6항�
 
 test('경고 목록 클릭: 관련 객체를 선택하고 그 영역으로 화면 이동', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   const first = page.locator('[data-testid=warnings-section] li').first();
   await first.click();
   const v = await page.evaluate(() => window.__warehouseView);
@@ -57,6 +58,7 @@ test('경고 목록 클릭: 관련 객체를 선택하고 그 영역으로 화�
 
 test('랙 목록: 검색·필터는 목록을 줄이고 도면에서 나머지를 흐리며, 정렬·행 클릭 선택, 새로고침 후 필터 유지', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   const total = await page.locator('[data-testid=rack-list] [data-rack]').count();
   assert.ok(total > 10);
   await page.locator('[data-testid=rack-search]').fill('b-7');

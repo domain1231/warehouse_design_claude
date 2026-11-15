@@ -80,8 +80,8 @@ test('랙 더블클릭 상세: 선반·자재 카드, 자재 원본 정보, 검�
 
 test('재고 기록: 범위(현재·전체·이전)·검색, 미확인 수량 표시', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await attachFixture(page);
-  await page.locator('[data-testid=inventory-section] > summary').click();
   const rows = page.locator('[data-testid=inv-rows] tr');
   await page.waitForFunction(() => document.querySelectorAll('[data-testid=inv-rows] tr').length === 3); // 머리글 + 현재 2건
   assert.match(await page.locator('[data-testid=inv-rows]').textContent(), /5 \/ 미확인 BOX/);
@@ -99,8 +99,8 @@ test('재고 기록: 범위(현재·전체·이전)·검색, 미확인 수량 �
 
 test('배치 이력: 현재 배치 기록 → 이동 → 복원(화면 초기화·실행취소 가능), 비교 대화상자', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await page.locator('[data-testid=allow-warnings]').check();
-  await page.locator('[data-testid=snapshots-section] > summary').click();
   await page.locator('[data-testid=snap-date]').fill('2026-11-01');
   await page.locator('[data-testid=snap-name]').fill('기준 배치');
   await page.locator('[data-testid=snap-save]').click();
