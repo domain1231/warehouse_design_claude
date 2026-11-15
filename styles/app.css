@@ -205,3 +205,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .excel-preview-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px; }
 .summary-text { white-space: pre-wrap; font-size: 11px; background: var(--bg); padding: 6px; border-radius: 4px; }
 @media (max-width: 900px) { .excel-preview-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* 라벨은 클릭을 가로채지 않는다(기준본 .v-labels). */
+.v-labels{pointer-events:none}

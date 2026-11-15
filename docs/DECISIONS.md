@@ -121,3 +121,9 @@
 - 승인 후보=적용 후보: 기준본 W.proof 대신 미리보기를 만든 프로젝트 객체와 적용 시점 프로젝트가 같은지 확인한다(세션 프로젝트는 변경 시 새 객체). 다르면 다시 계산하고 재확인을 요구한다. 설정을 바꾸면 경고 확인 체크가 풀린다.
 - 기준본 일치: `tools/excel-diff.mjs`가 기준본 페이지에서 W.base 결과를 실제 70 EX.apply(wApply)와 90 R.transaction으로 적용(화면 확인·후보 일치 검사만 대체)한 프로젝트를 기록한다. 자동 배치 이력 지문은 객체 ID를 포함하므로 "적용 배치의 검사 지문과 같은가"만 비교한다. X2 8사례 일치.
 - 매핑 요약 복사: 실제 업무 파일 확인을 위해 시트·머리글 이름·열 위치·건수·문제 유형만 복사한다(품목·로케이션 등 셀 값 제외).
+
+## D-019 랙·ZONE 라벨과 글자 폭 측정 (2026-11-15, Phase 5c-1)
+- `src/cad/labels.js`: 기준본 80 Q.parts·V.fullLabel·V.labels(실효 정의, 75:108은 덮어써져 미사용)와 75 fits·V.shortCode·V.textColor를 옮겼다. 라벨은 객체 뒤·오버레이 앞에 그린다. 표시 설정 변경과 ZONE 표시 이름은 기준본 V.appearanceEdit처럼 실행취소에 기록한다.
+- 글자 폭: 기준본은 canvas measureText로 라벨 맞춤·외부 배치를 정한다. 브라우저에서는 같은 방식(같은 글꼴 지정)을 쓴다. Node 검사에는 canvas가 없으므로 `tools/label-metrics.mjs`가 Chrome에서 잰 글자 폭·글자 쌍 보정 표(`tests/golden/label-metrics.js`)를 `setFallbackMeasure`로 주입한다. 표는 검사 전용이며 배포본에 넣지 않는다(배포본 증가분 약 13KB는 코드만).
+- 한계: 실제 화면의 라벨 맞춤은 사용자 PC 글꼴(Segoe UI·맑은 고딕 유무)에 따라 달라진다(기준본과 같은 성질). 대조 자료는 이 Linux Chrome 글꼴 기준이며, 글꼴이 다른 환경에서 기준 자료를 다시 만들면 표도 함께 다시 만든다.
+- 기준본 대조: `tools/label-diff.mjs`가 기준본 scene()의 g.v-labels·Q.parts·V.fullLabel을 기록한다. 기준본에는 이 기능의 자동 검사가 없었으므로 L1이 첫 자동 검사다.

@@ -6,6 +6,7 @@ import { createProjectStore } from './persistence/storage.js';
 import { formatNumber as fmt } from './core/format.js';
 import { viewBox, zoomBy, panFrom, pinchFrom, centerView, focusBox, withFitScale, wheelPixels, wheelFactor, createWheelTracker } from './cad/camera.js';
 import { buildScene, selectionBox, esc } from './cad/scene.js';
+import { rackLabelParts, labelStatusText } from './cad/labels.js';
 import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js';
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
 import { pixelsPerMeter } from './cad/camera.js';
@@ -163,7 +164,16 @@ function renderShell(root) {
   wheelLabel.append(wheelSelect);
   const wheelReset = button('wheel-reset', '휠 감도 기본값');
   const wheelStatus = el('p', { class: 'muted', testid: 'wheel-status', role: 'status' });
-  left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus);
+  const labelSelect = (testid, text, options) => {
+    const sel = el('select', { testid });
+    for (const [v, t] of options) sel.append(el('option', { value: v }, t));
+    return wrap(text, sel);
+  };
+  const labelMode = labelSelect('label-mode', '랙 텍스트', [['rack-code', '랙 번호만'], ['occupancy', '랙 번호 + 실제 적재율'], ['detail', '상세 정보'], ['minimal', '최소 표시 · 선택 랙']]);
+  const labelLayout = labelSelect('label-layout', 'ZONE·번호 배치', [['auto', '자동 · 좁으면 두 줄'], ['stacked', '항상 두 줄'], ['inline', '한 줄'], ['minimal', '최소 · 선택 랙']]);
+  const labelPadding = labelSelect('label-padding', '랙 번호 형식', [['0', '5'], ['2', '05'], ['3', '005']]);
+  const labelStatus = el('p', { class: 'muted', testid: 'label-status' });
+  left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus, el('h2', {}, '라벨'), labelMode, labelLayout, labelPadding, labelStatus);
 
   // 가운데: 도면
   const canvasWrap = el('div', { class: 'canvas-wrap', testid: 'canvas-wrap' });
@@ -206,6 +216,7 @@ function renderShell(root) {
   return {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
+    labelMode: labelMode.querySelector('select'), labelLayout: labelLayout.querySelector('select'), labelPadding: labelPadding.querySelector('select'), labelStatus,
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
     scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
@@ -225,6 +236,7 @@ async function start() {
   let marquee = null;
   let lastProject = null;
   let sceneKey = null;
+  let sceneScale = null;
   let sceneWarnings = [];
   const tracker = createWheelTracker();
   const wheel = { pending: 0, clientX: 0, clientY: 0, frame: 0 };
@@ -291,18 +303,26 @@ async function start() {
     ui.plan.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`);
     ui.zoomLabel.textContent = `${fmt(view.zoom * 100, 0)}%`;
     ui.centerLock.checked = view.centerLocked;
+    renderPlan();
   }
 
   function renderPlan(force = false) {
     const p = project();
     if (!p) return;
     const l = layout();
-    const key = [l, p.settings, p.theme, p.precision, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
-    if (!force && sceneKey && key.every((k, i) => k === sceneKey[i])) return;
+    const u = view ? pixelsPerMeter(view, l.warehouse, size()) : 20;
+    const key = [l, p.settings, p.theme, p.precision, p.rackLabels, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
+    const same = !force && sceneKey && key.every((k, i) => k === sceneKey[i]);
+    if (same && u === sceneScale) return;
+    // 확대율만 바뀌면 라벨 크기·배치(화면 px 기준)만 다시 계산하고 선택·패널은 그대로 둔다.
+    const scaleOnly = same;
     sceneKey = key;
-    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: view ? pixelsPerMeter(view, l.warehouse, size()) : 20, resize: isLocked(p) ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view });
+    sceneScale = u;
+    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: u, resize: isLocked(p) ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view, warnings: scaleOnly ? sceneWarnings : undefined });
     sceneWarnings = r.warnings;
     ui.plan.innerHTML = r.svg;
+    ui.labelStatus.textContent = labelStatusText(r.labelHidden);
+    if (scaleOnly) return;
     renderSelection();
     if (!preview) {
       panels.render({ layout: l, project: p, selected, warnings: r.warnings });
@@ -325,7 +345,7 @@ async function start() {
     const rackCount = os.filter((o) => o.kind === 'rack').length;
     ui.detailBtn.disabled = !(os.length === 1 && os[0].kind === 'rack');
     for (const b of [ui.alignXBtn, ui.alignYBtn, ui.distributeBtn]) b.disabled = rackCount < 2 || locked;
-    if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)) });
+    if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)), zone: os.length === 1 && os[0].kind === 'rack' ? rackLabelParts(os[0], project(), project().settings.scenario) : undefined, onZone: (name) => editZone(os[0], name) });
   }
 
   function showToast(text) {
@@ -348,6 +368,20 @@ async function start() {
   }
   // 명령 기록 이름은 기준본처럼 따로 지정한 것 외에는 '객체 수정'이다. label은 실행취소 표시용.
   const command = (label, mutate, name = COMMAND_DEFAULT) => run(label, (p, ctx) => applyCommand(p, mutate, { command: name, selection: [...selected], ...ctx }));
+
+  /** 라벨 표시 설정 변경. 기준본 V.appearanceEdit처럼 실행취소에 기록하고 저장한다. */
+  function labelEdit(label, mutate) {
+    return session.edit(label, mutate).then(() => renderPlan(true)).catch((e) => { showToast(`색상·표시 설정 취소: ${e.message}`); renderPlan(true); });
+  }
+  function editZone(o, name) {
+    if (name === '') return showToast('표시 이름을 입력하세요.');
+    const { key } = rackLabelParts(o, project(), project().settings.scenario);
+    labelEdit('ZONE 표시 이름', (d) => {
+      const names = d.rackLabels.zoneNames[d.settings.scenario];
+      if (name === null) delete names[key];
+      else Object.defineProperty(names, key, { value: name, enumerable: true, configurable: true, writable: true });
+    });
+  }
 
   function editField(id, field, raw, isNumber) {
     if (selected.size === 1 && MM_INPUT_FIELDS.has(field) && !isMmInput(raw)) {
@@ -444,6 +478,9 @@ async function start() {
     ui.snapOn.checked = s.project.settings.snap;
     ui.snapStep.value = String(s.project.precision.snapStep);
     ui.keyStep.value = String(s.project.precision.keyStep);
+    ui.labelMode.value = s.project.rackLabels.displayMode;
+    ui.labelLayout.value = s.project.rackLabels.layoutMode;
+    ui.labelPadding.value = String(s.project.rackLabels.numberPadding);
     if (s.project !== lastProject) {
       // 프로젝트를 처음 불러오거나 실행취소 등으로 바뀌면 저장된 선택·카메라를 따른다(조작 중이면 조작이 우선).
       const ids = new Set(s.project.scenarios[s.project.settings.scenario].objects.map((o) => o.id));
@@ -513,6 +550,9 @@ async function start() {
   ui.deleteBtn.addEventListener('click', () => deleteSelected());
   const pref = (v) => { try { session.setView(v, { delay: 0 }); } catch (e) { showToast(e.message); } };
   ui.allowWarnings.addEventListener('change', () => pref({ allowWarnings: ui.allowWarnings.checked }));
+  ui.labelMode.addEventListener('change', () => labelEdit('랙 텍스트', (d) => { d.rackLabels.displayMode = ui.labelMode.value; }));
+  ui.labelLayout.addEventListener('change', () => labelEdit('ZONE·번호 배치', (d) => { d.rackLabels.layoutMode = ui.labelLayout.value; }));
+  ui.labelPadding.addEventListener('change', () => labelEdit('랙 번호 형식', (d) => { d.rackLabels.numberPadding = Number(ui.labelPadding.value); }));
   ui.snapOn.addEventListener('change', () => pref({ snap: ui.snapOn.checked }));
   ui.snapStep.addEventListener('change', () => pref({ precision: { snapStep: Number(ui.snapStep.value) } }));
   ui.keyStep.addEventListener('change', () => {

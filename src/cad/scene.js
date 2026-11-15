@@ -1,8 +1,8 @@
 // 도면 SVG 내용 생성(DOM 없음, 문자열). 기준본 20-renderer scene + 50-editor M.objectSvg·M.overlay + 75 V.fill을 옮겼다.
 // 카메라(viewBox)는 여기서 다루지 않는다. 화면은 배치·선택이 바뀔 때만 내용을 다시 만들고, 확대·이동은 viewBox만 바꾼다.
 //
-// 아직 옮기지 않은 것(후속 단계): 참고 도면 이미지(F-012), 측정점, 랙·ZONE 라벨(V.labels, F-019),
-// 검색·필터 흐림(match), Excel 상태 색(EX.color), 랙 전체 이름 툴팁(V.fullLabel).
+// 랙·ZONE 라벨(V.labels, F-019)은 labels.js. 랙 전체 이름 툴팁(V.fullLabel)은 labels.js rackFullLabel(화면 연결은 후속).
+// 아직 옮기지 않은 것(후속 단계): 참고 도면 이미지(F-012), 측정점, Excel 상태 색(EX.color 표시 모드).
 import { warnings as spatialWarnings, ratio } from '../warehouse/constraints.js';
 import { aisleClearance } from '../geometry/clearance.js';
 import { HANDLE_DIRECTIONS, handlePoint } from '../warehouse/commands.js';
@@ -10,6 +10,7 @@ import { matchRack } from '../warehouse/racklist.js';
 import { bounds, triangles } from '../geometry/polygons.js';
 import { OBJECT_TYPES, COLORS_DEFAULT } from '../core/project.js';
 import { formatNumber as fmt } from '../core/format.js';
+import { rackLabelsSvg } from './labels.js';
 
 /** 기준본 V.objectDefault: 랙 외 객체 기본 색. */
 export const OBJECT_COLORS = Object.freeze({ wall: '#9aaec7', column: '#b1c2d5', aisle: '#19423d', work: '#364663', blocked: '#665041', door: '#374b67' });
@@ -64,9 +65,10 @@ function objectShape(o, fill, stroke, sel, aisle) {
  *   guides: 드래그 중 정렬 가이드(commands.alignmentGuides). 선 굵기·글자 크기는 화면 px 기준이라 pixelsPerMeter가 필요하다.
  *   filter: project.panels.view — 검색·필터에 맞지 않는 랙을 흐리게(기준본 match, 불투명도 0.2).
  *   resize: { live: boolean, invalidText?: string } — 객체 1개를 선택 도구로 골랐을 때 8방향 크기 조절 핸들(기준본 65)을 그린다.
- * @returns {{ svg: string, warnings: object[] }}
+ *   report / mini: 보고서·미니맵용(라벨 배율·최소 모드 처리가 다르다).
+ * @returns {{ svg: string, warnings: object[], labelHidden: number }}
  */
-export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20, resize = null, filter = null } = {}) {
+export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20, resize = null, filter = null, report = false, mini = false } = {}) {
   const W = layout.warehouse, st = project.settings;
   const ws = warnings ?? spatialWarnings(layout, project);
   const bad = new Set(ws.flatMap((w) => w.ids));
@@ -96,6 +98,8 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     if (!isRack && !o.vertices) s += `<g transform="rotate(${-o.rotation} ${cx} ${cy})"><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" fill="#c7d9ed" font-size="${Math.min(0.22, o.width / (Math.max(o.code.length, 4) * 0.7))}">${esc(o.code)}</text></g>`;
     s += '</g>';
   }
+  const labels = rackLabelsSvg(layout, project, { scope, selected, pixelsPerMeter, report, mini, fillOf: (o) => customFill(project, scope, o, colors[loadState(o, st)]) });
+  s += labels.svg;
   // 겹침 표시(기준본 M.overlay): 통로 최소 유효 폭 선, 다중 선택 상자, 영역 선택 사각형.
   for (const r of aisles.values()) {
     if (!r.line || !r.enabled) continue;
@@ -118,7 +122,7 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     const o = layout.objects.find((x) => selected.has(x.id));
     if (o) s += handleSvg(o, pixelsPerMeter, resize);
   }
-  return { svg: s, warnings: ws };
+  return { svg: s, warnings: ws, labelHidden: labels.hidden };
 }
 
 /** 정렬 가이드(기준본 Q.guideSvg 중 가이드 부분). 가까운 랙 거리 표시(Q.nearest)는 아직 옮기지 않았다. */
