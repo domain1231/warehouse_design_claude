@@ -39,7 +39,7 @@ export function backupTarget(p, target, reason, { nextId, now }) {
   const b = { id: nextId(), target, time: now(), reason, ...capture };
   const rows = p.layoutBackups.concat(b);
   while (rows.length > BACKUP_LIMIT || bytes(JSON.stringify(rows)) > BACKUP_BYTES) {
-    if (rows.length === 1) throw new Error('백업 용량 한도 초과: 대상별 배치 백업 6개 / 합계 3.2MB');
+    if (rows.length === 1) throw new Error('백업 용량 한도 초과: 배치 백업 6개(BEFORE·AFTER 합계) / 합계 3.2MB');
     rows.shift();
   }
   p.layoutBackups = rows;
