@@ -1,0 +1,3068 @@
+{
+ "source": "warehouse_design warehouse_layout_designer_v2_4_1",
+ "viewport": "1600x1000",
+ "all": [
+  {
+   "key": " › h1 › Warehouse Studio 창고 배치 설계 v#.#",
+   "tag": "h1",
+   "text": "Warehouse Studio 창고 배치 설계 v#.#",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#vSave",
+   "tag": "button",
+   "text": "프로젝트 저장",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#vVersions",
+   "tag": "button",
+   "text": "이전 버전·백업",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#vStorage",
+   "tag": "button",
+   "text": "저장소 관리",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#vRetry",
+   "tag": "button",
+   "text": "현재 프로젝트 다시 저장",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#vRecoverRaw",
+   "tag": "button",
+   "text": "보호 원본 JSON",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#undo",
+   "tag": "button",
+   "text": "↶ 취소",
+   "label": "Ctrl+Z",
+   "where": ""
+  },
+  {
+   "key": "#redo",
+   "tag": "button",
+   "text": "↷ 다시",
+   "label": "Ctrl+Y",
+   "where": ""
+  },
+  {
+   "key": "#jsonOut",
+   "tag": "button",
+   "text": "JSON 백업",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#jsonIn",
+   "tag": "input:file",
+   "text": "불러오기",
+   "label": "불러오기",
+   "where": ""
+  },
+  {
+   "key": "#aboutBtn",
+   "tag": "button",
+   "text": "프로그램 정보",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#helpBtn",
+   "tag": "button",
+   "text": "사용 안내",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#toggleTools",
+   "tag": "button",
+   "text": "☰ 설계 도구",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#toggleInfo",
+   "tag": "button",
+   "text": "선택 정보",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#wAll",
+   "tag": "button",
+   "text": "모든 랙 보기",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#wViolations",
+   "tag": "button",
+   "text": "위반 목록",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": " › summary › 정밀 배치 설정 · v#.#",
+   "tag": "summary",
+   "text": "정밀 배치 설정 · v#.#",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#qSnap",
+   "tag": "input:checkbox",
+   "text": "배치 스냅 ON",
+   "label": "배치 스냅 ON",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "#qSnapStep",
+   "tag": "select",
+   "text": "# | # | # | # | # | # | # | # | #",
+   "label": "스냅 간격 (m)#.#.#.#",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "#qDecimals",
+   "tag": "select",
+   "text": "#자리 | #자리 | #자리",
+   "label": "좌표 표시 소수점#자리#자리#자리",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "#qKeyStep",
+   "tag": "select",
+   "text": "# | # | # | # | #",
+   "label": "방향키 이동 (m)#.#.#",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "#qFastStep",
+   "tag": "select",
+   "text": "# | # | #",
+   "label": "Shift 고속 이동 (m)#.#",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "#qGuides",
+   "tag": "input:checkbox",
+   "text": "정렬 가이드 표시",
+   "label": "정렬 가이드 표시",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "#qGuideSnap",
+   "tag": "input:checkbox",
+   "text": "가이드 흡착 (스냅 ON일 때)",
+   "label": "가이드 흡착 (스냅 ON일 때)",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "정밀 배치 설정 · v#.# › button › ↑",
+   "tag": "button",
+   "text": "↑",
+   "label": "위로 미세 이동",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "정밀 배치 설정 · v#.# › button › ←",
+   "tag": "button",
+   "text": "←",
+   "label": "왼쪽으로 미세 이동",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "정밀 배치 설정 · v#.# › button › →",
+   "tag": "button",
+   "text": "→",
+   "label": "오른쪽으로 미세 이동",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": "정밀 배치 설정 · v#.# › button › ↓",
+   "tag": "button",
+   "text": "↓",
+   "label": "아래로 미세 이동",
+   "where": "정밀 배치 설정 · v#.#"
+  },
+  {
+   "key": " › button › 설계 도구 닫기 ×",
+   "tag": "button",
+   "text": "설계 도구 닫기 ×",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": " › summary › v#.# / 선택 · 통로 · 화면",
+   "tag": "summary",
+   "text": "v#.# / 선택 · 통로 · 화면",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#mSelectAll",
+   "tag": "button",
+   "text": "전체 랙 선택",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mClearSelection",
+   "tag": "button",
+   "text": "선택 해제",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mSelectRule",
+   "tag": "select",
+   "text": "일부 겹침 | 완전 포함",
+   "label": "영역 선택 기준일부 겹침완전 포함",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mAllowWarnings",
+   "tag": "input:checkbox",
+   "text": "공간 위반을 경고 후 허용 (기본 차단)",
+   "label": "공간 위반을 경고 후 허용 (기본 차단)",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "v#.# / 선택 · 통로 · 화면 › h3 › 보호 통로 설정",
+   "tag": "h3",
+   "text": "보호 통로 설정",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mPolygonAisle",
+   "tag": "button",
+   "text": "다각형 통로 그리기",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mFinishPolygon",
+   "tag": "button",
+   "text": "다각형 완성",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mAisleType",
+   "tag": "select",
+   "text": "메인 이동 통로 | 작업자 이동 통로 | 자재 운반 통로 | 랙 접근 통로 | 출입문 연결 통로",
+   "label": "통로 종류메인 이동 통로작업자 이동 통로자재 운반 통로랙 접근 통로출입문 연결 통로",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mRuleMin",
+   "tag": "input:number",
+   "text": "최소 폭 (m)",
+   "label": "최소 폭 (m)",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mRuleTarget",
+   "tag": "input:number",
+   "text": "목표 폭 (m)",
+   "label": "목표 폭 (m)",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mRuleEnabled",
+   "tag": "input:checkbox",
+   "text": "이 종류 통로 경고 사용",
+   "label": "이 종류 통로 경고 사용",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mApplyAisleRule",
+   "tag": "button",
+   "text": "같은 종류의 통로에 기준 적용",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mValidate",
+   "tag": "button",
+   "text": "현재 통로 폭 · 충돌 확인",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "v#.# / 선택 · 통로 · 화면 › h3 › 작업 영역",
+   "tag": "h3",
+   "text": "작업 영역",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mCenterLock",
+   "tag": "input:checkbox",
+   "text": "창고 중심 고정 확대",
+   "label": "창고 중심 고정 확대",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "v#.# / 선택 · 통로 · 화면 › h3 › 배치맵 설정",
+   "tag": "h3",
+   "text": "배치맵 설정",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mWheelSensitivity",
+   "tag": "select",
+   "text": "낮음 · 정밀 조작 (기본) | 보통 · 일반 조작 | 높음 · 빠른 조작",
+   "label": "마우스 휠 확대 감도낮음 · 정밀 조작 (기본)보통 · 일반 조작높음 · 빠른 조작",
+   "where": "v#.# / 선택 · 통로 · 화면 › 배치맵 설정"
+  },
+  {
+   "key": "#mWheelReset",
+   "tag": "button",
+   "text": "휠 감도 기본값",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면 › 배치맵 설정"
+  },
+  {
+   "key": "#mCenter",
+   "tag": "button",
+   "text": "중앙 정렬",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mResetZoom",
+   "tag": "button",
+   "text": "기본 배율",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mZoom50",
+   "tag": "button",
+   "text": "#%",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": "#mZoom200",
+   "tag": "button",
+   "text": "#%",
+   "label": "",
+   "where": "v#.# / 선택 · 통로 · 화면"
+  },
+  {
+   "key": " › summary › Excel / 로케이션 자동 생성",
+   "tag": "summary",
+   "text": "Excel / 로케이션 자동 생성",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#exFile",
+   "tag": "input:file",
+   "text": "Excel·로케이션 CSV 불러오기",
+   "label": "Excel·로케이션 CSV 불러오기",
+   "where": "Excel / 로케이션 자동 생성"
+  },
+  {
+   "key": "#exOpen",
+   "tag": "button",
+   "text": "가져오기 / 자동 배치 설정",
+   "label": "",
+   "where": "Excel / 로케이션 자동 생성"
+  },
+  {
+   "key": "#exViz",
+   "tag": "select",
+   "text": "실제 재고 적재율 | 높이 활용률 | 위치 등록 현황 | 품목별 관리 지표",
+   "label": "도면 색상 기준실제 재고 적재율높이 활용률위치 등록 현황품목별 관리 지표",
+   "where": "Excel / 로케이션 자동 생성"
+  },
+  {
+   "key": "#exHeightPolicy",
+   "tag": "select",
+   "text": "선반별 최대 높이 / 높이 가중평균 | 선반별 최대 높이 비율 / 단순평균 | 등록 자재 중 최대 높이 비율",
+   "label": "랙 높이 집계 정책선반별 최대 높이 / 높이 가중평균선반별 최대 높이 비율 / 단순평균등록 자재 중 최대 높이 비율",
+   "where": "Excel / 로케이션 자동 생성"
+  },
+  {
+   "key": " › summary › # / 프로젝트 · 공간",
+   "tag": "summary",
+   "text": "# / 프로젝트 · 공간",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#projectName",
+   "tag": "input:text",
+   "text": "프로젝트명",
+   "label": "프로젝트명",
+   "where": "# / 프로젝트 · 공간"
+  },
+  {
+   "key": "#roomWidth",
+   "tag": "input:number",
+   "text": "가로 X (m)",
+   "label": "가로 X (m)",
+   "where": "# / 프로젝트 · 공간"
+  },
+  {
+   "key": "#roomHeight",
+   "tag": "input:number",
+   "text": "세로 Y (m)",
+   "label": "세로 Y (m)",
+   "where": "# / 프로젝트 · 공간"
+  },
+  {
+   "key": "#ceiling",
+   "tag": "input:number",
+   "text": "천장 높이 (m)",
+   "label": "천장 높이 (m)",
+   "where": "# / 프로젝트 · 공간"
+  },
+  {
+   "key": "#roomArea",
+   "tag": "input:text",
+   "text": "계산 면적 (㎡)",
+   "label": "계산 면적 (㎡)",
+   "where": "# / 프로젝트 · 공간"
+  },
+  {
+   "key": "#applyRoom",
+   "tag": "button",
+   "text": "치수 적용",
+   "label": "",
+   "where": "# / 프로젝트 · 공간"
+  },
+  {
+   "key": "# / 프로젝트 · 공간 › summary › 면적에서 치수 계산",
+   "tag": "summary",
+   "text": "면적에서 치수 계산",
+   "label": "",
+   "where": "# / 프로젝트 · 공간"
+  },
+  {
+   "key": "#areaInput",
+   "tag": "input:number",
+   "text": "목표 면적 (㎡)",
+   "label": "목표 면적 (㎡)",
+   "where": "# / 프로젝트 · 공간 › 면적에서 치수 계산"
+  },
+  {
+   "key": "#knownWidth",
+   "tag": "input:number",
+   "text": "알려진 가로 (m)",
+   "label": "알려진 가로 (m)",
+   "where": "# / 프로젝트 · 공간 › 면적에서 치수 계산"
+  },
+  {
+   "key": "#deriveRoom",
+   "tag": "button",
+   "text": "가로 기준 세로 계산",
+   "label": "",
+   "where": "# / 프로젝트 · 공간 › 면적에서 치수 계산"
+  },
+  {
+   "key": " › summary › # / 배치 도구",
+   "tag": "summary",
+   "text": "# / 배치 도구",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "# / 배치 도구 › button › ↖ 선택 / 이동",
+   "tag": "button",
+   "text": "↖ 선택 / 이동",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ✥ 화면 이동",
+   "tag": "button",
+   "text": "✥ 화면 이동",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ▤ 랙 추가",
+   "tag": "button",
+   "text": "▤ 랙 추가",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ━ 내부 벽",
+   "tag": "button",
+   "text": "━ 내부 벽",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ▪ 기둥",
+   "tag": "button",
+   "text": "▪ 기둥",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ◴ 출입문",
+   "tag": "button",
+   "text": "◴ 출입문",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ↔ 통로",
+   "tag": "button",
+   "text": "↔ 통로",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ▧ 보관 불가",
+   "tag": "button",
+   "text": "▧ 보관 불가",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ▱ 작업 공간",
+   "tag": "button",
+   "text": "▱ 작업 공간",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "# / 배치 도구 › button › ⌁ 거리 측정",
+   "tag": "button",
+   "text": "⌁ 거리 측정",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "#newRackType",
+   "tag": "select",
+   "text": "중량랙 | 경량랙 | 팔레트랙 | 일반 선반 | 사용자 지정 랙",
+   "label": "추가 랙 종류중량랙경량랙팔레트랙일반 선반사용자 지정 랙",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "#newWidth",
+   "tag": "input:number",
+   "text": "폭 (m)",
+   "label": "폭 (m)",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "#newDepth",
+   "tag": "input:number",
+   "text": "깊이 (m)",
+   "label": "깊이 (m)",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "#newHeight",
+   "tag": "input:number",
+   "text": "높이 (m)",
+   "label": "높이 (m)",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "#newUnit",
+   "tag": "input:text",
+   "text": "단위",
+   "label": "단위",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": "#rackPalette",
+   "tag": "button",
+   "text": "▤ 이 랙을 도면으로 드래그",
+   "label": "",
+   "where": "# / 배치 도구"
+  },
+  {
+   "key": " › summary › # / 정밀 배치",
+   "tag": "summary",
+   "text": "# / 정밀 배치",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#gridStep",
+   "tag": "select",
+   "text": "# | # | # | # | #",
+   "label": "표시 격자 (m)#.#",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#collisionPolicy",
+   "tag": "select",
+   "text": "경고 후 허용 | 새 공간 위반 차단",
+   "label": "충돌 정책경고 후 허용새 공간 위반 차단",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#gridOn",
+   "tag": "input:checkbox",
+   "text": "그리드 표시",
+   "label": "그리드 표시",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#snapOn",
+   "tag": "input:checkbox",
+   "text": "배치 스냅 (정밀 설정 간격)",
+   "label": "배치 스냅 (정밀 설정 간격)",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#minGap",
+   "tag": "input:number",
+   "text": "랙 사이 최소 여유 (m, #=검사 안 함)",
+   "label": "랙 사이 최소 여유 (m, #=검사 안 함)",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#alignX",
+   "tag": "button",
+   "text": "좌측 정렬",
+   "label": "",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#alignY",
+   "tag": "button",
+   "text": "상단 정렬",
+   "label": "",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#distributeGap",
+   "tag": "input:number",
+   "text": "등간격 (m)",
+   "label": "등간격 (m)",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": "#distribute",
+   "tag": "button",
+   "text": "가로 배치",
+   "label": "",
+   "where": "# / 정밀 배치"
+  },
+  {
+   "key": " › summary › # / 참고 도면 배경",
+   "tag": "summary",
+   "text": "# / 참고 도면 배경",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#imageIn",
+   "tag": "input:file",
+   "text": "이미지 불러오기",
+   "label": "이미지 불러오기",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#referenceImage",
+   "tag": "button",
+   "text": "첨부 도면 사용",
+   "label": "",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#bgOn",
+   "tag": "input:checkbox",
+   "text": "배경 표시",
+   "label": "배경 표시",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#bgOpacity",
+   "tag": "input:range",
+   "text": "투명도",
+   "label": "투명도",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#bgX",
+   "tag": "input:number",
+   "text": "배경 X (m)",
+   "label": "배경 X (m)",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#bgY",
+   "tag": "input:number",
+   "text": "배경 Y (m)",
+   "label": "배경 Y (m)",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#bgW",
+   "tag": "input:number",
+   "text": "배경 폭 (m)",
+   "label": "배경 폭 (m)",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#bgH",
+   "tag": "input:number",
+   "text": "배경 높이 (m)",
+   "label": "배경 높이 (m)",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#calibrationLength",
+   "tag": "input:number",
+   "text": "보정할 두 점 사이 실측 거리 (m)",
+   "label": "보정할 두 점 사이 실측 거리 (m)",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#calibrate",
+   "tag": "button",
+   "text": "도면 위 두 점으로 축척 보정",
+   "label": "",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": "#clearBg",
+   "tag": "button",
+   "text": "배경 제거",
+   "label": "",
+   "where": "# / 참고 도면 배경"
+  },
+  {
+   "key": " › summary › # / 적재율 색상",
+   "tag": "summary",
+   "text": "# / 적재율 색상",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#thresholdLow",
+   "tag": "input:number",
+   "text": "보통 시작 (%)",
+   "label": "보통 시작 (%)",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#thresholdHigh",
+   "tag": "input:number",
+   "text": "주의 시작 (%)",
+   "label": "주의 시작 (%)",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#colorEmpty",
+   "tag": "input:color",
+   "text": "빈 랙",
+   "label": "빈 랙",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#colorLow",
+   "tag": "input:color",
+   "text": "여유",
+   "label": "여유",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#colorMid",
+   "tag": "input:color",
+   "text": "보통",
+   "label": "보통",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#colorHigh",
+   "tag": "input:color",
+   "text": "주의",
+   "label": "주의",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#colorOver",
+   "tag": "input:color",
+   "text": "초과",
+   "label": "초과",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#colorUnknown",
+   "tag": "input:color",
+   "text": "정보 없음",
+   "label": "정보 없음",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#applyColors",
+   "tag": "button",
+   "text": "색상 기준 적용",
+   "label": "",
+   "where": "# / 적재율 색상"
+  },
+  {
+   "key": "#newBlank",
+   "tag": "button",
+   "text": "빈 프로젝트",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#loadSample",
+   "tag": "button",
+   "text": "첨부 도면 참고 샘플",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rBefore",
+   "tag": "button",
+   "text": "BEFORE 보기",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rAfter",
+   "tag": "button",
+   "text": "AFTER 편집",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rClone",
+   "tag": "button",
+   "text": "BEFORE → AFTER 복제",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rLock",
+   "tag": "button",
+   "text": "BEFORE 잠금 해제",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rHistory",
+   "tag": "button",
+   "text": "가져오기 이력",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rBackupDownload",
+   "tag": "button",
+   "text": "JSON 백업 다운로드",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#vLabelMode",
+   "tag": "select",
+   "text": "랙 번호만 | 랙 번호 + 실제 적재율 | 상세 정보 | 최소 표시 · 선택 랙",
+   "label": "랙 텍스트랙 번호만랙 번호 + 실제 적재율상세 정보최소 표시 · 선택 랙",
+   "where": ""
+  },
+  {
+   "key": "#vColorMode",
+   "tag": "select",
+   "text": "데이터 기반 | 사용자 지정 색상",
+   "label": "색상 표시데이터 기반사용자 지정 색상",
+   "where": ""
+  },
+  {
+   "key": "#vThemeOpen",
+   "tag": "button",
+   "text": "색상 설정·기본색 복원",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#qLabelLayout",
+   "tag": "select",
+   "text": "자동 · 좁으면 두 줄 | 항상 두 줄 | 한 줄 | 최소 · 선택 랙",
+   "label": "ZONE·번호 배치자동 · 좁으면 두 줄항상 두 줄한 줄최소 · 선택 랙",
+   "where": ""
+  },
+  {
+   "key": "#qNumberPadding",
+   "tag": "select",
+   "text": "# | # | #",
+   "label": "랙 번호 형식#",
+   "where": ""
+  },
+  {
+   "key": "#mLeftPanel",
+   "tag": "button",
+   "text": "접기: 설계 도구",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#mRightPanel",
+   "tag": "button",
+   "text": "접기: 선택 정보",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#mBothClose",
+   "tag": "button",
+   "text": "양쪽 접기",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#mBothOpen",
+   "tag": "button",
+   "text": "양쪽 펼치기",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#sBottomToggle",
+   "tag": "button",
+   "text": "하단 전체 펼치기",
+   "label": "이전 개별 상태로 하단 전체 펼치기",
+   "where": ""
+  },
+  {
+   "key": "#bDefaultLayout",
+   "tag": "button",
+   "text": "기본 레이아웃 복원",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#scenario",
+   "tag": "select",
+   "text": "Before · 현재안 | After · 개선안",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#compareBtn",
+   "tag": "button",
+   "text": "비교",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#seedAfter",
+   "tag": "button",
+   "text": "BEFORE → AFTER 복제",
+   "label": "미리보기와 백업 후 독립 복제",
+   "where": ""
+  },
+  {
+   "key": "#zoomOut",
+   "tag": "button",
+   "text": "−",
+   "label": "축소",
+   "where": ""
+  },
+  {
+   "key": "#zoomIn",
+   "tag": "button",
+   "text": "＋",
+   "label": "확대",
+   "where": ""
+  },
+  {
+   "key": "#fit",
+   "tag": "button",
+   "text": "전체 보기",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#focusSelection",
+   "tag": "button",
+   "text": "선택 확대",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rotate",
+   "tag": "button",
+   "text": "↻ #°",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#duplicate",
+   "tag": "button",
+   "text": "복제",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#delete",
+   "tag": "button",
+   "text": "삭제",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#svgOut",
+   "tag": "button",
+   "text": "SVG",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#pngOut",
+   "tag": "button",
+   "text": "PNG",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#printBtn",
+   "tag": "button",
+   "text": "인쇄",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "선택 객체 # › button › 선택 정보 닫기 ×",
+   "tag": "button",
+   "text": "선택 정보 닫기 ×",
+   "label": "",
+   "where": "선택 객체 #"
+  },
+  {
+   "key": " › h2 › 선택 객체 #",
+   "tag": "h2",
+   "text": "선택 객체 #",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "선택 객체 # › h3 › 공간 지표",
+   "tag": "h3",
+   "text": "공간 지표",
+   "label": "",
+   "where": "선택 객체 #"
+  },
+  {
+   "key": "#sGrip",
+   "tag": "button",
+   "text": "하단 패널 높이 조절",
+   "label": "하단 패널 높이 조절",
+   "where": ""
+  },
+  {
+   "key": "#liveBtn",
+   "tag": "button",
+   "text": "현재 편집으로",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#historyDate",
+   "tag": "input:date",
+   "text": "조회 날짜",
+   "label": "조회 날짜",
+   "where": ""
+  },
+  {
+   "key": "#historyMode",
+   "tag": "select",
+   "text": "해당 날짜 배치 우선 | 현재 배치 + 과거 재고",
+   "label": "배치 이력 모드",
+   "where": ""
+  },
+  {
+   "key": "#dateSlider",
+   "tag": "input:range",
+   "text": "저장된 날짜 슬라이더",
+   "label": "저장된 날짜 슬라이더",
+   "where": ""
+  },
+  {
+   "key": " › button › ▾ 재고기록기록 없음 · #건",
+   "tag": "button",
+   "text": "▾ 재고기록기록 없음 · #건",
+   "label": "재고기록 접기",
+   "where": ""
+  },
+  {
+   "key": "#bInventoryQuery",
+   "tag": "input:text",
+   "text": "재고기록 검색",
+   "label": "재고기록 검색",
+   "where": ""
+  },
+  {
+   "key": "#bInventoryDate",
+   "tag": "input:date",
+   "text": "기록 날짜",
+   "label": "기록 날짜",
+   "where": ""
+  },
+  {
+   "key": "#bInventoryClearDate",
+   "tag": "button",
+   "text": "전체 날짜",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rInventoryScope",
+   "tag": "select",
+   "text": "현재 편집안 | 전체 배치 기록 | 배치 미지정 이전 기록",
+   "label": "기록 범위현재 편집안전체 배치 기록배치 미지정 이전 기록",
+   "where": ""
+  },
+  {
+   "key": "#bInventoryPrev",
+   "tag": "button",
+   "text": "이전",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#bInventoryNext",
+   "tag": "button",
+   "text": "다음",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#saveSnapshot",
+   "tag": "button",
+   "text": "현재 재고·배치 저장",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#includeLayout",
+   "tag": "input:checkbox",
+   "text": "배치 이력 함께 저장",
+   "label": "배치 이력 함께 저장",
+   "where": ""
+  },
+  {
+   "key": "#snapshotDate",
+   "tag": "input:date",
+   "text": "저장 날짜",
+   "label": "저장 날짜",
+   "where": ""
+  },
+  {
+   "key": "#snapshotSource",
+   "tag": "input:text",
+   "text": "데이터 출처",
+   "label": "데이터 출처",
+   "where": ""
+  },
+  {
+   "key": "#csvIn",
+   "tag": "input:file",
+   "text": "재고 CSV 가져오기",
+   "label": "재고 CSV 가져오기",
+   "where": ""
+  },
+  {
+   "key": "#csvTemplate",
+   "tag": "button",
+   "text": "CSV 양식",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#historyCsv",
+   "tag": "button",
+   "text": "이력 CSV",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#replaceCsv",
+   "tag": "input:checkbox",
+   "text": "동일 날짜·ID 기록 교체 허용",
+   "label": "동일 날짜·ID 기록 교체 허용",
+   "where": ""
+  },
+  {
+   "key": " › button › ▾ 배치이력기록 없음 · #건",
+   "tag": "button",
+   "text": "▾ 배치이력기록 없음 · #건",
+   "label": "배치이력 접기",
+   "where": ""
+  },
+  {
+   "key": "#bLayoutDate",
+   "tag": "input:date",
+   "text": "배치 기록 날짜",
+   "label": "배치 기록 날짜",
+   "where": ""
+  },
+  {
+   "key": "#bLayoutName",
+   "tag": "input:text",
+   "text": "배치 이름",
+   "label": "배치 이름",
+   "where": ""
+  },
+  {
+   "key": "#bSaveLayout",
+   "tag": "button",
+   "text": "현재 배치만 기록",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#bLayoutCompare",
+   "tag": "button",
+   "text": "Before/After 비교",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#bLayoutScope",
+   "tag": "select",
+   "text": "현재 편집안 | Before·After 전체",
+   "label": "배치이력 범위현재 편집안Before·After 전체",
+   "where": ""
+  },
+  {
+   "key": "#bLayoutPrev",
+   "tag": "button",
+   "text": "이전",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#bLayoutNext",
+   "tag": "button",
+   "text": "다음",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": " › summary › Excel 가져오기·자동 백업 이력",
+   "tag": "summary",
+   "text": "Excel 가져오기·자동 백업 이력",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": " › button › ▾ 랙 목록#개",
+   "tag": "button",
+   "text": "▾ 랙 목록#개",
+   "label": "랙 목록 접기",
+   "where": ""
+  },
+  {
+   "key": " › h2 › 랙 목록",
+   "tag": "h2",
+   "text": "랙 목록",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#rackCsv",
+   "tag": "button",
+   "text": "랙 목록 CSV",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "#bRackSort",
+   "tag": "select",
+   "text": "기존 순서 | 랙 번호순 | 랙 번호 역순",
+   "label": "정렬기존 순서랙 번호순랙 번호 역순",
+   "where": ""
+  },
+  {
+   "key": "#search",
+   "tag": "input:text",
+   "text": "번호 / 블록 검색",
+   "label": "번호 / 블록 검색",
+   "where": ""
+  },
+  {
+   "key": "#typeFilter",
+   "tag": "select",
+   "text": "전체 종류 | 중량랙 | 경량랙 | 팔레트랙 | 일반 선반 | 사용자 지정 랙",
+   "label": "종류전체 종류중량랙경량랙팔레트랙일반 선반사용자 지정 랙",
+   "where": ""
+  },
+  {
+   "key": "#loadFilter",
+   "tag": "select",
+   "text": "전체 | 빈 랙 | #% 이상 | #% 초과 | 정보 없음",
+   "label": "적재율전체빈 랙#% 이상#% 초과정보 없음",
+   "where": ""
+  },
+  {
+   "key": " › button › ▾ 공간검토#건",
+   "tag": "button",
+   "text": "▾ 공간검토#건",
+   "label": "공간검토 접기",
+   "where": ""
+  },
+  {
+   "key": " › h2 › 공간 검토",
+   "tag": "h2",
+   "text": "공간 검토",
+   "label": "",
+   "where": ""
+  },
+  {
+   "key": "대화상자:Before / After 배치 비교 › button › 닫기 ×",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "대화상자:Before / After 배치 비교 › h2 › Before / After 배치 비교",
+   "tag": "h2",
+   "text": "Before / After 배치 비교",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "#rCompareMode",
+   "tag": "select",
+   "text": "BEFORE/AFTER 좌우 차이 | BEFORE 단독 | AFTER 단독 | 반투명 중첩 차이",
+   "label": "배치 비교 모드",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "#rCompareSave",
+   "tag": "button",
+   "text": "비교 중 JSON 저장",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "#rDiffCsv",
+   "tag": "button",
+   "text": "랙 변경 CSV",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "대화상자:Before / After 배치 비교 › h3 › BEFORE · 현재안",
+   "tag": "h3",
+   "text": "BEFORE · 현재안",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "대화상자:Before / After 배치 비교 › h3 › AFTER · 개선안",
+   "tag": "h3",
+   "text": "AFTER · 개선안",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "#mCompareSvg",
+   "tag": "button",
+   "text": "전후 비교 SVG",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "#mComparePng",
+   "tag": "button",
+   "text": "전후 비교 PNG",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "#compareCsv",
+   "tag": "button",
+   "text": "비교 요약 CSV",
+   "label": "",
+   "where": "대화상자:Before / After 배치 비교"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › button › 닫기 ×",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h2 › Warehouse Studio 사용 안내",
+   "tag": "h2",
+   "text": "Warehouse Studio 사용 안내",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h3 › Excel 연동 추가 기능",
+   "tag": "h3",
+   "text": "Excel 연동 추가 기능",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › summary › 오픈소스 사용 고지",
+   "tag": "summary",
+   "text": "오픈소스 사용 고지",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › 오픈소스 사용 고지 › a › 공식 배포 안내",
+   "tag": "a",
+   "text": "공식 배포 안내",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내 › 오픈소스 사용 고지"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h3 › v#.# Excel 대상·잠금·비교",
+   "tag": "h3",
+   "text": "v#.# Excel 대상·잠금·비교",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h3 › v#.# 하단 패널",
+   "tag": "h3",
+   "text": "v#.# 하단 패널",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h3 › 객체 크기 및 랙 상세",
+   "tag": "h3",
+   "text": "객체 크기 및 랙 상세",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h3 › v# 다중 편집 및 통로 검토",
+   "tag": "h3",
+   "text": "v# 다중 편집 및 통로 검토",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h3 › 단축키 · 터치",
+   "tag": "h3",
+   "text": "단축키 · 터치",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "대화상자:Warehouse Studio 사용 안내 › h3 › 계산 및 구현 범위",
+   "tag": "h3",
+   "text": "계산 및 구현 범위",
+   "label": "",
+   "where": "대화상자:Warehouse Studio 사용 안내"
+  },
+  {
+   "key": "#exClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › h2 › Excel 연동 / 창고 레이아웃 자동 생성",
+   "tag": "h2",
+   "text": "Excel 연동 / 창고 레이아웃 자동 생성",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › h3 › 적용할 편집 배치 · 다른 편집안은 유지",
+   "tag": "h3",
+   "text": "적용할 편집 배치 · 다른 편집안은 유지",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#rTarget",
+   "tag": "select",
+   "text": "BEFORE — 개선 전 | AFTER — 개선 후",
+   "label": "가져오기 대상BEFORE — 개선 전AFTER — 개선 후",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › 적용할 편집 배치 · 다른 편집안은 유지"
+  },
+  {
+   "key": "#rTargetConfirm",
+   "tag": "input:checkbox",
+   "text": "선택한 대상 배치를 확인했습니다.",
+   "label": "선택한 대상 배치를 확인했습니다.",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › 적용할 편집 배치 · 다른 편집안은 유지"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › 적용할 편집 배치 · 다른 편집안은 유지 › input:checkbox › 적용 전 대상 자동 백업 (필수 · 최신 최대 #개 / JSON 합계 #MB · 정상 저장·검증 성공 시 오래된 백업부터 교체 · 실패 시 ",
+   "tag": "input:checkbox",
+   "text": "적용 전 대상 자동 백업 (필수 · 최신 최대 #개 / JSON 합계 #MB · 정상 저장·검증 성공 시 오래된 백업부터 교체 · 실패 시 ",
+   "label": "적용 전 대상 자동 백업 (필수 · 최신 최대 #개 / JSON 합계 #MB · 정상 저장·검증 성공 시 오래된 백업부터 교체 · 실패 시 ",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › 적용할 편집 배치 · 다른 편집안은 유지"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › h3 › # / 파일 · 데이터 분석",
+   "tag": "h3",
+   "text": "# / 파일 · 데이터 분석",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#exFileDialog",
+   "tag": "input:file",
+   "text": "파일 선택",
+   "label": "파일 선택",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "#exSheet",
+   "tag": "select",
+   "text": "워크시트",
+   "label": "워크시트",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "#exHeader",
+   "tag": "input:number",
+   "text": "머리글 행",
+   "label": "머리글 행",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "#exRemap",
+   "tag": "button",
+   "text": "머리글 자동 인식",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "#exAnalyze",
+   "tag": "button",
+   "text": "데이터 재분석",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석 › summary › #개 필드 / 수동 열 매핑",
+   "tag": "summary",
+   "text": "#개 필드 / 수동 열 매핑",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "#exSkip",
+   "tag": "input:checkbox",
+   "text": "오류 행 제외 허용 (첫 중복만 유지)",
+   "label": "오류 행 제외 허용 (첫 중복만 유지)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석 › summary › 검증 결과 / 오류 원본 행",
+   "tag": "summary",
+   "text": "검증 결과 / 오류 원본 행",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석"
+  },
+  {
+   "key": "#exIssuesCsv",
+   "tag": "button",
+   "text": "검증 결과 CSV",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 파일 · 데이터 분석 › 검증 결과 / 오류 원본 행"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › h3 › # / 창고 · 자동 배치 규칙",
+   "tag": "h3",
+   "text": "# / 창고 · 자동 배치 규칙",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#exBuilding",
+   "tag": "input:text",
+   "text": "건물",
+   "label": "건물",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exFloor",
+   "tag": "select",
+   "text": "층",
+   "label": "층",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exWidth",
+   "tag": "input:number",
+   "text": "창고 가로 (m)",
+   "label": "창고 가로 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exDepth",
+   "tag": "input:number",
+   "text": "창고 세로 (m)",
+   "label": "창고 세로 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exNorth",
+   "tag": "select",
+   "text": "화면 위 ↑ | 화면 오른쪽 → | 화면 아래 ↓ | 화면 왼쪽 ←",
+   "label": "북쪽 표시화면 위 ↑화면 오른쪽 →화면 아래 ↓화면 왼쪽 ←",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exDirection",
+   "tag": "select",
+   "text": "A → N / 동쪽 방향 | A → N / 서쪽 방향",
+   "label": "열 진행 방향A → N / 동쪽 방향A → N / 서쪽 방향",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exOriginX",
+   "tag": "input:number",
+   "text": "A열 기준 X (m)",
+   "label": "A열 기준 X (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exOriginY",
+   "tag": "input:number",
+   "text": "A열 기준 Y (m)",
+   "label": "A열 기준 Y (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exPick",
+   "tag": "button",
+   "text": "도면에서 A열 시작점 지정",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exFirst",
+   "tag": "select",
+   "text": "북쪽 시작 → 남쪽 증가 | 남쪽 시작 → 북쪽 증가",
+   "label": "첫 랙 위치 / 번호 증가북쪽 시작 → 남쪽 증가남쪽 시작 → 북쪽 증가",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exRotation",
+   "tag": "input:number",
+   "text": "초기 회전 (°)",
+   "label": "초기 회전 (°)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exColumnGap",
+   "tag": "input:number",
+   "text": "열 사이 간격 (m)",
+   "label": "열 사이 간격 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exRackGap",
+   "tag": "input:number",
+   "text": "랙 사이 간격 (m)",
+   "label": "랙 사이 간격 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exWallGap",
+   "tag": "input:number",
+   "text": "벽 최소 이격 (m)",
+   "label": "벽 최소 이격 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exAisleTarget",
+   "tag": "input:number",
+   "text": "통로 목표 폭 (m)",
+   "label": "통로 목표 폭 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exOrder",
+   "tag": "input:text",
+   "text": "사용자 정의 열 순서 (비우면 A~N)",
+   "label": "사용자 정의 열 순서 (비우면 A~N)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙 › summary › 열별 시작 좌표 · 북/남 · 회전",
+   "tag": "summary",
+   "text": "열별 시작 좌표 · 북/남 · 회전",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙 › summary › 기록 없는 번호의 랙 후보 생성",
+   "tag": "summary",
+   "text": "기록 없는 번호의 랙 후보 생성",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exEmpty",
+   "tag": "input:checkbox",
+   "text": "#번~최대 등록 번호 사이 누락 랙을 생성",
+   "label": "#번~최대 등록 번호 사이 누락 랙을 생성",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙 › 기록 없는 번호의 랙 후보 생성"
+  },
+  {
+   "key": "#exEmptyW",
+   "tag": "input:number",
+   "text": "후보 폭 (m)",
+   "label": "후보 폭 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙 › 기록 없는 번호의 랙 후보 생성"
+  },
+  {
+   "key": "#exEmptyD",
+   "tag": "input:number",
+   "text": "후보 깊이 (m)",
+   "label": "후보 깊이 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙 › 기록 없는 번호의 랙 후보 생성"
+  },
+  {
+   "key": "#exEmptyH",
+   "tag": "input:number",
+   "text": "후보 높이 (m)",
+   "label": "후보 높이 (m)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙 › 기록 없는 번호의 랙 후보 생성"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙 › h3 › # / 적용 · 재불러오기 정책",
+   "tag": "h3",
+   "text": "# / 적용 · 재불러오기 정책",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exMode",
+   "tag": "select",
+   "text": "선택한 배치 전체 교체 | 선택한 배치에 병합 | 기존 랙 정보만 업데이트 (신규 미추가)",
+   "label": "생성 방식선택한 배치 전체 교체선택한 배치에 병합기존 랙 정보만 업데이트 (신규 미추가)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exKeep",
+   "tag": "select",
+   "text": "병합/업데이트 시 선택 필요 | 수동 위치·회전 유지 | 규칙에 따라 재배치",
+   "label": "기존 객체 위치병합/업데이트 시 선택 필요수동 위치·회전 유지규칙에 따라 재배치",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exDate",
+   "tag": "input:date",
+   "text": "가져오기 기준일",
+   "label": "가져오기 기준일",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exSource",
+   "tag": "input:text",
+   "text": "출처",
+   "label": "출처",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exRecordLayout",
+   "tag": "input:checkbox",
+   "text": "기준일의 배치 이력도 저장",
+   "label": "기준일의 배치 이력도 저장",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "#exAllowWarnings",
+   "tag": "input:checkbox",
+   "text": "경고가 발생해도 확인 후 설계안 적용 허용",
+   "label": "경고가 발생해도 확인 후 설계안 적용 허용",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › # / 창고 · 자동 배치 규칙"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › h3 › # / 적용 전 미리보기",
+   "tag": "h3",
+   "text": "# / 적용 전 미리보기",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › h3 › Excel 자동 배치 · v#.#",
+   "tag": "h3",
+   "text": "Excel 자동 배치 · v#.#",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#wMode",
+   "tag": "select",
+   "text": "창고 내부 수용 우선 | 로케이션 순서 우선 | 통로 확보 우선 | 열 우선 최대 수용 · 미수용 외부 배치",
+   "label": "배치 방식창고 내부 수용 우선로케이션 순서 우선통로 확보 우선열 우선 최대 수용 · 미수용 외부 배치",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wKeep",
+   "tag": "input:checkbox",
+   "text": "기존 수동 랙 위치 유지 (이전 자료의 미확인 위치 포함)",
+   "label": "기존 수동 랙 위치 유지 (이전 자료의 미확인 위치 포함)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wRotate",
+   "tag": "input:checkbox",
+   "text": "자동 #° 회전 허용",
+   "label": "자동 #° 회전 허용",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wStructures",
+   "tag": "input:checkbox",
+   "text": "전체 교체 시 기존 구조물·보호 통로 유지",
+   "label": "전체 교체 시 기존 구조물·보호 통로 유지",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wScope",
+   "tag": "select",
+   "text": "전체 랙 | 경계 초과·대기 랙만 | 충돌·통로 침범 랙만 | 신규 랙만 | 아래에서 선택한 랙만",
+   "label": "재최적화 대상전체 랙경계 초과·대기 랙만충돌·통로 침범 랙만신규 랙만아래에서 선택한 랙만",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.# › summary › 열 우선 고급 설정",
+   "tag": "summary",
+   "text": "열 우선 고급 설정",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#clWrap",
+   "tag": "input:checkbox",
+   "text": "같은 열 내부 줄바꿈 허용",
+   "label": "같은 열 내부 줄바꿈 허용",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.# › 열 우선 고급 설정"
+  },
+  {
+   "key": "#wOptimize",
+   "tag": "button",
+   "text": "배치 재최적화",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wPrevious",
+   "tag": "button",
+   "text": "이전 후보로 돌아가기",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wPreviewAll",
+   "tag": "button",
+   "text": "모든 랙 보기",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wPreviewViolations",
+   "tag": "button",
+   "text": "위반 랙 확인",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#clReaccept",
+   "tag": "button",
+   "text": "외부 대기 랙 다시 수용 시도",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#clLegacy",
+   "tag": "button",
+   "text": "기존 내부 우선 방식으로 전환",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#clInsideFit",
+   "tag": "button",
+   "text": "창고 내부 맞춤",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#wAck",
+   "tag": "input:checkbox",
+   "text": "현재 후보의 경고를 확인했습니다 (실제 설치 승인과 다름)",
+   "label": "현재 후보의 경고를 확인했습니다 (실제 설치 승인과 다름)",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성 › Excel 자동 배치 · v#.#"
+  },
+  {
+   "key": "#rMissingPolicy",
+   "tag": "select",
+   "text": "유지 + 이번 파일 미등록 표시 | 기존 정보 그대로 유지 | 직접 체크한 누락 랙만 삭제",
+   "label": "이번 Excel에서 빠진 기존 랙유지 + 이번 파일 미등록 표시기존 정보 그대로 유지직접 체크한 누락 랙만 삭제",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#sReimportSpec",
+   "tag": "select",
+   "text": "기존 설계 규격 유지 (원본 규격만 갱신) | 새 Excel 규격을 설계에도 적용",
+   "label": "재불러오기 규격 처리기존 설계 규격 유지 (원본 규격만 갱신)새 Excel 규격을 설계에도 적용",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#exRefresh",
+   "tag": "button",
+   "text": "미리보기 갱신",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#vExcelStorageOpen",
+   "tag": "button",
+   "text": "저장소 관리",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#exApply",
+   "tag": "button",
+   "text": "확인 후 프로젝트에 적용",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#rImportBackup",
+   "tag": "button",
+   "text": "적용 취소 상태 JSON 백업 다운로드",
+   "label": "",
+   "where": "대화상자:Excel 연동 / 창고 레이아웃 자동 생성"
+  },
+  {
+   "key": "#mEditClose",
+   "tag": "button",
+   "text": "취소 ×",
+   "label": "",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "대화상자:다중 랙 편집 / 적용 전 미리보기 › h2 › 다중 랙 편집 / 적용 전 미리보기",
+   "tag": "h2",
+   "text": "다중 랙 편집 / 적용 전 미리보기",
+   "label": "",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mAction",
+   "tag": "select",
+   "text": "왼쪽 정렬 | 오른쪽 정렬 | 위쪽 정렬 | 아래쪽 정렬 | 가로 가운데 정렬 | 세로 가운데 정렬 | 가로 일렬 배치 | 세로 일렬 배치 | ",
+   "label": "동작왼쪽 정렬오른쪽 정렬위쪽 정렬아래쪽 정렬가로 가운데 정렬세로 가운데 정렬가로 일렬 배치세로 일렬 배치가로 간격 배치세로 간격 배치그룹 이동그",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mAlignRef",
+   "tag": "select",
+   "text": "선택 그룹 전체 경계 | 처음 선택한 기준 랙 | 직접 입력한 기준선 | 창고 외벽",
+   "label": "정렬 기준선택 그룹 전체 경계처음 선택한 기준 랙직접 입력한 기준선창고 외벽",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mReferenceLine",
+   "tag": "input:number",
+   "text": "기준선 좌표 (m)",
+   "label": "기준선 좌표 (m)",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mSpaceMode",
+   "tag": "select",
+   "text": "고정 간격 | 시작·끝 사이 균등 분배",
+   "label": "간격 방식고정 간격시작·끝 사이 균등 분배",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mGap",
+   "tag": "input:number",
+   "text": "외곽 사이 간격 (m)",
+   "label": "외곽 사이 간격 (m)",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mAnchor",
+   "tag": "select",
+   "text": "현재 첫 랙 | 현재 마지막 랙 | 그룹 중심 | 처음 선택한 기준 랙",
+   "label": "고정할 위치현재 첫 랙현재 마지막 랙그룹 중심처음 선택한 기준 랙",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mOrder",
+   "tag": "select",
+   "text": "현재 X 좌표 | 현재 Y 좌표 | 로케이션 오름차순 | 로케이션 내림차순 | 선택한 순서 | 직접 지정 순서",
+   "label": "순서현재 X 좌표현재 Y 좌표로케이션 오름차순로케이션 내림차순선택한 순서직접 지정 순서",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mCustomOrder",
+   "tag": "input:text",
+   "text": "직접 순서 (랙 번호를 쉼표로 구분)",
+   "label": "직접 순서 (랙 번호를 쉼표로 구분)",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mMoveX",
+   "tag": "input:number",
+   "text": "이동 ΔX (m)",
+   "label": "이동 ΔX (m)",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mMoveY",
+   "tag": "input:number",
+   "text": "이동 ΔY (m)",
+   "label": "이동 ΔY (m)",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mRotateAngle",
+   "tag": "input:number",
+   "text": "회전 (°)",
+   "label": "회전 (°)",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mReverse",
+   "tag": "input:checkbox",
+   "text": "순서 반전",
+   "label": "순서 반전",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mPreviewAllow",
+   "tag": "input:checkbox",
+   "text": "이번 변경의 공간 위반을 확인하고 허용",
+   "label": "이번 변경의 공간 위반을 확인하고 허용",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mPreviewRefresh",
+   "tag": "button",
+   "text": "미리보기 갱신",
+   "label": "",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mEditApply",
+   "tag": "button",
+   "text": "그룹 전체에 적용",
+   "label": "",
+   "where": "대화상자:다중 랙 편집 / 적용 전 미리보기"
+  },
+  {
+   "key": "#mAisleClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:통로 폭 · 보호 구역 검토"
+  },
+  {
+   "key": "대화상자:통로 폭 · 보호 구역 검토 › h2 › 통로 폭 · 보호 구역 검토",
+   "tag": "h2",
+   "text": "통로 폭 · 보호 구역 검토",
+   "label": "",
+   "where": "대화상자:통로 폭 · 보호 구역 검토"
+  },
+  {
+   "key": "#mAisleCsv",
+   "tag": "button",
+   "text": "통로 검토 CSV",
+   "label": "",
+   "where": "대화상자:통로 폭 · 보호 구역 검토"
+  },
+  {
+   "key": "#sInfoTitle",
+   "tag": "h2",
+   "text": "랙 상세 · 선반별 자재",
+   "label": "",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sInfoClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "랙 상세 닫기",
+   "where": "대화상자:랙 상세 · 선반별 자재 › 랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sInfoSearch",
+   "tag": "input:text",
+   "text": "자재 검색",
+   "label": "자재 검색",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sInfoShelf",
+   "tag": "select",
+   "text": "전체 선반",
+   "label": "선반 필터",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sShelfOrder",
+   "tag": "select",
+   "text": "#번 선반이 아래 (사용자 설정) | #번 선반이 위 (사용자 설정)",
+   "label": "선반 번호 방향",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sInfoMode",
+   "tag": "select",
+   "text": "논리적 위치 | 실측 위치 (미지원)",
+   "label": "자재 배치 표시 방식",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sInfoSvg",
+   "tag": "button",
+   "text": "선반 SVG",
+   "label": "",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sInfoPng",
+   "tag": "button",
+   "text": "선반 PNG",
+   "label": "",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#sInfoCsv",
+   "tag": "button",
+   "text": "자재 CSV",
+   "label": "",
+   "where": "대화상자:랙 상세 · 선반별 자재"
+  },
+  {
+   "key": "#bSnapshotCompareTitle",
+   "tag": "h2",
+   "text": "",
+   "label": "",
+   "where": "대화상자:bSnapshotCompare"
+  },
+  {
+   "key": "#bSnapshotCompareClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:bSnapshotCompare"
+  },
+  {
+   "key": "#rCloneClose",
+   "tag": "button",
+   "text": "취소 ×",
+   "label": "",
+   "where": "대화상자:BEFORE → AFTER 복제 미리보기"
+  },
+  {
+   "key": "대화상자:BEFORE → AFTER 복제 미리보기 › h2 › BEFORE → AFTER 복제 미리보기",
+   "tag": "h2",
+   "text": "BEFORE → AFTER 복제 미리보기",
+   "label": "",
+   "where": "대화상자:BEFORE → AFTER 복제 미리보기"
+  },
+  {
+   "key": "#rCloneChoice",
+   "tag": "select",
+   "text": "기존 AFTER 자동 백업 후 교체 | 독립 ID·생성일의 새 개선안 버전 생성 (기존 AFTER 백업) | 기존 AFTER 유지 · 취소",
+   "label": "기존 AFTER 처리기존 AFTER 자동 백업 후 교체독립 ID·생성일의 새 개선안 버전 생성 (기존 AFTER 백업)기존 AFTER 유지 · ",
+   "where": "대화상자:BEFORE → AFTER 복제 미리보기"
+  },
+  {
+   "key": "#rCloneApply",
+   "tag": "button",
+   "text": "확인 후 독립 복제",
+   "label": "",
+   "where": "대화상자:BEFORE → AFTER 복제 미리보기"
+  },
+  {
+   "key": "대화상자:교체 전 현재 작업 보호 › h2 › 교체 전 현재 작업 보호",
+   "tag": "h2",
+   "text": "교체 전 현재 작업 보호",
+   "label": "",
+   "where": "대화상자:교체 전 현재 작업 보호"
+  },
+  {
+   "key": "#vReplaceSave",
+   "tag": "button",
+   "text": "현재 프로젝트 저장 후 교체",
+   "label": "",
+   "where": "대화상자:교체 전 현재 작업 보호"
+  },
+  {
+   "key": "#vReplaceBackup",
+   "tag": "button",
+   "text": "현재 JSON 다운로드 후 교체",
+   "label": "",
+   "where": "대화상자:교체 전 현재 작업 보호"
+  },
+  {
+   "key": "#vReplaceCancel",
+   "tag": "button",
+   "text": "취소",
+   "label": "",
+   "where": "대화상자:교체 전 현재 작업 보호"
+  },
+  {
+   "key": "#vBackupClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:프로젝트 이전 버전·백업"
+  },
+  {
+   "key": "대화상자:프로젝트 이전 버전·백업 › h2 › 프로젝트 이전 버전·백업",
+   "tag": "h2",
+   "text": "프로젝트 이전 버전·백업",
+   "label": "",
+   "where": "대화상자:프로젝트 이전 버전·백업"
+  },
+  {
+   "key": "#vThemeClose",
+   "tag": "button",
+   "text": "취소·닫기 ×",
+   "label": "",
+   "where": "대화상자:색상 설정 · 기본 색상 복원"
+  },
+  {
+   "key": "대화상자:색상 설정 · 기본 색상 복원 › h2 › 색상 설정 · 기본 색상 복원",
+   "tag": "h2",
+   "text": "색상 설정 · 기본 색상 복원",
+   "label": "",
+   "where": "대화상자:색상 설정 · 기본 색상 복원"
+  },
+  {
+   "key": "#vThemeApply",
+   "tag": "button",
+   "text": "입력한 UI 색상 적용",
+   "label": "",
+   "where": "대화상자:색상 설정 · 기본 색상 복원"
+  },
+  {
+   "key": "#vResetScope",
+   "tag": "select",
+   "text": "UI 기본 테마만 복원 | 적재율 기본 색상·기준만 복원 | 모든 색상 설정 복원 (양쪽 객체 지정색 포함)",
+   "label": "복원 범위UI 기본 테마만 복원적재율 기본 색상·기준만 복원모든 색상 설정 복원 (양쪽 객체 지정색 포함)",
+   "where": "대화상자:색상 설정 · 기본 색상 복원"
+  },
+  {
+   "key": "#vResetApply",
+   "tag": "button",
+   "text": "미리본 기본 색상 복원",
+   "label": "",
+   "where": "대화상자:색상 설정 · 기본 색상 복원"
+  },
+  {
+   "key": "#vStorageClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:저장소 관리"
+  },
+  {
+   "key": "대화상자:저장소 관리 › h2 › 저장소 관리",
+   "tag": "h2",
+   "text": "저장소 관리",
+   "label": "",
+   "where": "대화상자:저장소 관리"
+  },
+  {
+   "key": "#vStorageRefresh",
+   "tag": "button",
+   "text": "측정 새로고침",
+   "label": "",
+   "where": "대화상자:저장소 관리"
+  },
+  {
+   "key": "#vStorageDownload",
+   "tag": "button",
+   "text": "현재 메모리 JSON 다운로드",
+   "label": "",
+   "where": "대화상자:저장소 관리"
+  },
+  {
+   "key": "#vStorageRecovery",
+   "tag": "button",
+   "text": "적용 전 복구 JSON 다운로드",
+   "label": "",
+   "where": "대화상자:저장소 관리"
+  },
+  {
+   "key": "#vStorageRetry",
+   "tag": "button",
+   "text": "현재 프로젝트 다시 저장",
+   "label": "",
+   "where": "대화상자:저장소 관리"
+  },
+  {
+   "key": "대화상자:저장소 관리 › summary › 상세 진단 JSON",
+   "tag": "summary",
+   "text": "상세 진단 JSON",
+   "label": "",
+   "where": "대화상자:저장소 관리"
+  },
+  {
+   "key": "#wClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:배치 위반 목록 · 현재 계산"
+  },
+  {
+   "key": "대화상자:배치 위반 목록 · 현재 계산 › h2 › 배치 위반 목록 · 현재 계산",
+   "tag": "h2",
+   "text": "배치 위반 목록 · 현재 계산",
+   "label": "",
+   "where": "대화상자:배치 위반 목록 · 현재 계산"
+  },
+  {
+   "key": "#aboutClose",
+   "tag": "button",
+   "text": "닫기 ×",
+   "label": "",
+   "where": "대화상자:Warehouse Layout Designer"
+  },
+  {
+   "key": "대화상자:Warehouse Layout Designer › h2 › Warehouse Layout Designer",
+   "tag": "h2",
+   "text": "Warehouse Layout Designer",
+   "label": "",
+   "where": "대화상자:Warehouse Layout Designer"
+  },
+  {
+   "key": "#aboutRelease",
+   "tag": "a",
+   "text": "GitHub Release 이력",
+   "label": "",
+   "where": "대화상자:Warehouse Layout Designer"
+  }
+ ],
+ "states": {
+  "rack1": [
+   {
+    "key": "#multiSelect",
+    "tag": "input:checkbox",
+    "text": "다중 선택 유지 (터치용)",
+    "label": "다중 선택 유지 (터치용)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:text › 번호 / 이름",
+    "tag": "input:text",
+    "text": "번호 / 이름",
+    "label": "번호 / 이름",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:text › 블록",
+    "tag": "input:text",
+    "text": "블록",
+    "label": "블록",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › select › 경량랙 | 중량랙 | 팔레트랙 | 일반 선반 | 사용자 지정 랙",
+    "tag": "select",
+    "text": "경량랙 | 중량랙 | 팔레트랙 | 일반 선반 | 사용자 지정 랙",
+    "label": "랙 종류경량랙중량랙팔레트랙일반 선반사용자 지정 랙",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › X (m)",
+    "tag": "input:number",
+    "text": "X (m)",
+    "label": "X (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › Y (m)",
+    "tag": "input:number",
+    "text": "Y (m)",
+    "label": "Y (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 폭 (m)",
+    "tag": "input:number",
+    "text": "폭 (m)",
+    "label": "폭 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 깊이 (m)",
+    "tag": "input:number",
+    "text": "깊이 (m)",
+    "label": "깊이 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 높이 (m)",
+    "tag": "input:number",
+    "text": "높이 (m)",
+    "label": "높이 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 회전 (°)",
+    "tag": "input:number",
+    "text": "회전 (°)",
+    "label": "회전 (°)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최대 수량",
+    "tag": "input:number",
+    "text": "최대 수량",
+    "label": "최대 수량",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 현재 수량",
+    "tag": "input:number",
+    "text": "현재 수량",
+    "label": "현재 수량",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:text › 적재 단위",
+    "tag": "input:text",
+    "text": "적재 단위",
+    "label": "적재 단위",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › select › 사용자 입력 | 사용자 실측 | 도면 참고 샘플 | 자동 배치 · 위치 실측 미확인",
+    "tag": "select",
+    "text": "사용자 입력 | 사용자 실측 | 도면 참고 샘플 | 자동 배치 · 위치 실측 미확인",
+    "label": "치수·위치 근거사용자 입력사용자 실측도면 참고 샘플자동 배치 · 위치 실측 미확인",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › textarea › 비고",
+    "tag": "textarea",
+    "text": "비고",
+    "label": "비고",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#sOpenInfo",
+    "tag": "button",
+    "text": "선반별 자재 상세",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#sPhysical",
+    "tag": "button",
+    "text": "실제 설비 변경 확인 기록",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최소 폭 m",
+    "tag": "input:number",
+    "text": "최소 폭 m",
+    "label": "최소 폭 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최소 깊이 m",
+    "tag": "input:number",
+    "text": "최소 깊이 m",
+    "label": "최소 깊이 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최대 폭 m",
+    "tag": "input:number",
+    "text": "최대 폭 m",
+    "label": "최대 폭 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최대 깊이 m",
+    "tag": "input:number",
+    "text": "최대 깊이 m",
+    "label": "최대 깊이 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#sAspect",
+    "tag": "input:checkbox",
+    "text": "폭·깊이 비율 잠금",
+    "label": "폭·깊이 비율 잠금",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColor",
+    "tag": "input:color",
+    "text": "사용자 지정색",
+    "label": "사용자 지정색",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColorApply",
+    "tag": "button",
+    "text": "지정색 적용",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColorClear",
+    "tag": "button",
+    "text": "지정색 해제",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#qZoneName",
+    "tag": "input:text",
+    "text": "현재 배치의 표시 이름",
+    "label": "현재 배치의 표시 이름",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#qZoneApply",
+    "tag": "button",
+    "text": "ZONE 이름 적용",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#qZoneReset",
+    "tag": "button",
+    "text": "원본 이름 표시",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#wPositionLock",
+    "tag": "input:checkbox",
+    "text": "랙 위치 잠금",
+    "label": "랙 위치 잠금",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#wReview",
+    "tag": "button",
+    "text": "검토 중으로 표시",
+    "label": "",
+    "where": "선택 객체 #"
+   }
+  ],
+  "rack2": [
+   {
+    "key": "선택 객체 # › h3 › 다중 랙 편집 패널",
+    "tag": "h3",
+    "text": "다중 랙 편집 패널",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 그룹 이동",
+    "tag": "button",
+    "text": "그룹 이동",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 그룹 중심 회전",
+    "tag": "button",
+    "text": "그룹 중심 회전",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 왼쪽 정렬",
+    "tag": "button",
+    "text": "왼쪽 정렬",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 오른쪽 정렬",
+    "tag": "button",
+    "text": "오른쪽 정렬",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 위쪽 정렬",
+    "tag": "button",
+    "text": "위쪽 정렬",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 아래쪽 정렬",
+    "tag": "button",
+    "text": "아래쪽 정렬",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 가로 가운데",
+    "tag": "button",
+    "text": "가로 가운데",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 세로 가운데",
+    "tag": "button",
+    "text": "세로 가운데",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 가로 일렬",
+    "tag": "button",
+    "text": "가로 일렬",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 세로 일렬",
+    "tag": "button",
+    "text": "세로 일렬",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 가로 간격",
+    "tag": "button",
+    "text": "가로 간격",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › button › 세로 간격",
+    "tag": "button",
+    "text": "세로 간격",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mGroupDuplicate",
+    "tag": "button",
+    "text": "그룹 복제",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mGroupDelete",
+    "tag": "button",
+    "text": "그룹 삭제",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mGroupUndo",
+    "tag": "button",
+    "text": "실행 취소",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mGroupCheck",
+    "tag": "button",
+    "text": "공간 검토",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mGroupCompare",
+    "tag": "button",
+    "text": "Before/After 비교",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mGroupExport",
+    "tag": "button",
+    "text": "현재 좌표 CSV",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › summary › 최근 편집 명령",
+    "tag": "summary",
+    "text": "최근 편집 명령",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#wPositionLock",
+    "tag": "input:checkbox",
+    "text": "랙 위치 잠금",
+    "label": "랙 위치 잠금",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#wReview",
+    "tag": "button",
+    "text": "검토 중으로 표시",
+    "label": "",
+    "where": "선택 객체 #"
+   }
+  ],
+  "aisle": [
+   {
+    "key": "#multiSelect",
+    "tag": "input:checkbox",
+    "text": "다중 선택 유지 (터치용)",
+    "label": "다중 선택 유지 (터치용)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:text › 번호 / 이름",
+    "tag": "input:text",
+    "text": "번호 / 이름",
+    "label": "번호 / 이름",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:text › 블록",
+    "tag": "input:text",
+    "text": "블록",
+    "label": "블록",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › X (m)",
+    "tag": "input:number",
+    "text": "X (m)",
+    "label": "X (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › Y (m)",
+    "tag": "input:number",
+    "text": "Y (m)",
+    "label": "Y (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 폭 (m)",
+    "tag": "input:number",
+    "text": "폭 (m)",
+    "label": "폭 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 깊이 (m)",
+    "tag": "input:number",
+    "text": "깊이 (m)",
+    "label": "깊이 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 높이 (m)",
+    "tag": "input:number",
+    "text": "높이 (m)",
+    "label": "높이 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 회전 (°)",
+    "tag": "input:number",
+    "text": "회전 (°)",
+    "label": "회전 (°)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최소 확보 폭 (m)",
+    "tag": "input:number",
+    "text": "최소 확보 폭 (m)",
+    "label": "최소 확보 폭 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 목표 폭 (m)",
+    "tag": "input:number",
+    "text": "목표 폭 (m)",
+    "label": "목표 폭 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › select › 메인 이동 통로 | 작업자 이동 통로 | 자재 운반 통로 | 랙 접근 통로 | 출입문 연결 통로",
+    "tag": "select",
+    "text": "메인 이동 통로 | 작업자 이동 통로 | 자재 운반 통로 | 랙 접근 통로 | 출입문 연결 통로",
+    "label": "통로 종류메인 이동 통로작업자 이동 통로자재 운반 통로랙 접근 통로출입문 연결 통로",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › select › 사용자 입력 | 사용자 실측 | 도면 참고 샘플 | 자동 배치 · 위치 실측 미확인",
+    "tag": "select",
+    "text": "사용자 입력 | 사용자 실측 | 도면 참고 샘플 | 자동 배치 · 위치 실측 미확인",
+    "label": "치수·위치 근거사용자 입력사용자 실측도면 참고 샘플자동 배치 · 위치 실측 미확인",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › textarea › 비고",
+    "tag": "textarea",
+    "text": "비고",
+    "label": "비고",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › h3 › 유효 통로 폭",
+    "tag": "h3",
+    "text": "유효 통로 폭",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mAisleAxis",
+    "tag": "select",
+    "text": "짧은 변 기준 자동 | 로컬 X 방향 폭 | 로컬 Y 방향 폭",
+    "label": "폭을 측정할 로컬 축짧은 변 기준 자동로컬 X 방향 폭로컬 Y 방향 폭",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mAisleEnabled",
+    "tag": "input:checkbox",
+    "text": "이 통로 경고 사용",
+    "label": "이 통로 경고 사용",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mAisleScope",
+    "tag": "input:text",
+    "text": "검사할 랙 번호 (비우면 전체)",
+    "label": "검사할 랙 번호 (비우면 전체)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#mLinkedDoor",
+    "tag": "select",
+    "text": "미지정 / 연결성 미검증 | 북측 출입문 | 남측 출입문 | 보조 출입문",
+    "label": "연결할 출입문미지정 / 연결성 미검증북측 출입문남측 출입문보조 출입문",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최소 폭 m",
+    "tag": "input:number",
+    "text": "최소 폭 m",
+    "label": "최소 폭 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최소 깊이 m",
+    "tag": "input:number",
+    "text": "최소 깊이 m",
+    "label": "최소 깊이 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최대 폭 m",
+    "tag": "input:number",
+    "text": "최대 폭 m",
+    "label": "최대 폭 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최대 깊이 m",
+    "tag": "input:number",
+    "text": "최대 깊이 m",
+    "label": "최대 깊이 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#sAspect",
+    "tag": "input:checkbox",
+    "text": "폭·깊이 비율 잠금",
+    "label": "폭·깊이 비율 잠금",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColor",
+    "tag": "input:color",
+    "text": "사용자 지정색",
+    "label": "사용자 지정색",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColorApply",
+    "tag": "button",
+    "text": "지정색 적용",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColorClear",
+    "tag": "button",
+    "text": "지정색 해제",
+    "label": "",
+    "where": "선택 객체 #"
+   }
+  ],
+  "column": [
+   {
+    "key": "#multiSelect",
+    "tag": "input:checkbox",
+    "text": "다중 선택 유지 (터치용)",
+    "label": "다중 선택 유지 (터치용)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:text › 번호 / 이름",
+    "tag": "input:text",
+    "text": "번호 / 이름",
+    "label": "번호 / 이름",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:text › 블록",
+    "tag": "input:text",
+    "text": "블록",
+    "label": "블록",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › X (m)",
+    "tag": "input:number",
+    "text": "X (m)",
+    "label": "X (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › Y (m)",
+    "tag": "input:number",
+    "text": "Y (m)",
+    "label": "Y (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 폭 (m)",
+    "tag": "input:number",
+    "text": "폭 (m)",
+    "label": "폭 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 깊이 (m)",
+    "tag": "input:number",
+    "text": "깊이 (m)",
+    "label": "깊이 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 높이 (m)",
+    "tag": "input:number",
+    "text": "높이 (m)",
+    "label": "높이 (m)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 회전 (°)",
+    "tag": "input:number",
+    "text": "회전 (°)",
+    "label": "회전 (°)",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › select › 사용자 입력 | 사용자 실측 | 도면 참고 샘플 | 자동 배치 · 위치 실측 미확인",
+    "tag": "select",
+    "text": "사용자 입력 | 사용자 실측 | 도면 참고 샘플 | 자동 배치 · 위치 실측 미확인",
+    "label": "치수·위치 근거사용자 입력사용자 실측도면 참고 샘플자동 배치 · 위치 실측 미확인",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › textarea › 비고",
+    "tag": "textarea",
+    "text": "비고",
+    "label": "비고",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최소 폭 m",
+    "tag": "input:number",
+    "text": "최소 폭 m",
+    "label": "최소 폭 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최소 깊이 m",
+    "tag": "input:number",
+    "text": "최소 깊이 m",
+    "label": "최소 깊이 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최대 폭 m",
+    "tag": "input:number",
+    "text": "최대 폭 m",
+    "label": "최대 폭 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "선택 객체 # › input:number › 최대 깊이 m",
+    "tag": "input:number",
+    "text": "최대 깊이 m",
+    "label": "최대 깊이 m",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#sAspect",
+    "tag": "input:checkbox",
+    "text": "폭·깊이 비율 잠금",
+    "label": "폭·깊이 비율 잠금",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColor",
+    "tag": "input:color",
+    "text": "사용자 지정색",
+    "label": "사용자 지정색",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColorApply",
+    "tag": "button",
+    "text": "지정색 적용",
+    "label": "",
+    "where": "선택 객체 #"
+   },
+   {
+    "key": "#vObjectColorClear",
+    "tag": "button",
+    "text": "지정색 해제",
+    "label": "",
+    "where": "선택 객체 #"
+   }
+  ]
+ }
+}

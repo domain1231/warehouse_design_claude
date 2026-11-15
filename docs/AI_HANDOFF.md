@@ -5,6 +5,13 @@
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-15 UI 동일성(D-032) · Phase 9b-0
+- 사용자 지시: UI 구성·문구·디자인은 v2.4.1과 동일. 감사 결과 `docs/UI_PARITY_AUDIT.md`(PR #29 병합).
+- 9b-0: `tools/ui-inventory.mjs`(기준본 UI 목록 생성) → `fixtures/legacy/ui-inventory.json`. 검사 `tests/e2e/ui-parity.test.js`, 고정 차이 `tests/e2e/ui-parity-gaps.json` 707건. 차이가 늘면 실패, 고친 차이를 목록에서 안 지워도 실패(래칫). 갱신: `UPDATE_UI_GAPS=1 node --test tests/e2e/ui-parity.test.js`.
+- 다음: 9b-1(헤더·KPI·상태 줄·3단 배치·글꼴·버튼 치수) → 9b-2 … 9b-7. 재구축 화면은 기준본 id·섹션 제목·문구를 그대로 사용한다.
+- 독립 검토: 사용자 지시로 Opus. frugal 훅이 격리 Opus 에이전트를 막으므로 현재는 main 세션(Opus)에서 검토한다.
+- 성능 비교(tools/perf-compare.mjs, 브랜치 chore/phase11-perf)는 25분 제한에 걸려 결과 없음. 사례 축소 후 재실행 필요.
+
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
 - 기준본 함수 체인: 기준본 `docs/FUNCTION_CHAIN.md` (340개 중 74개 체인, `validateProject` 12단계, `commit` 6단계).
