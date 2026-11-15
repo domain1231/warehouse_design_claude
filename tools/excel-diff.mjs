@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
-import { excelCases } from '../tests/golden/excel-cases.js';
+import { excelCases, proposalCases } from '../tests/golden/excel-cases.js';
+import { normalizeLikeHarness } from '../tests/golden/compare.js';
 
 const baseline = process.env.BASELINE_REPO;
 if (!baseline) {
@@ -56,10 +57,63 @@ for (const c of excelCases) {
   delete r.bytes;
   results.push({ name: c.name, ...r });
 }
+// 배치안(70 EX.proposal → 90 W.base). 사례마다 기준 프로젝트를 다시 불러온다.
+const projectText = fs.readFileSync(new URL('../fixtures/legacy/v2.4.1-primary.project.json', import.meta.url), 'utf8');
+const basic = fs.readFileSync(new URL('synthetic-basic.xlsx', outDir));
+const proposals = [];
+for (const c of proposalCases) {
+  const r = await page.evaluate(async ({ c, text, bytes }) => {
+    await EX.readFile(new File([new Uint8Array(bytes)], 'synthetic-basic.xlsx'));
+    if ($('excelDialog').open) $('excelDialog').close();
+    P = JSON.parse(text);
+    M.ensure(P);
+    W.ensure(P);
+    validateProject(P);
+    let last = null;
+    const out = [];
+    for (const step of c.steps) {
+      if (step === 'commit') {
+        P.scenarios[last.config.target] = JSON.parse(JSON.stringify(last.layout));
+        validateProject(P); // 실제 적용처럼 기본값 보정(규격·크기 제한 등)
+        continue;
+      }
+      if (step === 'apply') {
+        // 70 EX.apply 본문(wApply) + 90 R.transaction 래퍼. 화면 확인·후보 일치 검사만 대체한다.
+        last.warnings = warnings(last.layout);
+        last.applyContext = { filename: 'synthetic-basic.xlsx', sheet: EX.sheetName, analysis: JSON.parse(JSON.stringify(EX.analysis)) };
+        W.pending = { settings: JSON.parse(JSON.stringify(last.config.autoPlacement)), acknowledged: true, fingerprint: W.scan(last.layout).fingerprint, candidate: '기존 배치 규칙' };
+        const matches = W.matches;
+        W.matches = () => true;
+        window.confirm = () => true;
+        const ok = wApply(last);
+        W.matches = matches;
+        W.pending = null;
+        const pick = ({ scenarios, scenarioMeta, locationLayout, layoutBackups, layoutRevisions, importHistory, excelSnapshots, layoutSnapshots, editing, settings, metadata, autoPlacement }) => ({ scenarios, scenarioMeta, locationLayout, layoutBackups, layoutRevisions, importHistory, excelSnapshots, layoutSnapshots, selection: [editing.selectedRackIds, editing.selectionScenario], scenario: settings.scenario, sample: metadata.sample, autoSettings: autoPlacement.settings, autoHistory: autoPlacement.history.map((h) => ({ ...h, fingerprint: h.fingerprint === W.scan(h.layout).fingerprint })) }); // 지문은 객체 ID를 포함하므로 일치 여부만 비교
+        out.push({ applied: ok, project: pick(JSON.parse(JSON.stringify(P))) });
+        continue;
+      }
+      EX.resolutions = step.resolutions ?? c.resolutions;
+      EX.analyze();
+      if (step.dropRack) EX.analysis.racks = EX.analysis.racks.filter((x) => x.key !== step.dropRack);
+      if (step.onlyRacks) EX.analysis.racks = EX.analysis.racks.filter((x) => step.onlyRacks.includes(x.key) || x.key === step.dropRack);
+      if (step.editItem) EX.analysis.racks[0].shelves[0].items[0].itemName = '변경된 품목명';
+      R.missingDelete.clear();
+      if (step.deleteMissing) for (const o of P.scenarios[step.c.target].objects) if (o.excel?.key === step.dropRack) R.missingDelete.add(o.id);
+      try {
+        last = W.base(step.c);
+        out.push({ layout: last.layout, changes: last.changes, missing: last.missing.map((o) => o.id), generatedKeys: last.generatedKeys });
+      } catch (e) {
+        out.push({ error: e.message });
+      }
+    }
+    return JSON.parse(JSON.stringify(out));
+  }, { c, text: projectText, bytes: [...basic] });
+  proposals.push({ name: c.name, steps: r });
+}
 await browser.close();
 if (errors.length) {
   console.error('page errors', errors);
   process.exit(1);
 }
-fs.writeFileSync(new URL('../fixtures/legacy/excel-cases.json', import.meta.url), JSON.stringify({ baseline: 'v2.4.1 normal build', note: 'SYNTHETIC; regenerate with tools/excel-diff.mjs when cases change', results }, null, 1) + '\n');
+fs.writeFileSync(new URL('../fixtures/legacy/excel-cases.json', import.meta.url), JSON.stringify({ baseline: 'v2.4.1 normal build', note: 'SYNTHETIC; regenerate with tools/excel-diff.mjs when cases change', results, proposals }, null, 1) + '\n');
 console.log(results.map((r) => `${r.name}: header ${r.headerRow1}, rows ${r.analysis.rows.length}, racks ${r.analysis.racks.length}, issues ${r.analysis.issues.length}`).join('\n'));

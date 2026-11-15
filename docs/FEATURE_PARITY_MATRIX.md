@@ -28,14 +28,14 @@
 | F-018 | 랙 상세 인포그래픽 | 65-panels-details | 더블클릭 | 선반별 자재·지표 | shelves | warehouse/rackinfo, ui/rack-detail | UI08, P3, E2E details | IMPLEMENTED | 더블클릭·요약·선반 SVG·자재 상세·검색·선반 필터·방향 저장·SVG/PNG/CSV·실제 설비 확인 기준본 일치(P3·E1) |
 | F-019 | ZONE·랙 번호 라벨 | 80-precision-labels | 라벨 설정 | 정방향·외부 표시 | rackLabels | cad/labels | UI09 | NOT STARTED | — |
 | F-020 | 색상 범례·3종 지표 | 75-storage-appearance | 임계값·색상 | 지표 분리 표시 | theme | warehouse/utilization | UI10 | NOT STARTED | — |
-| F-021 | Excel 읽기·매핑·로케이션 | 40-excel EX.readFile | XLSX/CSV, 머리글, 매핑 | 원본 의미 보존, null 유지 | excelSnapshots | excel/xlsx, excel/analyze, ui/excel-dialog | XL01–XL05, XL10, X1, unit xlsx, E2E excel | IMPLEMENTING | XLSX·CSV 읽기, 머리글 탐지, 자동 매핑, 분석·규격 충돌 선택 기준본 일치(X1 6사례) — 배치 생성·적용 전 |
-| F-022 | 건물별 코드·기존 랙 매칭 | 70-scenarios EX.proposal (BUG-EXCEL-CODE-001) | 건물 설정 | ID·사용자 이름 보존 | R.key | excel/proposal | XL06–XL09 | NOT STARTED | — |
-| F-023 | Excel 미리보기·적용 승인 | 90-auto-layout W.readiness/proof, EX.apply | 후보·경고 확인 | 승인 후보=적용 후보 | autoPlacement | scenarios/approval | XL11–XL13 | NOT STARTED | — |
+| F-021 | Excel 읽기·매핑·로케이션 | 40-excel EX.readFile | XLSX/CSV, 머리글, 매핑 | 원본 의미 보존, null 유지 | excelSnapshots | excel/xlsx, excel/analyze, ui/excel-dialog | XL01–XL05, XL10, X1, unit xlsx, E2E excel | DONE | XLSX·CSV 읽기, 머리글 탐지, 자동 매핑, 분석·규격 충돌 선택 기준본 일치(X1 6사례). 값 없는 매핑 요약 복사 추가 |
+| F-022 | 건물별 코드·기존 랙 매칭 | 70-scenarios EX.proposal (BUG-EXCEL-CODE-001) | 건물 설정 | ID·사용자 이름 보존 | R.key | excel/proposal | XL06–XL09, X2 | DONE | 생성·건물 키 매칭·병합/갱신·규격 재가져오기·누락 정책·보호 랙·구조물 기준본 W.base 일치(X2 6사례) |
+| F-023 | Excel 미리보기·적용 승인 | 90-auto-layout W.readiness/proof, EX.apply | 후보·경고 확인 | 승인 후보=적용 후보 | autoPlacement | ui/excel-dialog, excel/apply | XL11–XL13, E2E excel | IMPLEMENTING | 미리보기·경고 확인·잠금/최종 확인·미리보기 후 변경 감지 구현. 대안 후보(W.pack 5종)·후보 비교표는 Phase 6 |
 | F-024 | 기존 자동 배치 모드 | 90-auto-layout W.fits/scan/pack | 배치 설정 | 기존 후보 재현 | autoPlacement | placement/* | AL01–AL03 | NOT STARTED | — |
 | F-025 | 열 우선 최대 수용 | 92-column-layout C.search | 열 우선 모드 | 열·번호 순서, 부분 수용 | autoPlacement | placement/column-layout | AL04–AL06, AL12, AL14 | NOT STARTED | — |
 | F-026 | 외부 대기·재수용 | 92-column-layout C.queue | 재수용 버튼 | 겹침 없음, 규격 유지 | objects | placement/external-queue | AL07–AL11, AL13 | NOT STARTED | — |
 | F-027 | BEFORE/AFTER·잠금·비교 | 70-scenarios | 잠금, 복제, 비교 | 독립성, 비교 출력 | scenarios | scenarios/* | SV09 | NOT STARTED | — |
-| F-028 | 원자적 적용 트랜잭션 | 70-scenarios R.transaction | 적용 | 실패 시 전체 복원 | 전체 | scenarios/transactions | XL14 | NOT STARTED | — |
+| F-028 | 원자적 적용 트랜잭션 | 70-scenarios R.transaction | 적용 | 실패 시 전체 복원 | 전체 | excel/apply | XL14, X2, unit excel-apply | DONE | R.capture·R.backup·R.transaction·EX.apply(+75·80·90 래퍼) 기준본 일치(X2 적용 2사례: 백업·수정 이력·가져오기 이력·스냅숏·자동 배치 이력). 다른 편집안 변경·검증 실패·참조 공유 시 전체 취소 |
 | F-029 | 검증 저장·무변경 생략 | 75 V.atomic/V.write/V.fingerprint | 저장 | SAVED/UNSAVED/ROLLED_BACK | persistence | persistence/storage, core/session | SV01–SV03, SV11 | IMPLEMENTED | 단위(SV01–SV03, SV11) + 브라우저 E2E(저장·새로고침 복원) |
 | F-030 | Quota 처리·백업 순환 | 75 V.track/V.restore (BUG-STORAGE-001) | — | 정상본 보존, 3/6개 순환 | layoutBackups | persistence/backups | SV04–SV07, SV12 | IMPLEMENTING | Quota 단위·브라우저 E2E(실패 표시·기존본 보존·재시도) — 백업 순환(3/6개) 전 |
 | F-031 | 저장소 진단·복구 다운로드 | 75 V.measureStorage/storageSnapshot | 저장소 관리 | 크기·단계 표시 | — | persistence/diagnostics | — (Phase 0 배정) | NOT STARTED | — |

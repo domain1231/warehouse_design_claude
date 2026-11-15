@@ -1,9 +1,9 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 5a(Excel 읽기·매핑·분석) 완료. PR `feature/phase5-excel`(기준: main). PR #1~#12는 main에 병합됨.
+- 단계: Phase 5b(Excel 배치안·적용 트랜잭션) 완료. PR `feature/phase5b-excel-apply`(기준: main). PR #1~#13은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 92 + Golden 188(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 30. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 96 + Golden 197(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 31. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -73,9 +73,15 @@
 - 가상 통합 문서 `fixtures/excel/`(기준본 SheetJS로 생성). 대조 `tests/golden/X1-excel.test.js` 8. 재생성: `BASELINE_REPO=../warehouse_design WAREHOUSE_BROWSER_PATH=<chrome> node tools/excel-diff.mjs`.
 - NOT RUN: 실제 업무 Excel(커밋 금지 자료), Windows Edge.
 
+## Phase 5b 결과 (2026-11-15, feature/phase5b-excel-apply)
+- `src/excel/proposal.js`(readExcelConfig·generateRacks·buildProposal), `src/excel/apply.js`(captureTarget·backupTarget·runTransaction·applyExcelProposal), Excel 대화상자 설정·미리보기·경고 확인·적용·매핑 요약 복사(D-018).
+- 기준본 대조 `tests/golden/X2-proposal.test.js` 9(배치안 6 + 적용 2 + 목록). 단위 `tests/unit/excel-apply.test.js` 4. E2E excel 2.
+- NOT RUN: 실제 업무 Excel, Windows Edge.
+
 ## 다음 작업
-- Phase 5b: 배치 생성(EX.generate, 92 열 우선 생성은 Phase 6과 연계)·제안(EX.proposal + 60·70·90 래퍼: 건물 코드, 기존 랙 매칭, 규격 재가져오기 정책, 누락 랙 정책)·적용(70 R.transaction 원자성, 승인 후보=적용 후보), 표시 모드 전환·Excel 색, 라벨(F-019).
-- 사용자 확인 필요: 실제 업무 Excel 열 이름 목록(값 없이)으로 매핑 확인.
+- Phase 5c: 표시 모드 전환·Excel 색(F-018 잔여), ZONE·랙 번호 라벨(F-019).
+- Phase 6: 자동 배치 후보(W.pack 5종·W.build·비교표·후보 선택), 열 우선 생성(92).
+- 사용자 확인 필요: 실제 업무 Excel을 로컬 빌드로 열고 '매핑 요약 복사' 결과(값 제외)로 매핑 확인.
 
 ## 미결 사항
 - 명세서 원본 전문(`docs/SPEC_v1_0.md`) 반입 여부.
