@@ -29,7 +29,14 @@
 - 저장소에 validate 연결 시 기준본 저장본 로드·잘못된 프로젝트 저장 차단 확인.
 - D-006 확정: A안(기준본 키 쓰지 않음).
 
+## Phase 1b-2 결과 (2026-11-11, feature/phase1-session)
+- `src/core/history.js`: 변경분 실행취소(D-009). `src/core/session.js`: 편집 세션·자동 저장·충돌·손상 보호(D-010).
+- `src/main.js`: 저장 상태·이름 편집·저장·덮어쓰기 확인·손상 교체·실행취소·JSON 내보내기 화면(도면 없음). storage 이벤트 연결.
+- 브라우저 E2E `tests/e2e/storage.test.js` 5개: 새로고침 복원, 실행취소 저장, 기준본 데이터 로드(키 불변), Quota 주입 실패·재시도, 두 탭 충돌·확인 후 덮어쓰기. Linux Chrome for Testing 153. Windows Edge NOT RUN(CI windows-latest는 Chromium).
+- Phase 1 완료 범위: 저장 계층·프로젝트 모델·실행취소·세션. 남은 저장 항목: 백업 순환(3/6개), 저장소 진단, JSON 불러오기 UI → Phase 8·9.
+
 ## 다음 작업
+- Phase 2: 공간검사(경고 9종, W.scan) 이식 → Golden G2 일치. 이후 열 우선 결과 재계산(92) 연결.
 - Phase 1b-2: 변경분(patch) 실행취소, 저장소·프로젝트 모델을 앱에 연결, 실제 브라우저 E2E(저장·새로고침·Quota 주입·다중 탭).
 - Phase 1b: 프로젝트 모델·validateProject(G5 일치, 기준본 12단계 체인 기준), 변경분(patch) 실행취소, 저장소를 앱에 연결하고 실제 브라우저 E2E(Quota·다중 탭).
 0. (완료) Phase 0: 기준본 FUNCTION_CHAIN과 786/88 검사 분류로 `FEATURE_PARITY_MATRIX.md` 세분화, Golden Master 비교 도구(이 저장소 `tools/golden-compare`) 설계.
