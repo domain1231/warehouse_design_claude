@@ -50,6 +50,6 @@
 | F-039 | 휠 감도 설정·저장 | 50-editor M.setWheelMode | 감도 선택 | 프로젝트와 독립 저장, 손상 시 안전 기본값 | 별도 키 | cad/wheel-settings | unit plan, E2E plan | IMPLEMENTED | 저장·쓰기 후 읽기·손상 시 기본값·기준본 키 읽기 전용 |
 | F-040 | 탐색 예산·중단 사유 | 92 C.limits/C.check | — | probe 상한, 사유 표시(D-005 결정적) | autoPlacement | placement/candidates | AL12 | IMPLEMENTED | 탐색 예산(probe·시작점·오프셋·후보)만으로 중단, 중단 사유 표시, 시간 상한 제거(D-023, 사용자 확정) |
 | F-041 | 파생 검사 결과 재계산 | 92 JSON 복원 후 재검사 | JSON 불러오기 | 저장된 집계 불신, 현재 좌표로 재계산 | autoPlacement | placement/diagnostics | — | NOT STARTED | — |
-| F-042 | 모바일 드로어·레이아웃 | shell, 65 | 좁은 화면 | 가로 넘침 없음, 드로어 동작 | — | ui/panels | — | NOT STARTED | — |
+| F-042 | 모바일 드로어·레이아웃 | shell, 65 | 좁은 화면 | 가로 넘침 없음, 드로어 동작 | — | ui/panels | — | DEFERRED | 사용자 지시(2026-11-15)로 요청 전까지 개발·검사 보류 |
 
 ✚ 기반 모듈 구현됨 (`src/geometry/tolerance.js`, `src/core/ids.js`). 기능 행 자체는 아직 NOT STARTED.
