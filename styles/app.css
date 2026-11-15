@@ -1,0 +1,32 @@
+:root {
+  color-scheme: dark;
+  --bg: #15181d;
+  --panel: #1e232b;
+  --line: #2f3742;
+  --text: #e6e9ee;
+  --muted: #9aa4b2;
+  --accent: #3b82f6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 system-ui, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+}
+
+.shell {
+  max-width: 720px;
+  margin: 10vh auto;
+  padding: 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.shell h1 { margin: 0 0 4px; font-size: 20px; }
+.shell .versions { color: var(--muted); margin: 0 0 16px; }
+.shell .status { border-left: 3px solid var(--accent); padding-left: 12px; margin: 0; }

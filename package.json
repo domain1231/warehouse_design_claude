@@ -1,0 +1,30 @@
+{
+  "name": "warehouse-layout-designer",
+  "version": "2.5.0-alpha.0",
+  "private": true,
+  "type": "module",
+  "description": "Greenfield rebuild of the offline SVG warehouse layout designer (baseline v2.4.1)",
+  "warehouse": {
+    "projectSchemaVersion": "2.3.6",
+    "baseline": {
+      "repository": "domain1231/warehouse_design",
+      "commit": "d7b1e696a7aaa6b559faf4f076b285ebb3c4e046",
+      "version": "2.4.1"
+    }
+  },
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build": "node tools/build.cjs",
+    "verify": "node tools/verify.cjs",
+    "test:unit": "node --test \"tests/unit/*.test.js\"",
+    "test:e2e": "node --test \"tests/e2e/*.test.js\"",
+    "check": "pnpm run test:unit && pnpm run build && pnpm run verify && pnpm run test:e2e"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright": "1.62.1"
+  }
+}
