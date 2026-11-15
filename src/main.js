@@ -1,6 +1,8 @@
 // 앱 진입점. 저장소·프로젝트 모델·편집 세션(Phase 1), SVG 도면 보기·선택(Phase 3a), 객체 편집(Phase 3b)을 화면에 연결한다.
 // 계산은 src/cad/*(카메라·선택·도면 문자열)에 있고, 이 파일은 DOM 이벤트를 그 함수들에 연결만 한다.
 // __APP_VERSION__ / __SCHEMA_VERSION__ 은 빌드 시 package.json에서 주입된다.
+import { createIdGenerator } from './core/ids.js';
+import { createBackupRing } from './persistence/backups.js';
 import { createSession, projectValidator } from './core/session.js';
 import { createProjectStore } from './persistence/storage.js';
 import { formatNumber as fmt } from './core/format.js';
@@ -251,7 +253,10 @@ function renderShell(root) {
 async function start() {
   const ui = renderShell(document.getElementById('app'));
   const store = createProjectStore({ storage: window.localStorage, validate: projectValidator });
-  const session = createSession({ store });
+  const ids = createIdGenerator();
+  // 주요 작업 전 전체 프로젝트 백업 링(기준본 V.checkpoint, D-026). 지문은 저장 메타(persistence)를 뺀 프로젝트 JSON.
+  const backups = createBackupRing({ storage: window.localStorage, validate: projectValidator, fingerprint: (p) => JSON.stringify({ ...p, persistence: undefined }), nextId: ids });
+  const session = createSession({ store, nextId: ids, backups });
 
   // ── 화면 상태(세션 밖) ──
   let tool = 'select';
