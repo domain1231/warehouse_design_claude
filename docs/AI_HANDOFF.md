@@ -1,7 +1,7 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#20은 main에 병합됨.
+- 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#21은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
 - 검사: 단위 96 + Golden 252(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 45. Linux, Node 24, Chrome 153에서 PASS.
 
@@ -99,7 +99,7 @@
 
 ## Phase 6c 결과 (2026-11-15, feature/phase6c-column, PR #19 위에 쌓음)
 - `src/autolayout/column.js`(D-023), Excel 대화상자 열 우선 방식·열 후보 비교·열별 수용표·외부 재수용·적용 차단. 대조 X2 30(열 우선 10사례 추가), E2E excel 5.
-- 결정 필요: 탐색 시간 상한 제거(탐색 예산만 사용)로 대규모 배치에서 기준본과 결과가 다를 수 있음.
+- 결정 확정(2026-11-15): 탐색 시간 상한 제거 수용, 복제 시 재고 기록 복사 유지, 백업 한도 문구를 BEFORE·AFTER 합계로 수정.
 - NOT RUN: 500랙 규모 탐색(기준본 시간 상한 도달 여부), Windows Edge.
 
 ## Phase 7a 결과 (2026-11-15, feature/phase7-scenarios)

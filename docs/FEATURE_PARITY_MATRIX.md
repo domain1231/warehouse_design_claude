@@ -32,8 +32,8 @@
 | F-022 | 건물별 코드·기존 랙 매칭 | 70-scenarios EX.proposal (BUG-EXCEL-CODE-001) | 건물 설정 | ID·사용자 이름 보존 | R.key | excel/proposal | XL06–XL09, X2 | DONE | 생성·건물 키 매칭·병합/갱신·규격 재가져오기·누락 정책·보호 랙·구조물 기준본 W.base 일치(X2 6사례) |
 | F-023 | Excel 미리보기·적용 승인 | 90-auto-layout W.readiness/proof, EX.apply | 후보·경고 확인 | 승인 후보=적용 후보 | autoPlacement | ui/excel-dialog, excel/apply | XL11–XL13, E2E excel | IMPLEMENTING | 미리보기·경고 확인·잠금/최종 확인·미리보기 후 변경 감지, 대안 후보 자동 선택(D-021), 비교표·직접 선택·범위별 재최적화(D-022), 열 우선 후보·적용 차단(D-023) |
 | F-024 | 기존 자동 배치 모드 | 90-auto-layout W.fits/scan/pack | 배치 설정 | 기존 후보 재현 | autoPlacement | autolayout/candidates | AL01–AL03, X2 | DONE | 내부·순서·통로 방식 후보 5~6종 생성·점수·선택 기준본 일치(X2 후보 10사례, 대기열 포함) |
-| F-025 | 열 우선 최대 수용 | 92-column-layout C.search | 열 우선 모드 | 열·번호 순서, 부분 수용 | autoPlacement | autolayout/column | AL04–AL06, AL12, AL14, X2 | IMPLEMENTED | 열 우선 후보·외부 대기·열 진단·재최적화 기준본 일치(X2 10사례). 탐색 시간 상한은 제거(D-023, 사용자 확인 필요) |
-| F-026 | 외부 대기·재수용 | 92-column-layout C.queue | 재수용 버튼 | 겹침 없음, 규격 유지 | objects | placement/external-queue | AL07–AL11, AL13 | NOT STARTED | — |
+| F-025 | 열 우선 최대 수용 | 92-column-layout C.search | 열 우선 모드 | 열·번호 순서, 부분 수용 | autoPlacement | autolayout/column | AL04–AL06, AL12, AL14, X2 | IMPLEMENTED | 열 우선 후보·외부 대기·열 진단·재최적화 기준본 일치(X2 10사례). 탐색 시간 상한은 제거(D-023, 사용자 확정) |
+| F-026 | 외부 대기·재수용 | 92-column-layout C.queue | 재수용 버튼 | 겹침 없음, 규격 유지 | objects | placement/external-queue | AL07–AL11, AL13 | IMPLEMENTED | 열 우선 외부 대기열·대기 사유·외부 재수용 기준본 일치(X2, D-023) |
 | F-027 | BEFORE/AFTER·잠금·비교 | 70-scenarios | 잠금, 복제, 비교 | 독립성, 비교 출력 | scenarios | warehouse/scenarios, ui/scenario-dialogs | SV09, S2, E2E scenarios | IMPLEMENTING | 잠금(Phase 3b)·복제·백업 복원·비교표·변경 행·CSV 기준본 일치(S2 7사례, D-024). 남음: 과거 조회 모드(7b) |
 | F-028 | 원자적 적용 트랜잭션 | 70-scenarios R.transaction | 적용 | 실패 시 전체 복원 | 전체 | excel/apply | XL14, X2, unit excel-apply | DONE | R.capture·R.backup·R.transaction·EX.apply(+75·80·90 래퍼) 기준본 일치(X2 적용 2사례: 백업·수정 이력·가져오기 이력·스냅숏·자동 배치 이력). 다른 편집안 변경·검증 실패·참조 공유 시 전체 취소 |
 | F-029 | 검증 저장·무변경 생략 | 75 V.atomic/V.write/V.fingerprint | 저장 | SAVED/UNSAVED/ROLLED_BACK | persistence | persistence/storage, core/session | SV01–SV03, SV11 | IMPLEMENTED | 단위(SV01–SV03, SV11) + 브라우저 E2E(저장·새로고침 복원) |
@@ -48,7 +48,7 @@
 
 | F-038 | 오프라인·런타임 오류 0 (횡단) | 모든 묶음 공통 | — | 외부 요청 0, 런타임 오류 0 | — | tools/verify, tests/e2e | smoke E2E | IMPLEMENTED | TESTING |
 | F-039 | 휠 감도 설정·저장 | 50-editor M.setWheelMode | 감도 선택 | 프로젝트와 독립 저장, 손상 시 안전 기본값 | 별도 키 | cad/wheel-settings | unit plan, E2E plan | IMPLEMENTED | 저장·쓰기 후 읽기·손상 시 기본값·기준본 키 읽기 전용 |
-| F-040 | 탐색 예산·중단 사유 | 92 C.limits/C.check | — | probe 상한, 사유 표시(D-005 결정적) | autoPlacement | placement/candidates | AL12 | NOT STARTED | — |
+| F-040 | 탐색 예산·중단 사유 | 92 C.limits/C.check | — | probe 상한, 사유 표시(D-005 결정적) | autoPlacement | placement/candidates | AL12 | IMPLEMENTED | 탐색 예산(probe·시작점·오프셋·후보)만으로 중단, 중단 사유 표시, 시간 상한 제거(D-023, 사용자 확정) |
 | F-041 | 파생 검사 결과 재계산 | 92 JSON 복원 후 재검사 | JSON 불러오기 | 저장된 집계 불신, 현재 좌표로 재계산 | autoPlacement | placement/diagnostics | — | NOT STARTED | — |
 | F-042 | 모바일 드로어·레이아웃 | shell, 65 | 좁은 화면 | 가로 넘침 없음, 드로어 동작 | — | ui/panels | — | NOT STARTED | — |
 
