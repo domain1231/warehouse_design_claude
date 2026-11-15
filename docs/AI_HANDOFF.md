@@ -1,10 +1,9 @@
 # AI 인수인계
 
 ## 현재 상태 (2026-11-15)
-- 단계: Phase 4a(통계·경고 목록·랙 목록·범례·패널 접기) 완료. PR `feature/phase4-panels`(기준: `feature/phase3b2-resize` = PR #10, 미병합).
-- 스택 PR #1~#9와 기준본 저장소 PR #20~#22는 2026-11-15 병합됨.
+- 단계: Phase 4b(랙 상세·재고 기록·배치 이력) 완료. PR `feature/phase4b-details`(기준: main). PR #1~#11은 main에 병합됨.
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
-- 검사: 단위 88 + Golden 170(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 26. Linux, Node 24, Chrome 153에서 PASS.
+- 검사: 단위 88 + Golden 180(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 29. Linux, Node 24, Chrome 153에서 PASS.
 
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
@@ -64,10 +63,14 @@
 - 기준본 대조 `tests/golden/P2-panels.test.js` 10. E2E `tests/e2e/panels.test.js` 5.
 - NOT RUN: Windows Edge, 실제 마우스·터치.
 
+## Phase 4b 결과 (2026-11-15, feature/phase4b-details)
+- `src/warehouse/rackinfo.js`, `src/warehouse/records.js`, `src/ui/rack-detail.js`, `src/ui/records-panel.js`, `applyCommand` resetCamera, `setView({ rackInfographic })`, verify 이름공간 허용(D-016).
+- 기준본 대조 P3 7, E1 37(36사례). E2E `tests/e2e/details.test.js` 3.
+- NOT RUN: Windows Edge, 실제 마우스·터치.
+
 ## 다음 작업
-- Phase 4b: 랙 상세 인포그래픽(F-018, 더블클릭·선반별 자재), 하단 패널(재고 기록·배치 이력 조회, F-034·F-035).
-- 이후: Excel 가져오기(Phase 5, 표시 모드·라벨·Excel 색 포함), Phase 6 자동 배치·열 우선(92), Phase 8 백업·진단.
-- 사용자: PR #10 → Phase 4a PR 순서로 병합.
+- Phase 5: Excel 가져오기(시트 읽기·검증·랙/선반/자재 계층 연결·자동 생성 위치), 표시 모드 전환(재고·높이·등록·관리), 랙·ZONE 라벨(F-019), Excel 상태 색.
+- 이후: Phase 6 자동 배치·열 우선(92), Phase 7 이력 조회 모드·시나리오 비교, Phase 8 백업·진단.
 
 ## 미결 사항
 - 명세서 원본 전문(`docs/SPEC_v1_0.md`) 반입 여부.

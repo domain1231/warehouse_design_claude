@@ -25,7 +25,7 @@
 | F-015 | 경계 초과·통로 최소 폭 | 10-geometry warnings | 통로 설정 | 경고·차단 구분 | aisles | geometry/clearance, warehouse/constraints | GEO06, GEO07, G2, S1 | IMPLEMENTED | 경계 이탈·통로 최소/목표 폭·침범·L자 통로·출입문 연결·scopeIds 기준본 일치. 경고/차단 정책 UI 전 |
 | F-016 | 경고 중복 제거·분류 | 90-auto-layout W.scan (BUG-SCAN-001) | — | 중복 집계 없음 | warnings | warehouse/constraints | GEO09, GEO10, G2, S1 | IMPLEMENTING | W.scan 집계·중복 제거(BUG-SCAN-001)·지문 기준본 일치. 열 우선 확장(92)은 Phase 6 |
 | F-017 | 원본/설계 규격 | 60-specifications | 규격 편집 | 원본 보존, 차이 표시 | spec | warehouse/racks | — (Phase 0 배정) | IMPLEMENTING | 기본값·검증(originalSpec/designSpec) G5·V1 일치 — 편집 UI 전 |
-| F-018 | 랙 상세 인포그래픽 | 65-panels-details | 더블클릭 | 선반별 자재·지표 | shelves | ui/panels | UI08 | NOT STARTED | — |
+| F-018 | 랙 상세 인포그래픽 | 65-panels-details | 더블클릭 | 선반별 자재·지표 | shelves | warehouse/rackinfo, ui/rack-detail | UI08, P3, E2E details | IMPLEMENTED | 더블클릭·요약·선반 SVG·자재 상세·검색·선반 필터·방향 저장·SVG/PNG/CSV·실제 설비 확인 기준본 일치(P3·E1) |
 | F-019 | ZONE·랙 번호 라벨 | 80-precision-labels | 라벨 설정 | 정방향·외부 표시 | rackLabels | cad/labels | UI09 | NOT STARTED | — |
 | F-020 | 색상 범례·3종 지표 | 75-storage-appearance | 임계값·색상 | 지표 분리 표시 | theme | warehouse/utilization | UI10 | NOT STARTED | — |
 | F-021 | Excel 읽기·매핑·로케이션 | 40-excel EX.readFile | XLSX/CSV, 머리글, 매핑 | 원본 의미 보존, null 유지 | excelSnapshots | excel/* | XL01–XL05, XL10 | NOT STARTED | — |
@@ -41,7 +41,7 @@
 | F-031 | 저장소 진단·복구 다운로드 | 75 V.measureStorage/storageSnapshot | 저장소 관리 | 크기·단계 표시 | — | persistence/diagnostics | — (Phase 0 배정) | NOT STARTED | — |
 | F-032 | JSON 내보내기·불러오기 | 30-editor-io | 파일 | 2.3.6 무손실 왕복 | Project | exports/json, persistence/migration | SV08, SV10 | IMPLEMENTING | 기준본 저장 형식 양방향 호환, JSON 내보내기 버튼 — JSON 불러오기 UI 전 |
 | F-033 | CSV·SVG·PNG·인쇄 내보내기 | 30-editor-io, 65-panels-details | 내보내기 | 오프라인 출력 | — | exports/* | — (Phase 0 배정) | NOT STARTED | — |
-| F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | scenarios/history | UI04 | NOT STARTED | — |
+| F-034 | 재고기록·배치이력·과거 조회 | 65-panels-details, 70-scenarios | 기록, 날짜 선택 | 읽기 전용 조회, null 보존 | inventoryHistory, layoutSnapshots | warehouse/records, ui/records-panel | UI04, P3, E1, E2E details | IMPLEMENTING | 재고 기록 조회(범위·검색·null 보존), 배치 이력 기록·복원·비교 기준본 일치 — 과거 날짜 읽기 전용 조회 모드(Phase 7) 전 |
 | F-035 | 패널 접기·하단 패널 | shell, 65-panels-details | 패널 버튼 | 좌표 불변 | — | ui/panels, main | UI06, UI07, E2E panels | IMPLEMENTING | 좌우 패널 접기·저장·축척 불변(E2E) — 하단 패널(재고·배치 이력) 전 |
 | F-037 | 다중 탭·창 덮어쓰기 방지 (BUG-STORAGE-002, v2.4.2 후보) | 75 V.write V.baseRaw/V.concurrentChange, 99 bootstrap | 두 탭에서 저장, 다시 저장 확인 | 다른 탭 저장 후 덮어쓰기 차단, 확인 시에만 덮어쓰기(이전본은 last-good) | persistence | persistence/storage (revision 검사) | 기준본 MT01–MT09 | IMPLEMENTED | 단위(2단계 감지·경쟁) + 브라우저 E2E(알림·차단·확인 후 덮어쓰기) |
 | F-036 | 프로그램 정보·버전 표시 | 99-bootstrap | — | 앱/스키마 버전 분리 | — | main | smoke E2E | IMPLEMENTED | TESTING |

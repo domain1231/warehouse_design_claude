@@ -66,11 +66,11 @@ function log(p, { command, ids, before, after, success, reason = '', now, nextId
  * 편집 명령을 적용한다. 입력 프로젝트는 바꾸지 않는다.
  * @param {object} project 현재 프로젝트(검증된 상태)
  * @param {(draft: object, layout: object) => void} mutate 복사본을 고친다
- * @param {{ command?: string, selection?: Iterable<string>, now?: () => string, nextId: () => string, overrideAllow?: boolean }} opt
+ * @param {{ command?: string, selection?: Iterable<string>, now?: () => string, nextId: () => string, overrideAllow?: boolean, resetCamera?: boolean }} opt
  * @returns {{ ok: true, project, ids: Set<string> } | { ok: false, project, reason: string, logged: boolean }}
  *   실패 시 project는 원본 + 실패 기록(logged=true) 또는 원본 그대로(BEFORE 잠금, logged=false).
  */
-export function applyCommand(project, mutate, { command = COMMAND_DEFAULT, selection = [], now = () => new Date().toISOString(), nextId, overrideAllow = false } = {}) {
+export function applyCommand(project, mutate, { command = COMMAND_DEFAULT, selection = [], now = () => new Date().toISOString(), nextId, overrideAllow = false, resetCamera = false } = {}) {
   if (isLocked(project)) return { ok: false, project, reason: 'BEFORE 원본 잠금 상태입니다. 잠금 해제 후 수정하세요.', logged: false };
   const draft = clone(project);
   const before = clone(active(project));
@@ -119,6 +119,8 @@ export function applyCommand(project, mutate, { command = COMMAND_DEFAULT, selec
     const invalid = ids.size ? newSpatialWarnings(draft, before, finalAfter, ids) : [];
     if (invalid.length && !draft.editing.allowWarnings && !overrideAllow) throw new Error(invalid[0].text);
     if (ids.size) log(draft, { command, ids, before, after: finalAfter, success: true, now: () => time, nextId });
+    // 기준본 commit resetCamera(배치 복원 등): 화면을 처음 상태로
+    if (resetCamera) draft.viewport = { zoom: 1, panX: 0, panY: 0, centerLocked: true };
     return { ok: true, project: draft, ids };
   } catch (e) {
     const failed = clone(project);

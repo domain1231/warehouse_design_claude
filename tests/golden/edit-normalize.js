@@ -19,6 +19,9 @@ export function normalizeEditResult(name, initial, final, selected) {
     allowWarnings: final.editing.allowWarnings,
     selected: [...selected].sort(),
     backups: (final.layoutBackups ?? []).length - (initial.layoutBackups ?? []).length,
+    snapshots: final.layoutSnapshots.slice(initial.layoutSnapshots.length).map((s) => ({ ...s, layout: { objects: s.layout.objects.length } })),
+    snapshotCount: final.layoutSnapshots.length,
+    camera: { zoom: final.viewport.zoom, panX: final.viewport.panX, panY: final.viewport.panY, centerLocked: final.viewport.centerLocked },
   };
   return normalizeLikeHarness(out, { idPattern: ID });
 }
