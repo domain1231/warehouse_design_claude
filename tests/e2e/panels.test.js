@@ -64,7 +64,7 @@ test('랙 목록: 검색·필터는 목록을 줄이고 도면에서 나머지�
   await page.locator('[data-testid=rack-search]').fill('b-7');
   await page.waitForFunction((n) => document.querySelectorAll('[data-testid=rack-list] [data-rack]').length < n, total);
   const shown = await page.locator('[data-testid=rack-list] [data-rack]').count();
-  assert.match(await page.locator('[data-testid=rack-count]').textContent(), new RegExp(`${total}개 중 ${shown}개`));
+  assert.equal(await page.locator('[data-testid=bottom-summary-racks]').textContent(), `${total}개`); // 기준본: 요약은 필터와 무관한 전체 랙 수
   const dimmed = await page.locator('[data-testid=plan] g[data-id][opacity="0.2"]').count();
   assert.equal(dimmed, total - shown);
   await page.locator('[data-testid=rack-sort]').selectOption('codeDesc');

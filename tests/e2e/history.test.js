@@ -101,7 +101,7 @@ test('배치 이력 행의 조회 버튼은 해당 날짜 저장 배치로 조�
   const { ctx, page } = await open();
   await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await prepare(page);
-  await page.locator('[data-testid=snap-rows] [data-view]').click();
+  await page.locator('[data-testid=snap-rows] [data-layout-view]').click();
   assert.equal(await T(page, 'history-date').inputValue(), '2026-11-01');
   assert.match(await T(page, 'history-status').textContent(), /해당 날짜 저장 배치$/);
   assert.equal(await T(page, 'snap-save').isDisabled(), true);
