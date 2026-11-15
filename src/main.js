@@ -623,6 +623,8 @@ async function start() {
     ui.bottomToggle.textContent = pn.bottomOpen ? '하단 전체 접기' : '하단 전체 펼치기';
     ui.bottomToggle.setAttribute('aria-expanded', String(pn.bottomOpen));
     for (const [k, box] of Object.entries(ui.bottomSections)) if (box.open !== pn.bottomSections[k]) box.open = pn.bottomSections[k];
+    // 기준본 S.panels: 위 줄(재고기록·배치 이력)은 panelHeights.upper, 아래 줄(랙 목록·공간 검토)은 lower 높이로 내용만 스크롤한다.
+    for (const [k, box] of Object.entries(ui.bottomSections)) box.querySelector('.s-content').style.height = Math.max(k === 'inventory' || k === 'layout' ? 60 : 80, Math.min(k === 'inventory' || k === 'layout' ? 360 : 420, k === 'inventory' || k === 'layout' ? pn.panelHeights.upper : pn.panelHeights.lower)) + 'px';
     ui.leftToggle.textContent = pn.leftOpen ? '접기: 설계 도구' : '펼치기: 설계 도구';
     ui.rightToggle.textContent = pn.rightOpen ? '접기: 선택 정보' : '펼치기: 선택 정보';
     sizeWork();

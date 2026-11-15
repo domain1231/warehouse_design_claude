@@ -36,6 +36,7 @@ async function download(page, testid) {
 
 test('SVG·CSV 내보내기: 파일명과 내용 시작', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   const svg = await download(page, 'export-svg');
   assert.equal(svg.name, 'warehouse_layout.svg');
   assert.match(svg.text.toString('utf8'), /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" width="1500"/);
@@ -73,6 +74,7 @@ test('인쇄: 보고서 영역을 채우고 window.print 호출', async () => {
 
 test('과거 조회 중 내보내기는 조회 배치를 따른다(보고서 제목 줄)', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await page.locator('[data-testid=history-date]').fill('2026-10-01');
   await page.locator('[data-testid=history-date]').dispatchEvent('change');
   const svg = (await download(page, 'export-svg')).text.toString('utf8');
@@ -99,6 +101,8 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
   await page.locator('[data-testid=bottom-toggle]').click();
   await panel.waitFor({ state: 'visible' });
   const s0 = await state();
+  const rectH = () => page.evaluate(() => document.querySelector('[data-testid=bottom-panel]').getBoundingClientRect().height);
+  const chrome = (await rectH()) - s0.h; // 날짜 막대 등 패널 높이 외 고정 부분(기준본과 동일 구조)
   // 높이: 키보드
   const grip = page.locator('[data-testid=bottom-grip]');
   await grip.focus();
@@ -110,7 +114,7 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
   assert.equal((await state()).h, 600);
   await page.keyboard.press('ArrowDown');
   assert.equal((await state()).h, 580);
-  assert.equal(await page.evaluate(() => document.querySelector('[data-testid=bottom-panel]').getBoundingClientRect().height), 580);
+  assert.equal(await rectH(), 580 + chrome);
   // 구역 접기
   await page.locator('[data-testid=inventory-section] > summary').click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.panels.bottomSections.inventory === false); // toggle 이벤트는 비동기
@@ -139,6 +143,7 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
 test('하단 패널: 상태 문구가 바뀌어도 도면 크기가 변하지 않는다', async () => {
   const { ctx, page } = await open();
   const box = () => page.locator('[data-testid=canvas-wrap]').boundingBox();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   const b0 = await box();
   await page.locator('[data-testid=history-date]').fill('2026-10-01');
   await page.locator('[data-testid=history-date]').dispatchEvent('change');

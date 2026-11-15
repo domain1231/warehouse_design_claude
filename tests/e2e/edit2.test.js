@@ -20,7 +20,7 @@ after(async () => {
 });
 
 async function open() {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await ctx.newPage();
   page.problems = [];
   page.on('pageerror', (e) => page.problems.push(`pageerror: ${e.message}`));

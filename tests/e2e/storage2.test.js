@@ -28,7 +28,7 @@ const quotaHook = () => {
 };
 
 async function open() {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 }, acceptDownloads: true });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 }, acceptDownloads: true });
   await ctx.addInitScript(quotaHook);
   const page = await ctx.newPage();
   page.problems = [];
