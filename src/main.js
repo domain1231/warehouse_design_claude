@@ -5,12 +5,13 @@ import { createSession, projectValidator } from './core/session.js';
 import { createProjectStore } from './persistence/storage.js';
 import { formatNumber as fmt } from './core/format.js';
 import { viewBox, zoomBy, panFrom, pinchFrom, centerView, focusBox, withFitScale, wheelPixels, wheelFactor, createWheelTracker } from './cad/camera.js';
-import { buildScene, selectionBox, esc } from './cad/scene.js';
+import { buildScene, selectionBox, esc, OBJECT_COLORS } from './cad/scene.js';
 import { rackLabelParts, labelStatusText } from './cad/labels.js';
 import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js';
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
 import { pixelsPerMeter } from './cad/camera.js';
 import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
+import { setObjectColor, setColorMode, applyThresholdColors, resetColors } from './warehouse/appearance.js';
 import { renderInspector } from './ui/inspector.js';
 import { createGroupDialog } from './ui/group-dialog.js';
 import { createPanels } from './ui/panels.js';
@@ -173,6 +174,16 @@ function renderShell(root) {
   const labelLayout = labelSelect('label-layout', 'ZONE·번호 배치', [['auto', '자동 · 좁으면 두 줄'], ['stacked', '항상 두 줄'], ['inline', '한 줄'], ['minimal', '최소 · 선택 랙']]);
   const labelPadding = labelSelect('label-padding', '랙 번호 형식', [['0', '5'], ['2', '05'], ['3', '005']]);
   const labelStatus = el('p', { class: 'muted', testid: 'label-status' });
+  const vizMode = labelSelect('viz-mode', '도면 색상 기준', [['inventory', '실제 재고 적재율'], ['height', '높이 활용률'], ['registered', '위치 등록 현황'], ['management', '품목별 관리 지표']]);
+  const heightPolicy = labelSelect('height-policy', '랙 높이 집계 정책', [['weightedMax', '선반별 최대 높이 / 높이 가중평균'], ['meanMax', '선반별 최대 높이 비율 / 단순평균'], ['max', '등록 자재 중 최대 높이 비율']]);
+  const colorMode = labelSelect('color-mode', '색상 표시', [['data', '데이터 기반'], ['custom', '사용자 지정 색상']]);
+  const thr = (testid, text, min, max) => wrap(text, el('input', { type: 'number', testid, min, max }));
+  const thrLow = thr('threshold-low', '보통 시작 (%)', 1, 98), thrHigh = thr('threshold-high', '주의 시작 (%)', 2, 100);
+  const colorInputs = Object.entries({ empty: '빈 랙', low: '여유', mid: '보통', high: '주의', over: '초과', unknown: '정보 없음' }).map(([k, t]) => [k, wrap(t, el('input', { type: 'color', testid: 'color-' + k }))]);
+  const applyColorsBtn = button('apply-colors', '색상 기준 적용');
+  const resetScope = labelSelect('reset-scope', '복원 범위', [['ui', 'UI 기본 테마만 복원'], ['occupancy', '적재율 기본 색상·기준만 복원'], ['all', '모든 색상 설정 복원 (양쪽 객체 지정색 포함)']]);
+  const resetBtn = button('reset-colors', '기본 색상 복원');
+  left.append(el('h2', {}, '색상'), vizMode, heightPolicy, thrLow, thrHigh, ...colorInputs.map((c) => c[1]), applyColorsBtn, colorMode, resetScope, resetBtn);
   left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus, el('h2', {}, '라벨'), labelMode, labelLayout, labelPadding, labelStatus);
 
   // 가운데: 도면
@@ -217,6 +228,8 @@ function renderShell(root) {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     labelMode: labelMode.querySelector('select'), labelLayout: labelLayout.querySelector('select'), labelPadding: labelPadding.querySelector('select'), labelStatus,
+    vizMode: vizMode.querySelector('select'), heightPolicy: heightPolicy.querySelector('select'), colorMode: colorMode.querySelector('select'), resetScope: resetScope.querySelector('select'), resetBtn, applyColorsBtn,
+    thrLow: thrLow.querySelector('input'), thrHigh: thrHigh.querySelector('input'), colorInputs: Object.fromEntries(colorInputs.map(([k, l]) => [k, l.querySelector('input')])),
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
     scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
@@ -345,7 +358,7 @@ async function start() {
     const rackCount = os.filter((o) => o.kind === 'rack').length;
     ui.detailBtn.disabled = !(os.length === 1 && os[0].kind === 'rack');
     for (const b of [ui.alignXBtn, ui.alignYBtn, ui.distributeBtn]) b.disabled = rackCount < 2 || locked;
-    if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)), zone: os.length === 1 && os[0].kind === 'rack' ? rackLabelParts(os[0], project(), project().settings.scenario) : undefined, onZone: (name) => editZone(os[0], name) });
+    if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)), objectColor: os.length === 1 ? { value: project().theme.objectColors[project().settings.scenario][os[0].id] || OBJECT_COLORS[os[0].kind] || project().settings.colors.unknown, onSet: (c) => editObjectColor(os[0].id, c) } : undefined, zone: os.length === 1 && os[0].kind === 'rack' ? rackLabelParts(os[0], project(), project().settings.scenario) : undefined, onZone: (name) => editZone(os[0], name) });
   }
 
   function showToast(text) {
@@ -372,6 +385,19 @@ async function start() {
   /** 라벨 표시 설정 변경. 기준본 V.appearanceEdit처럼 실행취소에 기록하고 저장한다. */
   function labelEdit(label, mutate) {
     return session.edit(label, mutate).then(() => renderPlan(true)).catch((e) => { showToast(`색상·표시 설정 취소: ${e.message}`); renderPlan(true); });
+  }
+  function syncColorInputs() {
+    const st = project().settings;
+    ui.vizMode.value = st.vizMode ?? 'inventory';
+    ui.heightPolicy.value = st.heightPolicy ?? 'weightedMax';
+    ui.colorMode.value = project().theme.colorMode;
+    ui.thrLow.value = st.low;
+    ui.thrHigh.value = st.high;
+    for (const [k, i] of Object.entries(ui.colorInputs)) i.value = st.colors[k];
+  }
+  const colorEdit = (label, mutate) => labelEdit(label, mutate).then(syncColorInputs);
+  function editObjectColor(id, color) {
+    colorEdit('객체 표시 색상', (d) => setObjectColor(d, id, color));
   }
   function editZone(o, name) {
     if (name === '') return showToast('표시 이름을 입력하세요.');
@@ -478,6 +504,7 @@ async function start() {
     ui.snapOn.checked = s.project.settings.snap;
     ui.snapStep.value = String(s.project.precision.snapStep);
     ui.keyStep.value = String(s.project.precision.keyStep);
+    syncColorInputs();
     ui.labelMode.value = s.project.rackLabels.displayMode;
     ui.labelLayout.value = s.project.rackLabels.layoutMode;
     ui.labelPadding.value = String(s.project.rackLabels.numberPadding);
@@ -553,6 +580,15 @@ async function start() {
   ui.labelMode.addEventListener('change', () => labelEdit('랙 텍스트', (d) => { d.rackLabels.displayMode = ui.labelMode.value; }));
   ui.labelLayout.addEventListener('change', () => labelEdit('ZONE·번호 배치', (d) => { d.rackLabels.layoutMode = ui.labelLayout.value; }));
   ui.labelPadding.addEventListener('change', () => labelEdit('랙 번호 형식', (d) => { d.rackLabels.numberPadding = Number(ui.labelPadding.value); }));
+  ui.vizMode.addEventListener('change', () => colorEdit('색상 표시 기준', (d) => { d.settings.vizMode = ui.vizMode.value; }));
+  ui.heightPolicy.addEventListener('change', () => colorEdit('높이 집계 정책', (d) => { d.settings.heightPolicy = ui.heightPolicy.value; }));
+  ui.colorMode.addEventListener('change', () => colorEdit('색상 표시', (d) => setColorMode(d, ui.colorMode.value)));
+  ui.applyColorsBtn.addEventListener('click', () => colorEdit('적재율 색상 기준', (d) => applyThresholdColors(d, { low: ui.thrLow.value, high: ui.thrHigh.value, colors: Object.fromEntries(Object.entries(ui.colorInputs).map(([k, i]) => [k, i.value])) })));
+  ui.resetBtn.addEventListener('click', () => {
+    const scope = ui.resetScope.value;
+    if (scope === 'all' && !confirm('색상 설정만 변경됩니다. BEFORE·AFTER의 사용자 지정 객체색까지 기본값으로 복원합니까? 창고 데이터는 유지됩니다.')) return;
+    colorEdit('기본 색상 복원', (d) => resetColors(d, scope));
+  });
   ui.snapOn.addEventListener('change', () => pref({ snap: ui.snapOn.checked }));
   ui.snapStep.addEventListener('change', () => pref({ precision: { snapStep: Number(ui.snapStep.value) } }));
   ui.keyStep.addEventListener('change', () => {

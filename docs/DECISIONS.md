@@ -127,3 +127,10 @@
 - 글자 폭: 기준본은 canvas measureText로 라벨 맞춤·외부 배치를 정한다. 브라우저에서는 같은 방식(같은 글꼴 지정)을 쓴다. Node 검사에는 canvas가 없으므로 `tools/label-metrics.mjs`가 Chrome에서 잰 글자 폭·글자 쌍 보정 표(`tests/golden/label-metrics.js`)를 `setFallbackMeasure`로 주입한다. 표는 검사 전용이며 배포본에 넣지 않는다(배포본 증가분 약 13KB는 코드만).
 - 한계: 실제 화면의 라벨 맞춤은 사용자 PC 글꼴(Segoe UI·맑은 고딕 유무)에 따라 달라진다(기준본과 같은 성질). 대조 자료는 이 Linux Chrome 글꼴 기준이며, 글꼴이 다른 환경에서 기준 자료를 다시 만들면 표도 함께 다시 만든다.
 - 기준본 대조: `tools/label-diff.mjs`가 기준본 scene()의 g.v-labels·Q.parts·V.fullLabel을 기록한다. 기준본에는 이 기능의 자동 검사가 없었으므로 L1이 첫 자동 검사다.
+
+## D-020 색 표시 모드·사용자 지정 색 (2026-11-15, Phase 5c-2)
+- `src/warehouse/appearance.js`: 기준본 40 EX.height·EX.value·EX.state·EX.color, 75 V.fill(래퍼)·applyColors·V.resetColors·객체 지정색을 옮겼다. 랙 채움색과 라벨 글자색은 같은 `rackColor`를 쓴다.
+- 기준본과 다르던 재구축 동작 2건을 고쳤다: 범례의 높이 집계 안내가 정책별 문구가 아니었음, 통로 경고 색이 사용자 지정 색보다 우선했음(기준본은 지정색 우선).
+- 화면: 기준본의 색 설정 입력(shell.html:21)·표시 모드·높이 정책·색 모드 선택은 왼쪽 패널 "색상" 구역에, 기본 색 복원은 대화상자 대신 같은 구역의 범위 선택+버튼으로 두었다(전체 복원 확인 문구는 기준본 그대로). 변경은 모두 검증 후 실행취소에 기록하고, 실패하면 이전 값을 유지하며 '색상·표시 설정 취소: <사유>'를 표시한다.
+- 미이식: UI 색 직접 입력(vThemeFields·customColors·프리셋)과 복원 미리보기 → Phase 9.
+- 기준본 대조: `tools/color-diff.mjs`가 기준본에서 실제 화면 조작(선택 상자·입력·버튼·실행취소)으로 상태를 만들고 도형 채움색·라벨·범례·설정·실행취소 단계 수·거부 안내를 기록한다. 기준본에는 이 기능의 자동 검사가 없었다.

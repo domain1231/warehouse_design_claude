@@ -16,9 +16,9 @@ export const NON_SPATIAL_FIELDS = new Set(['capacity', 'quantity', 'unit', 'note
 /**
  * @param {HTMLElement} root
  * zone: 랙 1개 선택 시 ZONE 표시 이름 칸(기준본 80 Q.parts 결과). onZone(name): 이름 적용, null이면 원본 이름 표시.
- * @param {{ objects: object[], settings: object, locked: boolean, zone?: object, onZone?: (name: string|null) => void, onChange: (id: string, field: string, raw: string, isNumber: boolean) => void, onLock?: (id: string, value: boolean) => void }} opt
+ * @param {{ objects: object[], settings: object, locked: boolean, zone?: object, onZone?: (name: string|null) => void, objectColor?: { value: string, onSet: (color: string|null) => void }, onChange: (id: string, field: string, raw: string, isNumber: boolean) => void, onLock?: (id: string, value: boolean) => void }} opt
  */
-export function renderInspector(root, { objects, settings, locked, zone, onZone, onChange, onLock }) {
+export function renderInspector(root, { objects, settings, locked, zone, onZone, objectColor, onChange, onLock }) {
   if (!objects.length) {
     root.innerHTML = '';
     return;
@@ -52,7 +52,10 @@ export function renderInspector(root, { objects, settings, locked, zone, onZone,
   if (o.kind === 'rack' && o.placementMeta) s += `<label class="check"><input type="checkbox" data-lock data-testid="position-lock" ${o.placementMeta.positionLocked ? 'checked' : ''} ${ro}> 위치 잠금(자동 배치·이동에서 보호)</label>`;
   s += '<p class="muted">X → 오른쪽 / Y ↓ 아래 · 중심 회전 · 좌표 직접 입력은 스냅 제외(0.001m 단위)</p>';
   if (o.kind === 'rack' && zone) s += `<section class="q-zone"><h4>ZONE 표시 이름</h4><div>원본 ZONE ${esc(zone.rawZone)} · 랙 ${esc(zone.number)}<br>전체 랙 로케이션 ${esc(zone.location)}</div><label>현재 배치의 표시 이름<input data-testid="zone-name" maxlength="80" value="${esc(zone.zone)}"></label><button type="button" data-testid="zone-apply">ZONE 이름 적용</button> <button type="button" data-testid="zone-reset">원본 이름 표시</button><p class="muted">같은 배치·건물·층의 동일 ZONE에 적용합니다. Excel 식별자·로케이션은 변경하지 않습니다.</p></section>`;
+  if (objectColor) s += `<section class="s-spec"><h4>이 객체의 표시 색상</h4><label>사용자 지정색<input type="color" data-testid="object-color" value="${esc(objectColor.value)}"></label><button type="button" data-testid="object-color-apply">지정색 적용</button> <button type="button" data-testid="object-color-clear">지정색 해제</button><p class="muted">현재 배치의 색상 설정만 변경합니다. 선택은 테두리, 충돌은 경고 테두리·아이콘으로 유지됩니다.</p></section>`;
   root.innerHTML = s;
+  root.querySelector('[data-testid="object-color-apply"]')?.addEventListener('click', () => objectColor.onSet(root.querySelector('[data-testid="object-color"]').value));
+  root.querySelector('[data-testid="object-color-clear"]')?.addEventListener('click', () => objectColor.onSet(null));
   root.querySelector('[data-testid="zone-apply"]')?.addEventListener('click', () => onZone?.(root.querySelector('[data-testid="zone-name"]').value.trim()));
   root.querySelector('[data-testid="zone-reset"]')?.addEventListener('click', () => onZone?.(null));
   root.querySelector('[data-lock]')?.addEventListener('change', (e) => onLock?.(o.id, e.target.checked));
