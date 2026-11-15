@@ -42,6 +42,10 @@ test('SVG·CSV 내보내기: 파일명과 내용 시작', async () => {
   assert.match(svg.text.toString('utf8'), /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" width="1500"/);
   const cases = [['export-racks-csv', 'warehouse_racks.csv', '"id","code","block","type"'], ['export-history-csv', 'inventory_history.csv', '"scenario","date","rackId"'], ['export-template-csv', 'inventory_template.csv', '"date","rackId","capacity"'], ['export-compare-csv', 'warehouse_comparison.csv', '"지표","BEFORE","AFTER"']];
   for (const [id, name, head] of cases) {
+    if (id === 'export-compare-csv') { // 비교 요약 CSV는 비교 대화상자 안(기준본 #compareCsv)
+      await page.locator('[data-testid=scenario-compare]').click();
+      await page.locator('[data-testid=compare-dialog]').waitFor({ state: 'visible' });
+    }
     const f = await download(page, id);
     assert.equal(f.name, name);
     assert.equal(f.text.subarray(0, 3).toString('hex'), 'efbbbf', 'BOM');
@@ -116,7 +120,7 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
   assert.equal((await state()).h, 580);
   assert.equal(await rectH(), 580 + chrome);
   // 구역 접기
-  await page.locator('[data-testid=inventory-section] > summary').click();
+  await page.locator('[data-testid=inventory-section] [data-bottom]').click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.panels.bottomSections.inventory === false); // toggle 이벤트는 비동기
   assert.equal((await state()).preset, 'custom');
   // 전체 접기
@@ -130,7 +134,8 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
   assert.deepEqual([s1.open, s1.h, s1.s.inventory], [false, 580, false]);
   await page.locator('[data-testid=bottom-toggle]').click();
   await panel.waitFor({ state: 'visible' });
-  assert.equal(await page.locator('[data-testid=inventory-section]').evaluate((e) => e.open), false);
+  assert.equal(await page.locator('[data-testid=bottom-heading-inventory]').getAttribute('aria-expanded'), 'false');
+  assert.equal(await page.locator('[data-testid=bottom-heading-inventory] .b-toggle-heading').textContent(), '▸ 재고기록');
   // 기본 복원
   await page.locator('[data-testid=bottom-default]').click();
   const s2 = await state();

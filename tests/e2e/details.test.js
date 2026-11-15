@@ -98,12 +98,12 @@ test('배치 이력: 현재 배치 기록 → 이동 → 복원(화면 초기화
   await page.waitForFunction(() => window.__warehouseSession.state.project.layoutSnapshots.length === 1);
   const rack = (await P(page)).scenarios.after.objects.filter((o) => o.kind === 'rack')[20];
   await page.evaluate((id) => window.__warehouseSession.edit('이동', (p) => { p.scenarios.after.objects.find((o) => o.id === id).x += 0.5; }), rack.id);
-  await page.locator('[data-testid=snap-rows] [data-restore]').click();
+  await page.locator('[data-testid=snap-rows] [data-layout-restore]').click();
   await page.waitForFunction((id) => window.__warehouseSession.state.project.commandHistory.at(-1)?.type === '저장된 배치 복원', rack.id);
   const p = await P(page);
   assert.equal(p.scenarios.after.objects.find((o) => o.id === rack.id).x, rack.x);
   assert.deepEqual([p.viewport.zoom, p.viewport.centerLocked], [1, true]);
-  await page.locator('[data-testid=snap-rows] [data-compare]').click();
+  await page.locator('[data-testid=snap-rows] [data-layout-compare]').click();
   await page.locator('[data-testid=snap-compare]').waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-testid=snap-compare] svg').count(), 2);
   await page.locator('[data-testid=snap-compare] [data-cclose]').click();
