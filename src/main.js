@@ -35,6 +35,7 @@ import { saveSnapshot, restoreSnapshot, historyLayout, historyDates, historyStat
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
 import { OBJECT_TYPES, createProject } from './core/project.js';
 import { scanLayout } from './warehouse/constraints.js';
+import { violationListHtml } from './warehouse/violations.js';
 import { candidateSummary } from './autolayout/candidates.js';
 import { rackCsvRows, historyCsvRows, templateCsvRows, reportSvg } from './exports/report.js';
 import { csvEncode, rackItems } from './warehouse/rackinfo.js';
@@ -800,11 +801,33 @@ async function start() {
     const box = selectionBox(layout().objects.filter((o) => o.kind === 'rack'));
     if (box) { cancelWheel(); commitView(focusBox(view, box, W(), size())); }
   });
-  // 위반 목록 대화상자(기준본 wDialog)는 9b-4. 그 전까지 하단 공간 검토를 연다.
-  ui.wViolations.addEventListener('click', () => {
-    pref({ panels: { bottomOpen: true, bottomSections: { ...project().panels.bottomSections, space: true } } });
-    ui.bottomSections.space.scrollIntoView({ block: 'nearest' });
+  // 위반 목록 대화상자(기준본 wDialog): 현재 표시 도면을 다시 검사한 결과를 보여 준다.
+  const wDialog = document.createElement('dialog');
+  wDialog.id = 'wDialog';
+  wDialog.innerHTML = '<button id="wClose">닫기 ×</button><h2>배치 위반 목록 · 현재 계산</h2><p>경계 거리: 회전된 실제 외곽 기준. 검토 중 표시는 해결로 처리되지 않습니다.</p><div id="wMainList"></div>';
+  document.body.append(wDialog);
+  const wList = document.getElementById('wMainList');
+  document.getElementById('wClose').onclick = () => wDialog.close();
+  const wFocus = (id) => {
+    commitSelection(new Set([id]));
+    const box = selectionBox(layout().objects.filter((o) => selected.has(o.id)));
+    if (box) commitView(focusBox(view, box, W(), size()));
+    if (wDialog.open) wDialog.close();
+  };
+  const wRender = (page = 0) => { wList.innerHTML = violationListHtml(scanLayout(layout(), project()), project(), page); };
+  wList.addEventListener('click', (e) => {
+    const pg = e.target.closest('[data-cl-page]');
+    if (pg) { wRender(Number(pg.dataset.clNext)); return; }
+    const f = e.target.closest('[data-w-focus]');
+    const tr = e.target.closest('tr[data-w-rack]');
+    if (f) wFocus(f.dataset.wFocus);
+    else if (tr && !e.target.closest('button,input')) wFocus(tr.dataset.wRack);
   });
+  wList.addEventListener('keydown', (e) => {
+    const tr = e.target.closest('tr[data-w-rack]');
+    if (e.key === 'Enter' && tr) { e.preventDefault(); wFocus(tr.dataset.wRack); }
+  });
+  ui.wViolations.addEventListener('click', () => { wRender(); wDialog.showModal(); });
   ui.focus.addEventListener('click', () => {
     const box = selectionBox(layout().objects.filter((o) => selected.has(o.id)));
     if (box) commitView(focusBox(view, box, W(), size()));
@@ -1156,6 +1179,7 @@ async function start() {
   ui.plan.addEventListener('pointercancel', (e) => finish(e, true));
   document.addEventListener('keydown', (e) => {
     cancelWheel();
+    if (e.key.toLowerCase() === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); document.getElementById('vSave').click(); return; } // 기준본: 입력칸·대화상자 여부와 무관
     if (document.querySelector('dialog[open]') || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable || !project()) return;
     const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
     const dir = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
