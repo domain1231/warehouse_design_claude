@@ -22,7 +22,7 @@ import { createScenarioDialogs } from './ui/scenario-dialogs.js';
 import { cloneBeforeToAfter, restoreBackup, CLONE_COMMAND, RESTORE_COMMAND } from './warehouse/scenarios.js';
 import { applyExcelProposal, EXCEL_APPLY_COMMAND } from './excel/apply.js';
 import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
-import { saveSnapshot, restoreSnapshot, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
+import { saveSnapshot, restoreSnapshot, historyLayout, historyDates, historyStatusText, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
 import { OBJECT_TYPES } from './core/project.js';
 import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
@@ -188,6 +188,13 @@ function renderShell(root) {
   const applyColorsBtn = button('apply-colors', '색상 기준 적용');
   const resetScope = labelSelect('reset-scope', '복원 범위', [['ui', 'UI 기본 테마만 복원'], ['occupancy', '적재율 기본 색상·기준만 복원'], ['all', '모든 색상 설정 복원 (양쪽 객체 지정색 포함)']]);
   const resetBtn = button('reset-colors', '기본 색상 복원');
+  const histDate = el('input', { type: 'date', testid: 'history-date', 'aria-label': '조회 날짜' });
+  const histSlider = el('input', { type: 'range', min: '0', max: '0', step: '1', value: '0', testid: 'history-slider', 'aria-label': '이력 날짜 선택' });
+  const histMode = el('select', { testid: 'history-mode', 'aria-label': '배치 이력 모드' });
+  histMode.append(el('option', { value: 'recorded' }, '해당 날짜 배치 우선'), el('option', { value: 'current' }, '현재 배치 + 과거 재고'));
+  const liveBtn = button('history-live', '현재 편집으로');
+  const histStatus = el('p', { class: 'muted', testid: 'history-status', role: 'status' });
+  left.append(el('h2', {}, '과거 조회'), wrap('조회 날짜', histDate), histSlider, histMode, liveBtn, histStatus);
   left.append(el('h2', {}, '색상'), vizMode, heightPolicy, thrLow, thrHigh, ...colorInputs.map((c) => c[1]), applyColorsBtn, colorMode, resetScope, resetBtn);
   left.append(el('h2', {}, '도구'), tools, addTools, toolHelp, rackBox, el('h2', {}, '편집'), editRow, groupRow, allowLabel, snapLabel, wrap('스냅 간격 (m)', snapStep), wrap('방향키 이동 (m) · Shift는 고속', keyStep), el('h2', {}, '화면'), zoomRow, zoomRow2, lockLabel, wheelLabel, wheelReset, wheelStatus, el('h2', {}, '라벨'), labelMode, labelLayout, labelPadding, labelStatus);
 
@@ -237,7 +244,7 @@ function renderShell(root) {
     thrLow: thrLow.querySelector('input'), thrHigh: thrHigh.querySelector('input'), colorInputs: Object.fromEntries(colorInputs.map(([k, l]) => [k, l.querySelector('input')])),
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
     scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
-    toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
+    histDate, histSlider, histMode, liveBtn, histStatus, toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
 
@@ -263,6 +270,9 @@ async function start() {
   let preview = null; // 드래그 이동 중 미리보기 { layout, guides }
   let clipboard = [];
   let toastTimer = 0;
+  let historyDate = ''; // 과거 조회 날짜: 화면 상태이며 프로젝트에 저장하지 않는다(기준본 historyDate 전역).
+  let historyMode = 'recorded';
+  let histMemo = null;
   const panels = createPanels({ stats: ui.statsBody, warnings: ui.warnBody, list: ui.listBody, legend: ui.legendBox }, {
     onFocus: (ids) => {
       const existing = new Set(layout().objects.map((o) => o.id));
@@ -274,6 +284,8 @@ async function start() {
   });
   const rackDetail = createRackDetail({
     getProject: () => project(),
+    getLayout: () => layout(),
+    readOnly: () => !!historyDate,
     saveOrder: (order) => pref({ rackInfographic: { shelfOrder: order } }),
     confirmPhysical: (id) => command(PHYSICAL_COMMAND, confirmPhysical(id, new Date().toISOString(), session.nextId()), PHYSICAL_COMMAND).then(() => rackDetail.refresh()),
     download,
@@ -281,6 +293,8 @@ async function start() {
   });
   const records = createRecordsPanel({ inventory: ui.invBody, layouts: ui.snapBody }, {
     getProject: () => project(),
+    isHistory: () => !!historyDate,
+    onView: (date) => { historyMode = 'recorded'; setHistory(date); },
     today: () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
     saveSnapshot: (date, name) => command('현재 배치 기록', saveSnapshot({ id: session.nextId(), date, name, recordedAt: new Date().toISOString() }), SAVE_SNAPSHOT_COMMAND),
     restoreSnapshot: async (id) => {
@@ -292,10 +306,10 @@ async function start() {
     },
     toast: (t) => showToast(t),
   });
-  const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)) });
+  const excelDialog = createExcelDialog({ toast: (t) => showToast(t), getProject: () => project(), nextId: session.nextId, applyProposal: (pr, ctx) => historyBlocked() || session.apply(EXCEL_APPLY_COMMAND, (p, opts) => applyExcelProposal(p, pr, ctx, opts)) });
   const scenarioDialogs = createScenarioDialogs({
     getProject: () => project(), toast: (t) => showToast(t), download, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
-    apply: (label, compute) => session.apply(label, compute),
+    apply: (label, compute) => historyBlocked() || session.apply(label, compute),
   });
   const groupDialog = createGroupDialog({
     getProject: () => project(),
@@ -305,7 +319,19 @@ async function start() {
   });
 
   const project = () => session.state.project;
-  const layout = () => project().scenarios[project().settings.scenario];
+  const layout = () => {
+    const p = project();
+    if (!historyDate) return p.scenarios[p.settings.scenario];
+    if (!histMemo || histMemo.p !== p || histMemo.d !== historyDate || histMemo.m !== historyMode) histMemo = { p, d: historyDate, m: historyMode, l: historyLayout(p, historyDate, historyMode) };
+    return histMemo.l;
+  };
+  const HISTORY_MESSAGE = '과거 조회는 읽기 전용입니다.';
+  /** 과거 조회 중이면 편집을 막는다(BEFORE 잠금 안내가 먼저). 막았으면 실패 결과를 돌려준다. */
+  function historyBlocked() {
+    if (!historyDate || isLocked(project())) return null;
+    showToast(HISTORY_MESSAGE);
+    return { ok: false, reason: HISTORY_MESSAGE };
+  }
   const size = () => {
     const r = ui.canvasWrap.getBoundingClientRect();
     return { w: Math.max(1, r.width), h: Math.max(1, r.height) };
@@ -333,14 +359,14 @@ async function start() {
     if (!p) return;
     const l = layout();
     const u = view ? pixelsPerMeter(view, l.warehouse, size()) : 20;
-    const key = [l, p.settings, p.theme, p.precision, p.rackLabels, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
+    const key = [l, !!historyDate, p.settings, p.theme, p.precision, p.rackLabels, p.scenarioMeta, p.panels, [...selected].join('\u0000'), tool, marquee && JSON.stringify(marquee), preview];
     const same = !force && sceneKey && key.every((k, i) => k === sceneKey[i]);
     if (same && u === sceneScale) return;
     // 확대율만 바뀌면 라벨 크기·배치(화면 px 기준)만 다시 계산하고 선택·패널은 그대로 둔다.
     const scaleOnly = same;
     sceneKey = key;
     sceneScale = u;
-    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: u, resize: isLocked(p) ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view, warnings: scaleOnly ? sceneWarnings : undefined });
+    const r = buildScene(preview?.layout ?? l, p, { selected, tool, marquee, guides: preview?.guides, pixelsPerMeter: u, resize: isLocked(p) || historyDate ? null : { live: gesture?.kind === 'resize' && gesture.moved, invalidText: preview?.invalidText }, filter: p.panels.view, warnings: scaleOnly ? sceneWarnings : undefined });
     sceneWarnings = r.warnings;
     ui.plan.innerHTML = r.svg;
     ui.labelStatus.textContent = labelStatusText(r.labelHidden);
@@ -363,10 +389,11 @@ async function start() {
       : ws.length ? `<div class="warnbox">${ws.map((w) => esc(w.text)).join('<br>')}</div>` : '<p class="info">선택 객체에 공간 경고가 없습니다.</p>';
     ui.focus.disabled = !os.length;
     const locked = isLocked(project());
-    for (const b of [ui.rotateBtn, ui.duplicateBtn, ui.deleteBtn]) b.disabled = !os.length || locked;
+    const ro = locked || !!historyDate;
+    for (const b of [ui.rotateBtn, ui.duplicateBtn, ui.deleteBtn]) b.disabled = !os.length || ro;
     const rackCount = os.filter((o) => o.kind === 'rack').length;
     ui.detailBtn.disabled = !(os.length === 1 && os[0].kind === 'rack');
-    for (const b of [ui.alignXBtn, ui.alignYBtn, ui.distributeBtn]) b.disabled = rackCount < 2 || locked;
+    for (const b of [ui.alignXBtn, ui.alignYBtn, ui.distributeBtn]) b.disabled = rackCount < 2 || ro;
     if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)), objectColor: os.length === 1 ? { value: project().theme.objectColors[project().settings.scenario][os[0].id] || OBJECT_COLORS[os[0].kind] || project().settings.colors.unknown, onSet: (c) => editObjectColor(os[0].id, c) } : undefined, zone: os.length === 1 && os[0].kind === 'rack' ? rackLabelParts(os[0], project(), project().settings.scenario) : undefined, onZone: (name) => editZone(os[0], name) });
   }
 
@@ -379,6 +406,8 @@ async function start() {
 
   /** 편집 명령 실행: 실패하면 이유를 알린다(기준본 toast '전체 취소: …'). */
   async function run(label, compute) {
+    const blocked = historyBlocked();
+    if (blocked) return blocked;
     try {
       const r = await session.apply(label, compute);
       if (r && !r.ok) showToast(`전체 취소: ${r.reason}`);
@@ -459,6 +488,33 @@ async function start() {
     command(name, n.mutate, name);
   }
 
+  function syncHistory() {
+    const p = project();
+    if (!p) return;
+    const dates = historyDates(p), on = !!historyDate;
+    ui.histDate.value = historyDate;
+    ui.histMode.value = historyMode;
+    ui.histSlider.max = String(Math.max(0, dates.length - 1));
+    ui.histSlider.value = String(Math.max(0, dates.indexOf(historyDate)));
+    ui.histSlider.disabled = !dates.length;
+    ui.liveBtn.disabled = !on;
+    ui.histStatus.textContent = historyStatusText(p, historyDate, layout());
+    ui.hint.textContent = on ? `과거 조회 · 읽기 전용 · ${historyDate}` : '원점: 좌상단 · X → / Y ↓ · 단위 m';
+    ui.undoBtn.disabled = on || !session.state.canUndo || session.state.status === 'saving';
+    ui.redoBtn.disabled = on || !session.state.canRedo || session.state.status === 'saving';
+    for (const b of ui.toolButtons) if (b.dataset.tool !== 'select' && b.dataset.tool !== 'pan') b.disabled = on;
+  }
+  /** 기준본 setHistory: 선택 해제·카메라 초기화·선택 도구. */
+  function setHistory(d) {
+    abortGesture();
+    historyDate = d;
+    commitSelection(new Set());
+    setTool('select');
+    commitView(centerView(view, true, W(), size()));
+    syncHistory();
+    renderPlan(true);
+  }
+
   function setTool(t) {
     tool = t;
     for (const b of ui.toolButtons) b.classList.toggle('active', b.dataset.tool === t);
@@ -530,6 +586,7 @@ async function start() {
     }
     renderPlan();
     applyCamera();
+    syncHistory();
   };
   session.subscribe(paint);
 
@@ -552,6 +609,10 @@ async function start() {
     if (!confirm('읽을 수 없는 기존 저장본을 현재 프로젝트로 교체합니다. 계속하시겠습니까?')) return;
     guard(() => session.save({ replaceCorrupt: true }));
   });
+  ui.histDate.addEventListener('change', () => setHistory(/^\d{4}-\d{2}-\d{2}$/.test(ui.histDate.value) ? ui.histDate.value : ''));
+  ui.histSlider.addEventListener('input', () => { const d = historyDates(project())[Number(ui.histSlider.value)]; if (d) setHistory(d); });
+  ui.histMode.addEventListener('change', () => { historyMode = ui.histMode.value; syncHistory(); renderPlan(true); });
+  ui.liveBtn.addEventListener('click', () => setHistory(''));
   ui.undoBtn.addEventListener('click', () => guard(() => session.undo()));
   ui.redoBtn.addEventListener('click', () => guard(() => session.redo()));
   ui.exportBtn.addEventListener('click', () => {
@@ -880,10 +941,10 @@ async function start() {
       commitSelection(selectAllRacks(layout()));
     } else if (mod && k === 'z') {
       e.preventDefault();
-      guard(() => (e.shiftKey ? session.redo() : session.undo()));
+      if (!historyDate) guard(() => (e.shiftKey ? session.redo() : session.undo()));
     } else if (mod && k === 'y') {
       e.preventDefault();
-      guard(() => session.redo());
+      if (!historyDate) guard(() => session.redo());
     } else if (e.key === 'Delete') {
       e.preventDefault();
       deleteSelected();
