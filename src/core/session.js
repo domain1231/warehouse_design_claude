@@ -204,7 +204,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     state.project = next;
     state.status = 'unsaved';
     emit();
-    const r = await save();
+    const r = await save({ replaceCorrupt: state.corrupt }); // 기준본 V.allowProtectedReplace: 확인을 거친 전체 교체(JSON 불러오기·이전 버전 복원)에서만 보호 원본을 교체
     if (r.state === 'FAILED') {
       history.restore(snapshot);
       state.project = before;

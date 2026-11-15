@@ -42,7 +42,7 @@ function parsePointer(raw) {
 
 export function createProjectStore({ storage, prefix = DEFAULT_PREFIX, legacyKey = LEGACY_KEY, validate = (p) => p, now = () => new Date().toISOString() }) {
   if (!storage) throw new TypeError('storage가 필요합니다.');
-  const keys = { pointer: `${prefix}:pointer`, a: `${prefix}:slot-a`, b: `${prefix}:slot-b` };
+  const keys = { pointer: `${prefix}:pointer`, a: `${prefix}:slot-a`, b: `${prefix}:slot-b`, protected: `${prefix}:protected-original` };
   let base; // 마지막으로 읽거나 쓴 포인터 원문(null = 포인터 없음). undefined면 아직 load 전.
   let corrupt = false;
   let cache = null; // { pointerRaw, canonical, persistence }
@@ -126,6 +126,16 @@ export function createProjectStore({ storage, prefix = DEFAULT_PREFIX, legacyKey
     }
     if (corrupt && current === base && !replaceCorrupt) {
       throw new StoreError('기존 저장본이 손상되어 있어 보호 중입니다. JSON으로 보관한 뒤 교체를 확인하세요.', { code: 'CORRUPT', stage: 'protected' });
+    }
+    // 기준본 V.write(allowProtectedReplace): 손상 원본을 교체하기 전에 원문 그대로 보호 키에 보존한다(쓰기 후 읽기 확인).
+    // 이미 보호 원본이 있으면 덮어쓰지 않고 교체를 거부한다(앞선 원본 유실 방지).
+    if (corrupt && replaceCorrupt) {
+      if (op('protected-read', () => storage.getItem(keys.protected)) !== null) {
+        throw new StoreError('이미 보존된 손상 원본이 있어 교체하지 않았습니다. 보호 원본 JSON을 내려받아 보관한 뒤 저장소 관리에서 정리하세요.', { code: 'CORRUPT', stage: 'protected-exists' });
+      }
+      const original = JSON.stringify({ format: 'warehouse-protected-original-v1', savedAt: now(), pointer: current, a: storage.getItem(keys.a), b: storage.getItem(keys.b), legacy: current === null ? storage.getItem(legacyKey) : null });
+      op('protected-write', () => storage.setItem(keys.protected, original));
+      if (op('protected-readback', () => storage.getItem(keys.protected)) !== original) throw new StoreError('손상 원본 보존 확인 실패. 교체하지 않았습니다.', { code: 'VERIFY', stage: 'protected-readback' });
     }
     const ptr = current === null ? null : (() => {
       try {
