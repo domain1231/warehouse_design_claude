@@ -43,7 +43,7 @@ export function renderInspector(root, { objects, settings, locked, zone, onZone,
   if (o.kind === 'rack') s += select('type', '랙 종류', pairs(RACK_TYPES.includes(o.type) ? RACK_TYPES : [o.type, ...RACK_TYPES]));
   s += inp('x', 'X (m)', 'number', 'step="0.001"') + inp('y', 'Y (m)', 'number', 'step="0.001"');
   s += inp('width', '폭 (m)', 'number', 'min="0.01" step="0.001"') + inp('depth', '깊이 (m)', 'number', 'min="0.01" step="0.001"');
-  s += inp('height', '높이 (m)', 'number', 'min="0.01" step="0.001"') + inp('rotation', '회전 (°)', 'number', 'step="1"');
+  s += inp('height', '높이 (m)', 'number', 'min="0.01" step="0.001"') + inp('rotation', '회전 (°)', 'number', 'step="any"');
   if (o.kind === 'rack') s += inp('capacity', '최대 수량', 'number', 'min="0" step="any" placeholder="미설정"') + inp('quantity', '현재 수량', 'number', 'min="0" step="any" placeholder="미입력"') + inp('unit', '적재 단위');
   if (o.kind === 'aisle') s += inp('minWidth', '최소 확보 폭 (m)', 'number', 'min="0" step="0.1"') + inp('targetWidth', '목표 폭 (m)', 'number', 'min="0" step="0.1"') + select('aisleType', '통로 종류', pairs(AISLE_TYPES));
   if (o.kind === 'door') s += select('swing', '열림 방향', SWINGS) + '<p class="muted full">폭×깊이 전체를 문 개방 안전 구역으로 검사합니다.</p>';

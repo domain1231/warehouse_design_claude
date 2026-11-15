@@ -15,6 +15,8 @@ import { pixelsPerMeter } from './cad/camera.js';
 import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, COMMAND_DEFAULT, selectAllRacks, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { setObjectColor, setColorMode, applyThresholdColors, resetColors } from './warehouse/appearance.js';
 import { renderInspector } from './ui/inspector.js';
+import { createRoomPanel } from './ui/room-panel.js';
+import { applyRoom } from './warehouse/room.js';
 import { createGroupDialog } from './ui/group-dialog.js';
 import { createPanels } from './ui/panels.js';
 import { createRackDetail } from './ui/rack-detail.js';
@@ -53,6 +55,7 @@ const ERROR_HINT = {
 const TOOL_HELP = {
   select: '클릭 선택 · 드래그 이동 · Shift 추가 · Ctrl/⌘ 토글 · 빈 곳 드래그 영역 선택 · 방향키 미세 이동',
   pan: '드래그하여 화면 이동',
+  calibrate: '참고 도면 위의 기준이 되는 두 점을 차례로 클릭하세요.',
 };
 const ADD_TOOLS = [['rack', '▤ 랙'], ['wall', '━ 내부 벽'], ['column', '▪ 기둥'], ['door', '◴ 출입문'], ['aisle', '▭ 통로'], ['blocked', '▧ 보관 불가'], ['work', '▱ 작업 공간']];
 const RACK_TYPES = ['중량랙', '경량랙', '팔레트랙', '일반 선반', '사용자 지정 랙'];
@@ -250,6 +253,9 @@ function renderShell(root) {
   const bottom = el('section', { class: 'bottom', 'aria-label': '하단 패널', testid: 'bottom-panel' });
   bottom.append(...Object.values(bottomSections));
   const detailBtn = button('open-detail', '▤ 랙 상세(더블클릭)');
+  const [roomBox, roomBody] = section('창고 치수', 'room-section');
+  const [refBox, refBody] = section('참고 도면 배경', 'reference-section', false);
+  left.prepend(roomBox, refBox);
   right.append(el('h2', {}, '선택'), selStatus, selList, detailBtn, selWarn, inspector, statsBox, el('h2', {}, '내보내기'), exportRow, el('h2', {}, '요약'), summary, note);
 
   const main = el('div', { class: 'workspace' });
@@ -265,7 +271,7 @@ function renderShell(root) {
     thrLow: thrLow.querySelector('input'), thrHigh: thrHigh.querySelector('input'), colorInputs: Object.fromEntries(colorInputs.map(([k, l]) => [k, l.querySelector('input')])),
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
     scenBefore, scenAfter, lockBtn, cloneBtn, compareBtn, historyBtn, leftToggle, rightToggle, bottomToggle, bottomDefault, bottomGrip, bottom, bottomSections, exportBtns, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, excelBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
-    histDate, histSlider, histMode, liveBtn, histStatus, toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
+    roomBody, refBody, histDate, histSlider, histMode, liveBtn, histStatus, toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
 
@@ -448,6 +454,35 @@ async function start() {
   // 명령 기록 이름은 기준본처럼 따로 지정한 것 외에는 '객체 수정'이다. label은 실행취소 표시용.
   const command = (label, mutate, name = COMMAND_DEFAULT) => run(label, (p, ctx) => applyCommand(p, mutate, { command: name, selection: [...selected], ...ctx }));
 
+  // 창고 치수·참고 도면(Phase 9a): 모든 변경은 applyCommand를 거쳐 실행취소에 기록된다.
+  let calibration = [];
+  const roomPanel = createRoomPanel({ room: ui.roomBody, ref: ui.refBody }, {
+    getProject: () => project(),
+    isHistory: () => !!historyDate,
+    applyRoom: (r) => run('치수 적용', (p, ctx) => applyRoom(p, r, ctx)),
+    setBackground: (label, mutate) => command(label, (d, l) => mutate(d.settings.background, l.warehouse)),
+    startCalibration: () => { calibration = []; setTool('calibrate'); },
+    toast: (t) => showToast(t),
+  });
+  /** 축척 보정 도구의 클릭 한 번(기준본 30 tool==='calibrate'): 두 점 거리와 실측 거리의 비로 첫 점 기준 균일 확대. */
+  function calibrationClick(p) {
+    calibration.push({ x: p.x, y: p.y });
+    if (calibration.length < 2) return;
+    const [a, b] = calibration, d = Math.hypot(a.x - b.x, a.y - b.y), actual = roomPanel.calibrationLength();
+    calibration = [];
+    if (d > EPS && actual > 0) {
+      const f = actual / d;
+      command('참고 도면 축척 보정', (dr) => {
+        const g = dr.settings.background;
+        g.x = a.x + (g.x - a.x) * f;
+        g.y = a.y + (g.y - a.y) * f;
+        g.width *= f;
+        g.height *= f;
+      }).then((r) => r?.ok && showToast('배경 축척을 보정했습니다. 위치는 별도로 조정할 수 있습니다.'));
+    }
+    setTool('select');
+  }
+
   /** 라벨 표시 설정 변경. 기준본 V.appearanceEdit처럼 실행취소에 기록하고 저장한다. */
   function labelEdit(label, mutate) {
     return session.edit(label, mutate).then(() => renderPlan(true)).catch((e) => { showToast(`색상·표시 설정 취소: ${e.message}`); renderPlan(true); });
@@ -531,6 +566,7 @@ async function start() {
     ui.undoBtn.disabled = on || !session.state.canUndo || session.state.status === 'saving';
     ui.redoBtn.disabled = on || !session.state.canRedo || session.state.status === 'saving';
     for (const b of ui.toolButtons) if (b.dataset.tool !== 'select' && b.dataset.tool !== 'pan') b.disabled = on;
+    roomPanel.updateState();
   }
   /** 기준본 setHistory: 선택 해제·카메라 초기화·선택 도구. */
   function setHistory(d) {
@@ -624,6 +660,7 @@ async function start() {
     renderPlan();
     applyCamera();
     syncHistory();
+    roomPanel.sync();
   };
   session.subscribe(paint);
 
@@ -862,6 +899,11 @@ async function start() {
     }
     if (e.button !== 0 || gesture) return;
     e.preventDefault();
+    if (tool === 'calibrate') {
+      const p = toWorld(e.clientX, e.clientY);
+      calibrationClick(p);
+      return;
+    }
     if (tool !== 'select' && tool !== 'pan') {
       const p = toWorld(e.clientX, e.clientY);
       addAt(tool, { x: p.x, y: p.y });
