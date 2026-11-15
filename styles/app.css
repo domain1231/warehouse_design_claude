@@ -32,7 +32,8 @@ body {
 .brand h1 { margin: 0; font-size: 16px; }
 .versions { color: var(--muted); margin: 0; font-size: 12px; }
 .name-field { flex: 1 1 220px; max-width: 360px; margin: 0; }
-.status-box { flex: 1 1 220px; min-width: 0; }
+/* 상태 문구 길이가 바뀌어도 머리 영역 높이가 바뀌지 않게(도면 위치 고정) 높이를 고정하고 넘치면 스크롤 */
+.status-box { flex: 1 1 220px; min-width: 0; height: 44px; overflow-y: auto; }
 .status-badge { margin: 0; font-weight: 600; }
 .status-badge[data-state="saved"] { color: #6fcf97; }
 .status-badge[data-state="unsaved"], .status-badge[data-state="saving"] { color: #f2c94c; }

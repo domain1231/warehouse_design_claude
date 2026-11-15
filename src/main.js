@@ -560,6 +560,7 @@ async function start() {
     ui.status.textContent = STATUS_TEXT[s.status] ?? s.status;
     ui.status.dataset.state = s.status;
     ui.detail.textContent = s.error ? `${ERROR_HINT[s.error.code] ?? ''} (${s.error.code}${s.error.stage ? ' / ' + s.error.stage : ''}) ${s.error.message}${s.error.code === 'QUOTA' ? ' ' + storageDialogs.riskText() : ''}` : s.project?.persistence?.lastSavedAt ? `마지막 확인 저장: ${new Date(s.project.persistence.lastSavedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · 리비전 ${s.project.persistence.revision}` : '확인된 저장 없음';
+    ui.detail.title = ui.detail.textContent;
     ui.notice.textContent = s.notice;
     ui.notice.hidden = !s.notice;
     if (s.project && document.activeElement !== ui.name) ui.name.value = s.project.metadata.name;
@@ -610,6 +611,7 @@ async function start() {
       await fn();
     } catch (e) {
       ui.detail.textContent = `편집을 적용하지 않았습니다: ${e.message}`;
+      ui.detail.title = ui.detail.textContent;
     }
   };
 
