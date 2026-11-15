@@ -12,8 +12,12 @@ import { createIdGenerator } from '../../src/core/ids.js';
 import {
   applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects,
   fieldValue, setField, setDimension, DIMENSION_COMMAND, COMMAND_DEFAULT, MM_INPUT_FIELDS, isMmInput,
-  dragDelta, alignmentGuides, active,
+  dragDelta, alignmentGuides, active, resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS,
+  readGroupConfig, calculateGroup, applyGroupPreview, groupCommandName, newSpatialWarnings,
 } from '../../src/warehouse/commands.js';
+
+// 기준본 대화상자 칸 ID → 재구축 설정 이름
+const GROUP_FIELDS = { mAlignRef: 'reference', mReferenceLine: 'line', mSpaceMode: 'spacing', mGap: 'gap', mAnchor: 'anchor', mOrder: 'order', mCustomOrder: 'custom', mMoveX: 'dx', mMoveY: 'dy', mRotateAngle: 'angle', mReverse: 'reverse' };
 import { formatNumber as fmt } from '../../src/core/format.js';
 
 const expected = JSON.parse(fs.readFileSync(new URL('../../fixtures/legacy/edit-cases.json', import.meta.url), 'utf8')).results;
@@ -29,6 +33,7 @@ function runCase(c) {
   p.settings.policy = p.editing.allowWarnings ? 'warn' : 'block';
   const racks = active(p).objects.filter((o) => o.kind === 'rack');
   if (c.setup?.lockFirst) racks[c.select[0]].placementMeta.positionLocked = true;
+  if (c.setup?.aspect) racks[c.select[0]].resizeConstraints.aspectLocked = true;
   let selected = new Set(c.select.map((i) => racks[i].id));
   p.editing.selectedRackIds = [...selected];
   p.editing.selectionScenario = p.settings.scenario;
@@ -63,6 +68,27 @@ function runCase(c) {
       ({ dx, dy } = alignmentGuides(p, l, originals, dx, dy, 40));
       if (Math.abs(dx) + Math.abs(dy) < 1e-8) continue;
       p = applyMove(p, originals.map((o) => o.id), dx, dy, { cancel: !!step.cancel, nextId, now }).project;
+    } else if (step.op === 'resize') {
+      const o = active(p).objects.find((x) => selected.has(x.id));
+      const [sx, sy] = HANDLE_DIRECTIONS[step.handle];
+      const ch = resized(p, o, sx, sy, step.dx, step.dy);
+      cmd(applyResize(o.id, { width: ch.width, depth: ch.depth, height: o.height ?? null, x: ch.x, y: ch.y }), RESIZE_COMMAND);
+    } else if (step.op === 'group') {
+      // 화면 대화상자와 같은 기본값(기준본 M.open)
+      const g = p.editing.groupEditing ?? {};
+      const raw = { action: step.action, reference: 'group', line: '0', spacing: 'fixed', gap: String(g.gap ?? 0.3), anchor: g.anchor || 'first', order: step.action.endsWith('Y') ? 'y' : g.order || 'x', custom: '', dx: '0', dy: '0', angle: '90', reverse: false };
+      const ids = [...selected].filter((id) => active(p).objects.some((o) => o.kind === 'rack' && o.id === id));
+      for (const [id, v] of Object.entries(step.fields ?? {})) raw[GROUP_FIELDS[id]] = v === '#CODES' ? active(p).objects.filter((o) => selected.has(o.id)).map((o) => o.code).reverse().join(',') : v;
+      const allow = step.allow ?? p.editing.allowWarnings;
+      let preview;
+      try {
+        preview = calculateGroup(active(p), ids, readGroupConfig(raw), { fmt });
+      } catch {
+        continue; // 미리보기 오류: 적용 단추 비활성
+      }
+      if (newSpatialWarnings(p, preview.before, preview.layout, preview.targetIds).length && !allow) continue;
+      const r = applyCommand(p, applyGroupPreview(preview), { command: groupCommandName(preview.config.action), selection: [...selected], nextId, now, overrideAllow: allow });
+      p = r.project;
     }
     // 화면은 지워진 객체를 선택에서 뺀다
     const ids = new Set(active(p).objects.map((o) => o.id));

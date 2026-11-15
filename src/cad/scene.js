@@ -5,6 +5,7 @@
 // 검색·필터 흐림(match), Excel 상태 색(EX.color), 랙 전체 이름 툴팁(V.fullLabel).
 import { warnings as spatialWarnings, ratio } from '../warehouse/constraints.js';
 import { aisleClearance } from '../geometry/clearance.js';
+import { HANDLE_DIRECTIONS, handlePoint } from '../warehouse/commands.js';
 import { bounds, triangles } from '../geometry/polygons.js';
 import { OBJECT_TYPES, COLORS_DEFAULT } from '../core/project.js';
 import { formatNumber as fmt } from '../core/format.js';
@@ -60,9 +61,10 @@ function objectShape(o, fill, stroke, sel, aisle) {
  * @param {object} project 설정·테마·간격 기준
  * @param {{ scope?: 'before'|'after', selected?: Set<string>, tool?: string, marquee?: {a,b}|null, warnings?: object[], guides?: object[], pixelsPerMeter?: number }} opt
  *   guides: 드래그 중 정렬 가이드(commands.alignmentGuides). 선 굵기·글자 크기는 화면 px 기준이라 pixelsPerMeter가 필요하다.
+ *   resize: { live: boolean, invalidText?: string } — 객체 1개를 선택 도구로 골랐을 때 8방향 크기 조절 핸들(기준본 65)을 그린다.
  * @returns {{ svg: string, warnings: object[] }}
  */
-export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20 } = {}) {
+export function buildScene(layout, project, { scope = project.settings.scenario, selected = new Set(), tool = 'select', marquee = null, warnings, guides = [], pixelsPerMeter = 20, resize = null } = {}) {
   const W = layout.warehouse, st = project.settings;
   const ws = warnings ?? spatialWarnings(layout, project);
   const bad = new Set(ws.flatMap((w) => w.ids));
@@ -110,6 +112,10 @@ export function buildScene(layout, project, { scope = project.settings.scenario,
     s += `<rect id="mSelectionBox" class="m-overlay" pointer-events="none" x="${Math.min(a.x, b.x)}" y="${Math.min(a.y, b.y)}" width="${Math.abs(a.x - b.x)}" height="${Math.abs(a.y - b.y)}" fill="#80b3f1" fill-opacity=".15" stroke="#a8d2ff" stroke-width=".035" stroke-dasharray=".1 .06"/>`;
   }
   if (guides.length && project.precision?.guides) s += guideSvg(guides, pixelsPerMeter);
+  if (resize && selected.size === 1 && tool === 'select') {
+    const o = layout.objects.find((x) => selected.has(x.id));
+    if (o) s += handleSvg(o, pixelsPerMeter, resize);
+  }
   return { svg: s, warnings: ws };
 }
 
@@ -127,4 +133,19 @@ function guideSvg(guides, pixelsPerMeter) {
     }
   }
   return out + '</g>';
+}
+
+/** 8방향 크기 조절 핸들과 조절 중 크기·경고 표시(기준본 65 scene 래퍼). 핸들 크기는 화면 px 고정. */
+function handleSvg(o, pixelsPerMeter, { live = false, invalidText = '' } = {}) {
+  const u = Math.max(0.01, pixelsPerMeter), r = 5 / u, hit = 12 / u;
+  let out = '';
+  for (const [key, [sx, sy]] of Object.entries(HANDLE_DIRECTIONS)) {
+    const p = handlePoint(o, sx, sy);
+    out += `<g class="s-handle" data-resize="${key}" data-object="${esc(o.id)}" style="cursor:${key.length === 2 ? (key === 'nw' || key === 'se' ? 'nwse' : 'nesw') : key === 'n' || key === 's' ? 'ns' : 'ew'}-resize"><title>${key} · 크기 조절</title><rect x="${p.x - hit}" y="${p.y - hit}" width="${2 * hit}" height="${2 * hit}" fill="transparent"/><rect x="${p.x - r}" y="${p.y - r}" width="${2 * r}" height="${2 * r}" fill="#daeaff" stroke="#277acc" stroke-width="1.5" vector-effect="non-scaling-stroke" pointer-events="none"/></g>`;
+  }
+  if (live) {
+    const b = bounds(o);
+    out += `<text class="s-live" data-testid="resize-live" x="${b.minX}" y="${b.minY - 0.12}" fill="${invalidText ? '#ff9aa5' : '#d9efff'}" font-size="${14 / u}">${fmt(o.width, 3)} × ${fmt(o.depth, 3)}m${invalidText ? ' · ' + esc(invalidText) : ''}</text>`;
+  }
+  return out;
 }
