@@ -180,7 +180,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
    * 확대·이동 중 매 프레임 저장하지 않도록 delay(ms) 뒤에 한 번 저장한다. delay가 0이면 바로 저장한다.
    * viewport 값은 스키마 범위(배율 0.05–30, 이동 ±5000m, fitScale 0.001–100000)로 제한한다.
    */
-  function setView({ viewport, selection, allowWarnings, snap, precision, scenario, beforeLocked, panels } = {}, { delay = 250 } = {}) {
+  function setView({ viewport, selection, allowWarnings, snap, precision, scenario, beforeLocked, panels, rackInfographic } = {}, { delay = 250 } = {}) {
     if (!state.project) throw new Error('init() 전에는 화면 상태를 바꿀 수 없습니다.');
     const next = { ...state.project };
     if (viewport) {
@@ -206,9 +206,11 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     // BEFORE 원본 잠금 전환(기준본 rLock). 해제 확인은 화면에서 받는다.
     // 패널 접기·랙 목록 검색/필터/정렬(기준본 50 M.togglePanel, 65 B.capture): 실행취소 없이 저장
     if (panels) next.panels = { ...state.project.panels, ...panels, view: { ...state.project.panels.view, ...(panels.view ?? {}) } };
+    // 랙 상세 선반 번호 방향(기준본 65 sShelfOrder: save만, 실행취소 없음)
+    if (rackInfographic) next.rackInfographic = { ...state.project.rackInfographic, ...rackInfographic };
     if (typeof beforeLocked === 'boolean') next.scenarioMeta = { ...state.project.scenarioMeta, before: { ...state.project.scenarioMeta.before, locked: beforeLocked } };
-    if (allowWarnings !== undefined || snap !== undefined || precision || scenario !== undefined || beforeLocked !== undefined || panels) projectValidator(structuredClone(next));
-    const viewKeys = ['viewport', 'editing', 'settings', 'precision', 'locationLayout', 'scenarioMeta', 'panels'];
+    if (allowWarnings !== undefined || snap !== undefined || precision || scenario !== undefined || beforeLocked !== undefined || panels || rackInfographic) projectValidator(structuredClone(next));
+    const viewKeys = ['viewport', 'editing', 'settings', 'precision', 'locationLayout', 'scenarioMeta', 'panels', 'rackInfographic'];
     if (JSON.stringify(viewKeys.map((k) => next[k])) === JSON.stringify(viewKeys.map((k) => state.project[k]))) return { changed: false };
     state.project = next;
     if (state.status !== 'error') state.status = 'unsaved';

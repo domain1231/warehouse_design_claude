@@ -39,4 +39,7 @@ export const editCases = [
   { name: '그룹 중심 회전 90°', select: [30, 31], setup: { allowWarnings: true }, steps: [{ op: 'group', action: 'rotate' }] },
   { name: '그룹 정렬: 위반 미허용이면 적용 안 함', select: [30, 31, 32], steps: [{ op: 'group', action: 'top', fields: { mAlignRef: 'warehouse' } }] },
   { name: '그룹 정렬: 위반 확인 후 허용', select: [30, 31, 32], steps: [{ op: 'group', action: 'top', fields: { mAlignRef: 'warehouse' }, allow: true }] },
+  { name: '배치 이력 기록(현재 배치만)', select: [], steps: [{ op: 'snapshot-save', date: '2026-11-01', name: '11월 배치' }] },
+  { name: '배치 이력 복원: 이동 후 저장본으로 되돌림(수량·연결 유지, 화면 초기화)', select: [12], setup: { allowWarnings: true }, steps: [{ op: 'snapshot-save', date: '2026-11-01', name: '기준' }, { op: 'field', field: 'capacity', raw: '50', number: true }, { op: 'move', dx: 0.5, dy: 0 }, 'delete', { op: 'snapshot-restore' }] },
+  { name: '실제 설비 변경 확인(규격 이력 physical-confirmed)', select: [5], setup: { allowWarnings: true }, steps: [{ op: 'dimension', field: 'width', raw: '0.9' }, { op: 'physical' }] },
 ];

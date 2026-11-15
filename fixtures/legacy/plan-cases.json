@@ -1610,5 +1610,194 @@
     ]
    }
   ]
+ },
+ "details": {
+  "rackIndex": 3,
+  "svgs": [
+   {
+    "name": "전체 선반(아래→위)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1020\" height=\"827\" viewBox=\"0 0 1020 827\" role=\"img\" aria-label=\"선반별 논리적 자재 배치\"><rect width=\"100%\" height=\"100%\" fill=\"#101b29\"/><g font-family=\"Malgun Gothic,Segoe UI,sans-serif\"><text x=\"25\" y=\"32\" font-size=\"21\" fill=\"#eff5ff\">A-704 · 선반별 논리적 자재 위치</text><text x=\"25\" y=\"59\" font-size=\"13\" fill=\"#b9cde5\">카드 폭·간격: 논리적 표시 / 막대: 자재높이 ÷ 선반높이 / 현재고 미확인</text><text x=\"25\" y=\"83\" font-size=\"12\" fill=\"#b9cde5\">선반 번호 아래 → 위 (사용자 설정 · 실물 방향 미확인) · 기준일 2026-10-31</text><g class=\"s-shelf\" data-shelf=\"4\"><rect x=\"20\" y=\"105\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"133\" font-size=\"17\" fill=\"#dcecff\">4번 선반</text><text x=\"30\" y=\"157\" font-size=\"12\" fill=\"#9db3ce\">0 위치</text><text x=\"165\" y=\"175\" fill=\"#acbdd0\" font-size=\"14\">자재 미등록 · 비어 있는지 미확인</text><text x=\"160\" y=\"246\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><g class=\"s-shelf\" data-shelf=\"3\"><rect x=\"20\" y=\"263\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"291\" font-size=\"17\" fill=\"#dcecff\">3번 선반</text><text x=\"30\" y=\"315\" font-size=\"12\" fill=\"#9db3ce\">0 위치</text><text x=\"165\" y=\"333\" fill=\"#acbdd0\" font-size=\"14\">사용자 확인 빈 선반</text><text x=\"160\" y=\"404\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><g class=\"s-shelf\" data-shelf=\"2\"><rect x=\"20\" y=\"421\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"449\" font-size=\"17\" fill=\"#dcecff\">2번 선반</text><text x=\"30\" y=\"473\" font-size=\"12\" fill=\"#9db3ce\">1 위치</text><g class=\"s-item \" data-item=\"7F-A-1-2-1\"><rect x=\"155\" y=\"433\" width=\"252\" height=\"112\" rx=\"6\" fill=\"#20364d\" stroke=\"#46627e\"/><text x=\"163\" y=\"454\" fill=\"#8fd3ff\" font-size=\"13\">1번 · B-100</text><text x=\"163\" y=\"475\" fill=\"#eff5ff\" font-size=\"13\">박스 자재</text><text x=\"163\" y=\"494\" fill=\"#b1c6dc\" font-size=\"11\">7F-A-1-2-1</text><rect x=\"163\" y=\"504\" width=\"234\" height=\"7\" fill=\"#0e1b29\"/><rect x=\"163\" y=\"504\" width=\"234\" height=\"7\" fill=\"#fb7c8b\"/><text x=\"163\" y=\"529\" fill=\"#fb7c8b\" font-size=\"12\">높이 114.3% · 초과</text></g><text x=\"160\" y=\"562\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><g class=\"s-shelf\" data-shelf=\"1\"><rect x=\"20\" y=\"579\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"607\" font-size=\"17\" fill=\"#dcecff\">1번 선반</text><text x=\"30\" y=\"631\" font-size=\"12\" fill=\"#9db3ce\">2 위치</text><g class=\"s-item \" data-item=\"7F-A-1-1-1\"><rect x=\"155\" y=\"591\" width=\"252\" height=\"112\" rx=\"6\" fill=\"#20364d\" stroke=\"#46627e\"/><text x=\"163\" y=\"612\" fill=\"#8fd3ff\" font-size=\"13\">1번 · P-001</text><text x=\"163\" y=\"633\" fill=\"#eff5ff\" font-size=\"13\">가상 부품 하나</text><text x=\"163\" y=\"652\" fill=\"#b1c6dc\" font-size=\"11\">7F-A-1-1-1</text><rect x=\"163\" y=\"662\" width=\"234\" height=\"7\" fill=\"#0e1b29\"/><rect x=\"163\" y=\"662\" width=\"70.2\" height=\"7\" fill=\"#66c6b9\"/><text x=\"163\" y=\"687\" fill=\"#66c6b9\" font-size=\"12\">높이 30%</text></g><g class=\"s-item \" data-item=\"7F-A-1-1-2\"><rect x=\"415\" y=\"591\" width=\"252\" height=\"112\" rx=\"6\" fill=\"#20364d\" stroke=\"#46627e\"/><text x=\"423\" y=\"612\" fill=\"#8fd3ff\" font-size=\"13\">2번 · P-002</text><text x=\"423\" y=\"633\" fill=\"#eff5ff\" font-size=\"13\">가상 부품 둘</text><text x=\"423\" y=\"652\" fill=\"#b1c6dc\" font-size=\"11\">7F-A-1-1-2</text><rect x=\"423\" y=\"662\" width=\"234\" height=\"7\" fill=\"#0e1b29\"/><rect x=\"423\" y=\"662\" width=\"222.3\" height=\"7\" fill=\"#f9bc60\"/><text x=\"423\" y=\"687\" fill=\"#f9bc60\" font-size=\"12\">높이 95%</text></g><text x=\"160\" y=\"720\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><text x=\"25\" y=\"800\" fill=\"#a6bfd8\" font-size=\"12\">높이 활용률: 미확인 회색 / 90% 미만 청록 / 90~100% 주황 / 100% 초과 빨강 · 실제 적재율과 별개</text></g></svg>",
+    "detail": []
+   },
+   {
+    "name": "위→아래·검색 P-00",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1020\" height=\"827\" viewBox=\"0 0 1020 827\" role=\"img\" aria-label=\"선반별 논리적 자재 배치\"><rect width=\"100%\" height=\"100%\" fill=\"#101b29\"/><g font-family=\"Malgun Gothic,Segoe UI,sans-serif\"><text x=\"25\" y=\"32\" font-size=\"21\" fill=\"#eff5ff\">A-704 · 선반별 논리적 자재 위치</text><text x=\"25\" y=\"59\" font-size=\"13\" fill=\"#b9cde5\">카드 폭·간격: 논리적 표시 / 막대: 자재높이 ÷ 선반높이 / 현재고 미확인</text><text x=\"25\" y=\"83\" font-size=\"12\" fill=\"#b9cde5\">선반 번호 위 → 아래 (사용자 설정 · 실물 방향 미확인) · 기준일 2026-10-31</text><g class=\"s-shelf\" data-shelf=\"1\"><rect x=\"20\" y=\"105\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"133\" font-size=\"17\" fill=\"#dcecff\">1번 선반</text><text x=\"30\" y=\"157\" font-size=\"12\" fill=\"#9db3ce\">2 위치</text><g class=\"s-item \" data-item=\"7F-A-1-1-1\"><rect x=\"155\" y=\"117\" width=\"252\" height=\"112\" rx=\"6\" fill=\"#20364d\" stroke=\"#46627e\"/><text x=\"163\" y=\"138\" fill=\"#8fd3ff\" font-size=\"13\">1번 · P-001</text><text x=\"163\" y=\"159\" fill=\"#eff5ff\" font-size=\"13\">가상 부품 하나</text><text x=\"163\" y=\"178\" fill=\"#b1c6dc\" font-size=\"11\">7F-A-1-1-1</text><rect x=\"163\" y=\"188\" width=\"234\" height=\"7\" fill=\"#0e1b29\"/><rect x=\"163\" y=\"188\" width=\"70.2\" height=\"7\" fill=\"#66c6b9\"/><text x=\"163\" y=\"213\" fill=\"#66c6b9\" font-size=\"12\">높이 30%</text></g><g class=\"s-item \" data-item=\"7F-A-1-1-2\"><rect x=\"415\" y=\"117\" width=\"252\" height=\"112\" rx=\"6\" fill=\"#20364d\" stroke=\"#46627e\"/><text x=\"423\" y=\"138\" fill=\"#8fd3ff\" font-size=\"13\">2번 · P-002</text><text x=\"423\" y=\"159\" fill=\"#eff5ff\" font-size=\"13\">가상 부품 둘</text><text x=\"423\" y=\"178\" fill=\"#b1c6dc\" font-size=\"11\">7F-A-1-1-2</text><rect x=\"423\" y=\"188\" width=\"234\" height=\"7\" fill=\"#0e1b29\"/><rect x=\"423\" y=\"188\" width=\"222.3\" height=\"7\" fill=\"#f9bc60\"/><text x=\"423\" y=\"213\" fill=\"#f9bc60\" font-size=\"12\">높이 95%</text></g><text x=\"160\" y=\"246\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><g class=\"s-shelf\" data-shelf=\"2\"><rect x=\"20\" y=\"263\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"291\" font-size=\"17\" fill=\"#dcecff\">2번 선반</text><text x=\"30\" y=\"315\" font-size=\"12\" fill=\"#9db3ce\">0 위치</text><text x=\"165\" y=\"333\" fill=\"#acbdd0\" font-size=\"14\">검색 일치 자재 없음</text><text x=\"160\" y=\"404\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><g class=\"s-shelf\" data-shelf=\"3\"><rect x=\"20\" y=\"421\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"449\" font-size=\"17\" fill=\"#dcecff\">3번 선반</text><text x=\"30\" y=\"473\" font-size=\"12\" fill=\"#9db3ce\">0 위치</text><text x=\"165\" y=\"491\" fill=\"#acbdd0\" font-size=\"14\">검색 일치 자재 없음</text><text x=\"160\" y=\"562\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><g class=\"s-shelf\" data-shelf=\"4\"><rect x=\"20\" y=\"579\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#162537\" stroke=\"#3d5977\"/><text x=\"30\" y=\"607\" font-size=\"17\" fill=\"#dcecff\">4번 선반</text><text x=\"30\" y=\"631\" font-size=\"12\" fill=\"#9db3ce\">0 위치</text><text x=\"165\" y=\"649\" fill=\"#acbdd0\" font-size=\"14\">검색 일치 자재 없음</text><text x=\"160\" y=\"720\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><text x=\"25\" y=\"800\" fill=\"#a6bfd8\" font-size=\"12\">높이 활용률: 미확인 회색 / 90% 미만 청록 / 90~100% 주황 / 100% 초과 빨강 · 실제 적재율과 별개</text></g></svg>",
+    "detail": []
+   },
+   {
+    "name": "2번 선반·자재 선택",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1020\" height=\"353\" viewBox=\"0 0 1020 353\" role=\"img\" aria-label=\"선반별 논리적 자재 배치\"><rect width=\"100%\" height=\"100%\" fill=\"#101b29\"/><g font-family=\"Malgun Gothic,Segoe UI,sans-serif\"><text x=\"25\" y=\"32\" font-size=\"21\" fill=\"#eff5ff\">A-704 · 선반별 논리적 자재 위치</text><text x=\"25\" y=\"59\" font-size=\"13\" fill=\"#b9cde5\">카드 폭·간격: 논리적 표시 / 막대: 자재높이 ÷ 선반높이 / 현재고 미확인</text><text x=\"25\" y=\"83\" font-size=\"12\" fill=\"#b9cde5\">선반 번호 아래 → 위 (사용자 설정 · 실물 방향 미확인) · 기준일 2026-10-31</text><g class=\"s-shelf\" data-shelf=\"2\"><rect x=\"20\" y=\"105\" width=\"980\" height=\"150\" rx=\"7\" fill=\"#203c58\" stroke=\"#3d5977\"/><text x=\"30\" y=\"133\" font-size=\"17\" fill=\"#dcecff\">2번 선반</text><text x=\"30\" y=\"157\" font-size=\"12\" fill=\"#9db3ce\">1 위치</text><g class=\"s-item s-selected\" data-item=\"7F-A-1-2-1\"><rect x=\"155\" y=\"117\" width=\"252\" height=\"112\" rx=\"6\" fill=\"#20364d\" stroke=\"#72caff\"/><text x=\"163\" y=\"138\" fill=\"#8fd3ff\" font-size=\"13\">1번 · B-100</text><text x=\"163\" y=\"159\" fill=\"#eff5ff\" font-size=\"13\">박스 자재</text><text x=\"163\" y=\"178\" fill=\"#b1c6dc\" font-size=\"11\">7F-A-1-2-1</text><rect x=\"163\" y=\"188\" width=\"234\" height=\"7\" fill=\"#0e1b29\"/><rect x=\"163\" y=\"188\" width=\"234\" height=\"7\" fill=\"#fb7c8b\"/><text x=\"163\" y=\"213\" fill=\"#fb7c8b\" font-size=\"12\">높이 114.3% · 초과</text></g><text x=\"160\" y=\"246\" fill=\"#9fb4ce\" font-size=\"10\">자재 위치 번호순 · 누락 번호는 미등록 / 실측 점유 크기·현재고 추정 안 함</text></g><text x=\"25\" y=\"326\" fill=\"#a6bfd8\" font-size=\"12\">높이 활용률: 미확인 회색 / 90% 미만 청록 / 90~100% 주황 / 100% 초과 빨강 · 실제 적재율과 별개</text></g></svg>",
+    "detail": [
+     [
+      "No.",
+      "4"
+     ],
+     [
+      "로케이션",
+      "7F-A-1-2-1"
+     ],
+     [
+      "품목코드",
+      "B-100"
+     ],
+     [
+      "품목명",
+      "박스 자재"
+     ],
+     [
+      "규격",
+      "SYN"
+     ],
+     [
+      "ROP",
+      "10"
+     ],
+     [
+      "MAX Stock",
+      "50"
+     ],
+     [
+      "3개월 평균 입고수량",
+      "12.5"
+     ],
+     [
+      "Rack 단수",
+      "2"
+     ],
+     [
+      "혼적수",
+      "1"
+     ],
+     [
+      "Rack 가로 (mm)",
+      "800"
+     ],
+     [
+      "Rack 세로 (mm)",
+      "1850"
+     ],
+     [
+      "Rack 높이 (mm)",
+      "2000"
+     ],
+     [
+      "Rack 단 높이 (mm)",
+      "350"
+     ],
+     [
+      "자재높이 (mm)",
+      "400"
+     ],
+     [
+      "용적률(%)",
+      "미확인"
+     ],
+     [
+      "랙 용적률(%)",
+      "미확인"
+     ],
+     [
+      "사용 면적(m2)",
+      "미확인"
+     ],
+     [
+      "유휴 공간",
+      "미확인"
+     ],
+     [
+      "비고",
+      "미확인"
+     ],
+     [
+      "계산 높이 활용률",
+      "114.29% (자재높이 ÷ 선반높이)"
+     ],
+     [
+      "현재고",
+      "미확인 · ROP/MAX/평균입고와 별개"
+     ],
+     [
+      "원본 행",
+      "5"
+     ]
+    ]
+   }
+  ],
+  "summary": [
+   "위치: SYN / 7F / A열 / 1번째 랙",
+   "설계: 0.8m × 1.85m × 2m",
+   "원본: 0.8m × 1.85m × 2m",
+   "등록 선반: 4",
+   "자재 위치: 3",
+   "고유 품목: 3",
+   "현재 적재율: 미확인",
+   "출처: synthetic.xlsx",
+   "기준일: 2026-10-31"
+  ],
+  "inventory": [
+   {
+    "scope": "current",
+    "rows": [
+     [
+      "AFTER",
+      "2026-10-05",
+      "A-705",
+      "5 / 미확인 BOX",
+      "미확인",
+      "가상 기록"
+     ],
+     [
+      "AFTER",
+      "2026-10-01",
+      "A-704",
+      "40 / 100 BOX",
+      "40%",
+      "가상 기록"
+     ]
+    ]
+   },
+   {
+    "scope": "all",
+    "rows": [
+     [
+      "AFTER",
+      "2026-10-05",
+      "A-705",
+      "5 / 미확인 BOX",
+      "미확인",
+      "가상 기록"
+     ],
+     [
+      "AFTER",
+      "2026-10-01",
+      "A-704",
+      "40 / 100 BOX",
+      "40%",
+      "가상 기록"
+     ],
+     [
+      "배치 미확인",
+      "2026-09-30",
+      "A-704",
+      "미확인 / 80 BOX",
+      "미확인",
+      "이전 버전"
+     ]
+    ]
+   },
+   {
+    "scope": "legacy",
+    "rows": [
+     [
+      "배치 미확인",
+      "2026-09-30",
+      "A-704",
+      "미확인 / 80 BOX",
+      "미확인",
+      "이전 버전"
+     ]
+    ]
+   }
+  ]
  }
 }

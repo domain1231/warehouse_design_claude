@@ -5,6 +5,12 @@
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [
     {
@@ -22,11 +28,19 @@
    "policy": "block",
    "removed": [],
    "selected": [],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -106,11 +120,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -179,11 +201,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [
     {
@@ -225,11 +255,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [
     {
@@ -272,11 +310,19 @@
     "ID#2"
    ],
    "selected": [],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -356,11 +402,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -450,11 +504,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -576,11 +638,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -637,11 +707,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [],
    "name": "속성: X에 빈 값(NaN) 거부",
@@ -650,11 +728,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -745,6 +831,8 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": [
     {
      "after": {
@@ -769,6 +857,12 @@
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [],
    "name": "설계 치수 직접 입력: 0 거부(크기 제한)",
@@ -777,11 +871,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -871,11 +973,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -965,11 +1075,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -1126,11 +1244,19 @@
     "ID#1",
     "ID#2"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [
     {
@@ -1172,11 +1298,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [
     {
@@ -1218,11 +1352,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [
     {
@@ -1264,22 +1406,38 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [],
    "name": "BEFORE 잠금: 추가 거부(기록 없음)",
    "policy": "block",
    "removed": [],
    "selected": [],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -1370,6 +1528,8 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": [
     {
      "after": {
@@ -1394,6 +1554,12 @@
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -1516,6 +1682,8 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": [
     {
      "after": {
@@ -1540,6 +1708,12 @@
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -1630,6 +1804,8 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": [
     {
      "after": {
@@ -1654,6 +1830,12 @@
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -1744,6 +1926,8 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": [
     {
      "after": {
@@ -1768,6 +1952,12 @@
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [
     {
@@ -1809,11 +1999,19 @@
    "selected": [
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -1971,11 +2169,19 @@
     "ID#2",
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -2133,11 +2339,19 @@
     "ID#4",
     "ID#2"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -2295,11 +2509,19 @@
     "ID#2",
     "ID#1"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -2458,11 +2680,19 @@
     "ID#4",
     "ID#5"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -2686,11 +2916,19 @@
     "ID#3",
     "ID#2"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -2847,11 +3085,19 @@
     "ID#1",
     "ID#2"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": true,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -3008,11 +3254,19 @@
     "ID#1",
     "ID#2"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [],
    "commands": [],
    "name": "그룹 정렬: 위반 미허용이면 적용 안 함",
@@ -3023,11 +3277,19 @@
     "ID#2",
     "ID#3"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
   },
   {
    "allowWarnings": false,
    "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
    "changed": [
     {
      "aisleType": "메인 이동 통로",
@@ -3251,7 +3513,2549 @@
     "ID#3",
     "ID#2"
    ],
+   "snapshotCount": 0,
+   "snapshots": [],
    "specifications": []
+  },
+  {
+   "allowWarnings": false,
+   "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
+   "changed": [],
+   "commands": [],
+   "name": "배치 이력 기록(현재 배치만)",
+   "policy": "block",
+   "removed": [],
+   "selected": [],
+   "snapshotCount": 1,
+   "snapshots": [
+    {
+     "id": "ID#1",
+     "layout": {
+      "objects": 58
+     },
+     "name": "11월 배치",
+     "scenario": "after",
+     "source": "사용자 직접 기록"
+    }
+   ],
+   "specifications": []
+  },
+  {
+   "allowWarnings": true,
+   "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
+   "changed": [
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-701",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#1",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 0.6,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-702",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#2",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 0.6,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-703",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#3",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 0.6,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-704",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#4",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 0.6,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-705",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#5",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 3.6,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-706",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#6",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 3.6,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-707",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#7",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 3.6,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-708",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#8",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 3.6,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-709",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#9",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 5.3,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-710",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#10",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 5.3,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-711",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#11",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 5.3,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-712",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#12",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 5.3,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-713",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "excel": null,
+     "height": 2,
+     "id": "ID#13",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": true,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "배치 이력 복원 · 현재 자재 연결 미확인",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 7.5,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-714",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#14",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 7.5,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-715",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#15",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 7.5,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-716",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#16",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 9.4,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-717",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#17",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 9.4,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-718",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#18",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 9.4,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-719",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#19",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 9.4,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-720",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#20",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 10.3,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-721",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#21",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 10.3,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-722",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#22",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 10.3,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-723",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#23",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 10.3,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-724",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#24",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 12.6,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-725",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#25",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 12.6,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-726",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#26",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 12.6,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-727",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#27",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 12.6,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-728",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#28",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 13.5,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-729",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#29",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 13.5,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-730",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#30",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 13.5,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "B",
+     "capacity": null,
+     "code": "B-731",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#31",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 13.5,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-732",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#32",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-733",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#33",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-734",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#34",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-735",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#35",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-736",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#36",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16.9,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-737",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#37",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16.9,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-738",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#38",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16.9,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-739",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#39",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 16.9,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-740",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#40",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 19,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-741",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#41",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 19,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-742",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#42",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 19,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-743",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#43",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 19,
+     "y": 8.55
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-744",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#44",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 21.7,
+     "y": 2.4
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-745",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#45",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 21.7,
+     "y": 4.45
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-746",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#46",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 21.7,
+     "y": 6.5
+    },
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "C",
+     "capacity": null,
+     "code": "C-747",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "height": 2,
+     "id": "ID#47",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": null,
+     "placementMeta": {
+      "manualEdited": null,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": false,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.8,
+     "x": 21.7,
+     "y": 8.55
+    }
+   ],
+   "commands": [
+    {
+     "after": [
+      {
+       "code": "A-713",
+       "depth": 1.85,
+       "id": "ID#13",
+       "rotation": 0,
+       "width": 0.8,
+       "x": 8,
+       "y": 2.4
+      }
+     ],
+     "before": [
+      {
+       "code": "A-713",
+       "depth": 1.85,
+       "id": "ID#13",
+       "rotation": 0,
+       "width": 0.8,
+       "x": 7.5,
+       "y": 2.4
+      }
+     ],
+     "id": "ID#48",
+     "reason": "",
+     "scenario": "after",
+     "success": true,
+     "targetIds": [
+      "ID#13"
+     ],
+     "type": "객체 이동"
+    },
+    {
+     "after": [],
+     "before": [
+      {
+       "code": "A-713",
+       "depth": 1.85,
+       "id": "ID#13",
+       "rotation": 0,
+       "width": 0.8,
+       "x": 8,
+       "y": 2.4
+      }
+     ],
+     "id": "ID#49",
+     "reason": "",
+     "scenario": "after",
+     "success": true,
+     "targetIds": [
+      "ID#13"
+     ],
+     "type": "객체 수정"
+    },
+    {
+     "after": [
+      {
+       "code": "A-713",
+       "depth": 1.85,
+       "id": "ID#13",
+       "rotation": 0,
+       "width": 0.8,
+       "x": 7.5,
+       "y": 2.4
+      }
+     ],
+     "before": [],
+     "id": "ID#50",
+     "reason": "",
+     "scenario": "after",
+     "success": true,
+     "targetIds": [
+      "ID#13"
+     ],
+     "type": "저장된 배치 복원"
+    }
+   ],
+   "name": "배치 이력 복원: 이동 후 저장본으로 되돌림(수량·연결 유지, 화면 초기화)",
+   "policy": "warn",
+   "removed": [],
+   "selected": [],
+   "snapshotCount": 1,
+   "snapshots": [
+    {
+     "id": "ID#51",
+     "layout": {
+      "objects": 58
+     },
+     "name": "기준",
+     "scenario": "after",
+     "source": "사용자 직접 기록"
+    }
+   ],
+   "specifications": []
+  },
+  {
+   "allowWarnings": true,
+   "backups": 0,
+   "camera": {
+    "centerLocked": true,
+    "panX": 0,
+    "panY": 0,
+    "zoom": 1
+   },
+   "changed": [
+    {
+     "aisleType": "메인 이동 통로",
+     "block": "A",
+     "capacity": null,
+     "code": "A-706",
+     "depth": 1.85,
+     "designSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.9
+     },
+     "height": 2,
+     "id": "ID#1",
+     "kind": "rack",
+     "minWidth": 1,
+     "note": "",
+     "originalSpec": {
+      "depth": 1.85,
+      "height": 2,
+      "origin": "design",
+      "source": "등록 당시 설계값 · 실측 미확인",
+      "width": 0.8
+     },
+     "physicalConfirmation": {
+      "dimensions": {
+       "depth": 1.85,
+       "height": 2,
+       "width": 0.9
+      },
+      "source": "사용자 직접 확인"
+     },
+     "placementMeta": {
+      "manualEdited": true,
+      "positionLocked": false,
+      "waiting": false
+     },
+     "provenance": "도면 참고 샘플",
+     "quantity": null,
+     "resizeConstraints": {
+      "aspectLocked": false,
+      "maxDepth": 500,
+      "maxWidth": 500,
+      "minDepth": 0.05,
+      "minWidth": 0.05
+     },
+     "rotation": 0,
+     "specificationChanged": true,
+     "swing": "in-right",
+     "targetWidth": 1.5,
+     "type": "중량랙",
+     "unit": "BOX",
+     "width": 0.9,
+     "x": 3.6,
+     "y": 4.45
+    }
+   ],
+   "commands": [
+    {
+     "after": [
+      {
+       "code": "A-706",
+       "depth": 1.85,
+       "id": "ID#1",
+       "rotation": 0,
+       "width": 0.9,
+       "x": 3.6,
+       "y": 4.45
+      }
+     ],
+     "before": [
+      {
+       "code": "A-706",
+       "depth": 1.85,
+       "id": "ID#1",
+       "rotation": 0,
+       "width": 0.8,
+       "x": 3.6,
+       "y": 4.45
+      }
+     ],
+     "id": "ID#2",
+     "reason": "",
+     "scenario": "after",
+     "success": true,
+     "targetIds": [
+      "ID#1"
+     ],
+     "type": "설계 치수 직접 입력"
+    }
+   ],
+   "name": "실제 설비 변경 확인(규격 이력 physical-confirmed)",
+   "policy": "warn",
+   "removed": [],
+   "selected": [
+    "ID#1"
+   ],
+   "snapshotCount": 0,
+   "snapshots": [],
+   "specifications": [
+    {
+     "after": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.9
+     },
+     "before": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.8
+     },
+     "code": "A-706",
+     "id": "ID#3",
+     "rackId": "ID#1",
+     "scenario": "after",
+     "source": "도면 편집 · 실제 설비 변경 미확인",
+     "type": "design-only"
+    },
+    {
+     "after": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.9
+     },
+     "before": {
+      "depth": 1.85,
+      "height": 2,
+      "width": 0.9
+     },
+     "code": "A-706",
+     "id": "ID#4",
+     "rackId": "ID#1",
+     "scenario": "after",
+     "source": "사용자 직접 확인",
+     "type": "physical-confirmed"
+    }
+   ]
   }
  ]
 }

@@ -154,3 +154,30 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
   .legend { left: 8px; max-width: none; }
   .canvas-hint { display: none; }
 }
+
+/* Phase 4b: 랙 상세·기록 */
+.detail-dialog, .compare-dialog { width: min(1400px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
+.detail-dialog::backdrop, .compare-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.detail-summary { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; margin: 8px 0; }
+.detail-controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: end; margin-bottom: 8px; }
+.detail-controls label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
+.detail-controls .grow { flex: 1 1 200px; }
+.detail-controls input, .detail-controls select { padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--text); font: inherit; font-size: 12px; }
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; }
+.detail-elevation { overflow: auto; max-height: 64vh; border: 1px solid var(--line); border-radius: 6px; }
+.detail-elevation svg { display: block; width: 100%; height: auto; cursor: pointer; }
+.detail-item { overflow: auto; max-height: 64vh; font-size: 12px; }
+.detail-item dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; margin: 0; }
+.detail-item dt { color: var(--muted); }
+.detail-item dd { margin: 0; overflow-wrap: anywhere; }
+.item-row { display: block; width: 100%; text-align: left; margin: 2px 0; font-size: 12px; }
+.records-table { overflow: auto; max-height: 30vh; }
+.records-table table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.records-table th, .records-table td { border-bottom: 1px solid var(--line); padding: 3px 4px; text-align: left; vertical-align: top; }
+.pager { display: flex; gap: 6px; align-items: center; margin: 4px 0; font-size: 12px; }
+.snapshot-form { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px; }
+.snapshot-form button { grid-column: 1 / -1; }
+.snapshot-form input, [data-testid=snap-scope] { padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--text); font: inherit; font-size: 12px; min-width: 0; }
+.compare-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compare-plans svg { width: 100%; height: auto; background: var(--canvas); border: 1px solid var(--line); border-radius: 6px; }
+@media (max-width: 900px) { .detail-grid, .compare-plans { grid-template-columns: minmax(0, 1fr); } }

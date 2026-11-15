@@ -15,6 +15,8 @@ import {
   dragDelta, alignmentGuides, active, resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS,
   readGroupConfig, calculateGroup, applyGroupPreview, groupCommandName, newSpatialWarnings,
 } from '../../src/warehouse/commands.js';
+import { saveSnapshot, restoreSnapshot, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from '../../src/warehouse/records.js';
+import { confirmPhysical, PHYSICAL_COMMAND } from '../../src/warehouse/rackinfo.js';
 
 // 기준본 대화상자 칸 ID → 재구축 설정 이름
 const GROUP_FIELDS = { mAlignRef: 'reference', mReferenceLine: 'line', mSpaceMode: 'spacing', mGap: 'gap', mAnchor: 'anchor', mOrder: 'order', mCustomOrder: 'custom', mMoveX: 'dx', mMoveY: 'dy', mRotateAngle: 'angle', mReverse: 'reverse' };
@@ -89,6 +91,16 @@ function runCase(c) {
       if (newSpatialWarnings(p, preview.before, preview.layout, preview.targetIds).length && !allow) continue;
       const r = applyCommand(p, applyGroupPreview(preview), { command: groupCommandName(preview.config.action), selection: [...selected], nextId, now, overrideAllow: allow });
       p = r.project;
+    }
+    if (step.op === 'snapshot-save') {
+      cmd(saveSnapshot({ id: nextId(), date: step.date, name: step.name, recordedAt: now() }), SAVE_SNAPSHOT_COMMAND);
+    } else if (step.op === 'snapshot-restore') {
+      const r = applyCommand(p, restoreSnapshot(p.layoutSnapshots.at(-1).id), { command: RESTORE_SNAPSHOT_COMMAND, selection: [...selected], nextId, now, resetCamera: true });
+      p = r.project;
+      if (r.ok) selected = new Set();
+    } else if (step.op === 'physical') {
+      const id = [...selected][0];
+      cmd(confirmPhysical(id, now(), nextId()), PHYSICAL_COMMAND);
     }
     // 화면은 지워진 객체를 선택에서 뺀다
     const ids = new Set(active(p).objects.map((o) => o.id));

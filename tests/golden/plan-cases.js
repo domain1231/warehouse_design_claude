@@ -29,3 +29,26 @@ export const listCases = [
   { name: '랙 종류 중량랙·검색 72', type: '중량랙', rackSearch: '72' },
   { name: '빈 랙 필터(해당 없음)', load: 'empty' },
 ];
+
+// 랙 상세·재고 기록 대조용 가상 자료(Phase 4b). AFTER 4번째 랙에 Excel 선반 계층을 붙이고 재고 기록 3건을 넣는다.
+export function detailFixture(rackId, otherRackId) {
+  const item = (shelf, pos, code, name, shelfHeight, materialHeight, row) => ({ rowNo: row, location: `7F-A-1-${shelf}-${pos}`, position: pos, itemCode: code, itemName: name, specification: 'SYN', reorderPoint: 10, maxStock: 50, averageInbound3M: 12.5, shelfLevel: shelf, mixedItemCount: 1, rackWidth: 800, rackDepth: 1850, rackHeight: 2000, shelfHeight, materialHeight, heightUtilization: null, rackUtilizationSource: '', sourceUsedArea: null, sourceRemainingSpace: '', note: '', sourceRow: row + 1 });
+  return {
+    excel: { key: '7F-A-1', building: 'SYN', floor: '7', column: 'A', rackNumber: 1, sourceFile: 'synthetic.xlsx', asOfDate: '2026-10-31', shelves: [
+      { level: 1, items: [item(1, 2, 'P-002', '가상 부품 둘', 400, 380, 3), item(1, 1, 'P-001', '가상 부품 하나', 400, 120, 2)] },
+      { level: 2, items: [item(2, 1, 'B-100', '박스 자재', 350, 400, 4)] },
+      { level: 3, items: [], emptyConfirmed: true },
+      { level: 4, items: [] },
+    ] },
+    inventory: [
+      { date: '2026-10-01', rackId, capacity: 100, quantity: 40, unit: 'BOX', source: '가상 기록', scenario: 'after' },
+      { date: '2026-10-05', rackId: otherRackId, capacity: null, quantity: 5, unit: 'BOX', source: '가상 기록', scenario: 'after' },
+      { date: '2026-09-30', rackId, capacity: 80, quantity: null, unit: 'BOX', source: '이전 버전', scenario: 'legacy' },
+    ],
+  };
+}
+export const detailViews = [
+  { name: '전체 선반(아래→위)', shelfOrder: 'bottom', info: { shelf: '', item: null, search: '' } },
+  { name: '위→아래·검색 P-00', shelfOrder: 'top', info: { shelf: '', item: null, search: 'p-00' } },
+  { name: '2번 선반·자재 선택', shelfOrder: 'bottom', info: { shelf: '2', item: '7F-A-1-2-1', search: '' } },
+];

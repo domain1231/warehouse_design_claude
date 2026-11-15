@@ -17,8 +17,10 @@ if (sha256 !== meta.sha256) failures.push('build-metadata.json의 해시가 실�
 const externalRef = /<(script|link|img|iframe|source)\b[^>]*\b(src|href)\s*=\s*["']?(?!data:|blob:|#)/i;
 if (externalRef.test(html)) failures.push('외부 파일 참조(src/href)가 있습니다.');
 if (/\bimport\s*\(|\bimportScripts\s*\(/.test(html)) failures.push('동적 import 또는 importScripts가 있습니다.');
+// XML 이름공간 식별자는 네트워크 요청이 아니므로 허용한다(내려받는 SVG 파일에 필요, D-016).
+const NAMESPACES = new Set(['http://www.w3.org/2000/svg']);
 for (const match of html.matchAll(/https?:\/\/[^\s"'<>)]+/g)) {
-  failures.push(`네트워크 URL이 포함되어 있습니다: ${match[0]}`);
+  if (!NAMESPACES.has(match[0])) failures.push(`네트워크 URL이 포함되어 있습니다: ${match[0]}`);
 }
 
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);

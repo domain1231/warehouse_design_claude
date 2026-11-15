@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
-import { cameraCases, listCases } from '../tests/golden/plan-cases.js';
+import { cameraCases, listCases, detailFixture, detailViews } from '../tests/golden/plan-cases.js';
 
 const baseline = process.env.BASELINE_REPO;
 if (!baseline) {
@@ -28,7 +28,8 @@ page.on('pageerror', (e) => errors.push(String(e)));
 await page.goto(pathToFileURL(path.join(baseline, 'dist', stem + '.html')).href);
 await page.waitForSelector('#vStorage', { state: 'visible' });
 
-const out = await page.evaluate(({ text, cases, listCases }) => {
+const out = await page.evaluate(({ text, cases, listCases, fixtureSrc, views }) => {
+  const makeFixture = new Function('return ' + fixtureSrc)();
   const load = () => {
     P = JSON.parse(text);
     M.ensure(P);
@@ -81,8 +82,32 @@ const out = await page.evaluate(({ text, cases, listCases }) => {
     const dim = [...host2.querySelectorAll(':scope > g[data-id]')].filter((g) => g.getAttribute('opacity') !== '1').map((g) => g.dataset.id);
     return { name: c.name, ids: [...$('rackList').querySelectorAll('[data-rack]')].map((e) => e.dataset.rack), texts: [...$('rackList').querySelectorAll('[data-rack]')].map((e) => e.textContent), dim };
   });
-  return { camera, scene: { selected: sceneSelected, shapes, overlays }, panels: { stats, legendText, lists } };
-}, { text: projectText, cases: cameraCases, listCases });
+  // 랙 상세·재고 기록(Phase 4b)
+  load();
+  const rk = P.scenarios.after.objects.filter((o) => o.kind === 'rack');
+  const fx = makeFixture(rk[3].id, rk[4].id);
+  rk[3].excel = fx.excel;
+  P.inventoryHistory = fx.inventory;
+  validateProject(P);
+  renderAll();
+  S.openInfo(rk[3].id);
+  const svgs = views.map((v) => {
+    P.rackInfographic.shelfOrder = v.shelfOrder;
+    S.info = { rackId: rk[3].id, ...v.info };
+    S.renderInfo();
+    return { name: v.name, svg: S.infoSvg(), detail: [...$('sInfoDetail').querySelectorAll('dt')].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]) };
+  });
+  const summary = [...$('sInfoSummary').children].map((e) => e.textContent);
+  $('sInfoDialog').close();
+  const inventory = ['current', 'all', 'legacy'].map((scope) => {
+    $('bInventoryQuery').value = '';
+    $('bInventoryDate').value = '';
+    $('rInventoryScope').value = scope;
+    B.renderInventory();
+    return { scope, rows: [...$('bInventoryRows').querySelectorAll('tr')].slice(1).map((tr) => [...tr.children].map((td) => td.textContent)) };
+  });
+  return { camera, scene: { selected: sceneSelected, shapes, overlays }, panels: { stats, legendText, lists }, details: { rackIndex: 3, svgs, summary, inventory } };
+}, { text: projectText, cases: cameraCases, listCases, fixtureSrc: detailFixture.toString(), views: detailViews });
 await browser.close();
 if (errors.length) {
   console.error('page errors', errors);

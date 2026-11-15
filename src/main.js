@@ -13,6 +13,10 @@ import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, 
 import { renderInspector } from './ui/inspector.js';
 import { createGroupDialog } from './ui/group-dialog.js';
 import { createPanels } from './ui/panels.js';
+import { createRackDetail } from './ui/rack-detail.js';
+import { createRecordsPanel } from './ui/records-panel.js';
+import { confirmPhysical, PHYSICAL_COMMAND } from './warehouse/rackinfo.js';
+import { saveSnapshot, restoreSnapshot, SAVE_SNAPSHOT_COMMAND, RESTORE_SNAPSHOT_COMMAND } from './warehouse/records.js';
 import { resized, applyResize, RESIZE_COMMAND, HANDLE_DIRECTIONS, newSpatialWarnings } from './warehouse/commands.js';
 import { OBJECT_TYPES } from './core/project.js';
 import { GEOMETRY_EPS_M as EPS, SNAP_STEPS_M } from './geometry/tolerance.js';
@@ -53,8 +57,8 @@ function el(tag, attrs = {}, text) {
 }
 const button = (testid, text, attrs = {}) => el('button', { type: 'button', testid, ...attrs }, text);
 
-function download(name, text) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+function download(name, data, type = 'application/json') {
+  const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type }));
   const a = el('a', { href: url, download: name });
   document.body.append(a);
   a.click();
@@ -186,7 +190,10 @@ function renderShell(root) {
   const [statsBox, statsBody] = section('배치 통계', 'stats-section');
   const [warnBox, warnBody] = section('공간 경고', 'warnings-section');
   const [listBox, listBody] = section('랙 목록', 'racklist-section');
-  right.append(el('h2', {}, '선택'), selStatus, selList, selWarn, inspector, statsBox, warnBox, listBox, el('h2', {}, '요약'), summary, note);
+  const [invBox, invBody] = section('재고 기록', 'inventory-section', false);
+  const [snapBox, snapBody] = section('배치 이력', 'snapshots-section', false);
+  const detailBtn = button('open-detail', '▤ 랙 상세(더블클릭)');
+  right.append(el('h2', {}, '선택'), selStatus, selList, detailBtn, selWarn, inspector, statsBox, warnBox, listBox, invBox, snapBox, el('h2', {}, '요약'), summary, note);
 
   const main = el('div', { class: 'workspace' });
   main.append(left, canvasWrap, right);
@@ -197,7 +204,7 @@ function renderShell(root) {
     name, status, detail, notice, saveBtn, overwriteBtn, replaceBtn, undoBtn, redoBtn, exportBtn, summary,
     toolSelect, toolPan, toolHelp, zoomOut, zoomIn, zoomLabel, fit, zoom50, zoom200, focus, centerLock,
     wheelSelect, wheelReset, wheelStatus, canvasWrap, plan, hint, selStatus, selList, selWarn,
-    scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, alignXBtn, alignYBtn, distributeBtn, distributeGap,
+    scenBefore, scenAfter, lockBtn, leftToggle, rightToggle, main, statsBody, warnBody, listBody, legendBox, invBody, snapBody, detailBtn, alignXBtn, alignYBtn, distributeBtn, distributeGap,
     toolButtons, rackType, newWidth, newDepth, newHeight, newUnit, rotateBtn, duplicateBtn, deleteBtn, allowWarnings, snapOn, snapStep, keyStep, inspector, toast,
   };
 }
@@ -231,6 +238,26 @@ async function start() {
       if (box) commitView(focusBox(view, box, W(), size()));
     },
     onView: (v) => pref({ panels: { view: v } }),
+  });
+  const rackDetail = createRackDetail({
+    getProject: () => project(),
+    saveOrder: (order) => pref({ rackInfographic: { shelfOrder: order } }),
+    confirmPhysical: (id) => command(PHYSICAL_COMMAND, confirmPhysical(id, new Date().toISOString(), session.nextId()), PHYSICAL_COMMAND).then(() => rackDetail.refresh()),
+    download,
+    toast: (t) => showToast(t),
+  });
+  const records = createRecordsPanel({ inventory: ui.invBody, layouts: ui.snapBody }, {
+    getProject: () => project(),
+    today: () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
+    saveSnapshot: (date, name) => command('현재 배치 기록', saveSnapshot({ id: session.nextId(), date, name, recordedAt: new Date().toISOString() }), SAVE_SNAPSHOT_COMMAND),
+    restoreSnapshot: async (id) => {
+      const r = await run(RESTORE_SNAPSHOT_COMMAND, (p, ctx) => applyCommand(p, restoreSnapshot(id), { command: RESTORE_SNAPSHOT_COMMAND, selection: [...selected], resetCamera: true, ...ctx }));
+      if (r?.ok) {
+        commitSelection(new Set());
+        showToast('배치를 복원했습니다. 현재 수량·자재 연결과 날짜별 이력은 유지됩니다.');
+      }
+    },
+    toast: (t) => showToast(t),
   });
   const groupDialog = createGroupDialog({
     getProject: () => project(),
@@ -273,7 +300,11 @@ async function start() {
     sceneWarnings = r.warnings;
     ui.plan.innerHTML = r.svg;
     renderSelection();
-    if (!preview) panels.render({ layout: l, project: p, selected, warnings: r.warnings });
+    if (!preview) {
+      panels.render({ layout: l, project: p, selected, warnings: r.warnings });
+      records.render();
+      rackDetail.refresh();
+    }
   }
 
   function renderSelection() {
@@ -288,6 +319,7 @@ async function start() {
     const locked = isLocked(project());
     for (const b of [ui.rotateBtn, ui.duplicateBtn, ui.deleteBtn]) b.disabled = !os.length || locked;
     const rackCount = os.filter((o) => o.kind === 'rack').length;
+    ui.detailBtn.disabled = !(os.length === 1 && os[0].kind === 'rack');
     for (const b of [ui.alignXBtn, ui.alignYBtn, ui.distributeBtn]) b.disabled = rackCount < 2 || locked;
     if (!preview) renderInspector(ui.inspector, { objects: os, settings: project().settings, locked, onChange: editField, onLock: (id, v) => command('위치 잠금', setPositionLock(id, v)) });
   }
@@ -454,6 +486,7 @@ async function start() {
   const W = () => layout().warehouse;
   for (const b of ui.toolButtons) b.addEventListener('click', () => setTool(b.dataset.tool));
   ui.rotateBtn.addEventListener('click', () => rotateSelected());
+  ui.detailBtn.addEventListener('click', () => rackDetail.open([...selected][0]));
   ui.alignXBtn.addEventListener('click', () => groupDialog.open('left'));
   ui.alignYBtn.addEventListener('click', () => groupDialog.open('top'));
   ui.distributeBtn.addEventListener('click', () => groupDialog.open('spaceX', { gap: ui.distributeGap.value }));
@@ -718,6 +751,20 @@ async function start() {
       commitSelection(selected);
     }
   };
+  ui.plan.addEventListener('dblclick', (e) => {
+    if (e.target.closest('[data-resize]') || gesture || tool !== 'select' || !project()) return;
+    // 포인터 캡처 때문에 대상이 SVG 전체일 수 있어 기준본처럼 점이 들어간 랙(회전 반영)을 찾는다.
+    const id = e.target.closest('[data-id]')?.dataset.id, p = toWorld(e.clientX, e.clientY);
+    const inside = (o) => {
+      const a = (o.rotation * Math.PI) / 180, c = Math.cos(a), si = Math.sin(a), dx = p.x - o.x - o.width / 2, dy = p.y - o.y - o.depth / 2;
+      return Math.abs(dx * c + dy * si) <= o.width / 2 && Math.abs(-dx * si + dy * c) <= o.depth / 2;
+    };
+    const o = layout().objects.slice().reverse().find((x) => x.kind === 'rack' && (id ? x.id === id : inside(x)));
+    if (!o) return;
+    e.preventDefault();
+    commitSelection(new Set([o.id]));
+    rackDetail.open(o.id);
+  });
   ui.plan.addEventListener('pointerup', (e) => finish(e, false));
   ui.plan.addEventListener('pointercancel', (e) => finish(e, true));
   document.addEventListener('keydown', (e) => {

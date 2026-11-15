@@ -25,6 +25,7 @@ await context.setOffline(true);
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
+page.on('dialog', (d) => d.accept()); // 배치 복원·실제 설비 확인 confirm
 await page.goto(pathToFileURL(path.join(baseline, 'dist', stem + '.html')).href);
 await page.waitForSelector('#vStorage', { state: 'visible' });
 
@@ -97,6 +98,15 @@ const raw = await page.evaluate(({ text, cases }) => cases.map((c) => {
       if (step.allow !== undefined) $('mPreviewAllow').checked = step.allow;
       M.applyEdit();
       if ($('mEditDialog').open) $('mEditDialog').close();
+    } else if (step.op === 'snapshot-save') {
+      $('bLayoutDate').value = step.date;
+      $('bLayoutName').value = step.name;
+      $('bSaveLayout').click();
+    } else if (step.op === 'snapshot-restore') {
+      B.restoreSnapshot(P.layoutSnapshots.at(-1).id);
+    } else if (step.op === 'physical') {
+      renderInspector();
+      $('sPhysical').click();
     }
   }
   return { initial, final: JSON.parse(JSON.stringify(P)), selected: [...selected] };
