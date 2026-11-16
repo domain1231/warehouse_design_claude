@@ -4,5 +4,6 @@
  "all missing  › h1 › Warehouse Studio 창고 배치 설계 v#.#",
  "all missing #toggleInfo",
  "all missing #toggleTools",
- "all missing 선택 객체 # › button › 선택 정보 닫기 ×"
+ "all missing 선택 객체 # › button › 선택 정보 닫기 ×",
+ "all text #vLabelMode = 랙 번호만 | 랙 번호 + 실제 적재율 | 상세 정보 | 최소 표시 · 선택 랙"
 ]

@@ -508,6 +508,8 @@ export function validateProject(p) {
     for (const c of Object.values(map)) if (!isHex(c)) fail('객체 색상 형식 오류');
   }
   const labels = p.rackLabels;
+  // D-039 라벨 비율 기준: 'height'일 때만 저장하는 재구축 확장 필드(없으면 재고 기준, v2.4.1은 무시)
+  if (labels.ratioSource !== undefined && labels.ratioSource !== 'height') fail('랙 라벨 설정 오류');
   if (labels.orientation !== 'screen-horizontal' || !['rack-code', 'occupancy', 'detail', 'minimal'].includes(labels.displayMode) || labels.autoFontSize !== true || labels.externalLabelFallback !== true) fail('랙 라벨 설정 오류');
   if (!Number.isSafeInteger(p.persistence.revision) || p.persistence.revision < 0 || (p.persistence.lastSavedAt !== null && !parsesAsTime(p.persistence.lastSavedAt))) fail('저장 메타데이터 오류');
 
