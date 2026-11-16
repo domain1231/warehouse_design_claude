@@ -2,6 +2,7 @@
 // 원본 규격과 설계 규격을 섞지 않는다. 수량·현재고 정보가 없으므로 MAX Stock·평균 입고를 현재고로 쓰지 않는다.
 import { EXCEL_FIELD_LABELS as FIELDS } from '../warehouse/rackinfo.js';
 import { formatNumber as fmt } from '../core/format.js';
+import { parseLocationCode, legacyColumn } from '../core/location.js';
 
 export { FIELDS };
 const TEXT_FIELDS = new Set(['location', 'itemCode', 'itemName', 'specification', 'note']);
@@ -15,12 +16,10 @@ export const normHeader = (v) => String(v ?? '').normalize('NFKC').toLowerCase()
 export const excelNumber = (v) => (v === null || v === undefined || String(v).trim() === '' ? null : typeof v === 'boolean' ? NaN : Number(String(v).replace(/,/g, '').trim()));
 
 /** 로케이션 코드 '7F-A-1-2-3'(층-열-랙-선반-위치). 공백 제거·대문자. 형식이 틀리면 null. */
+// D-049: 형식 해석은 core/location.js 공용 구현을 쓴다.
+export { romanToNumber } from '../core/location.js';
 export function parseExcelLocation(v) {
-  const m = String(v ?? '').replace(/\s/g, '').toUpperCase().match(/^(\d+)F-([A-Z]+)-(\d+)-(\d+)-(\d+)$/);
-  if (!m) return null;
-  const n = [m[1], m[3], m[4], m[5]].map(Number);
-  if (n.some((x) => !Number.isSafeInteger(x) || x < 1 || x > 1e5)) return null;
-  return { floor: n[0] + 'F', floorNumber: n[0], column: m[2], rackNumber: n[1], shelfNumber: n[2], position: n[3], key: `${n[0]}F-${m[2]}-${n[1]}`, shelfKey: `${n[0]}F-${m[2]}-${n[1]}-${n[2]}`, location: `${n[0]}F-${m[2]}-${n[1]}-${n[2]}-${n[3]}` };
+  return parseLocationCode(v);
 }
 
 /** 머리글 행 찾기: 앞 40행 중 필드 이름과 가장 많이 일치하는 행(0부터). 일치가 없으면 7(8행). */
@@ -156,6 +155,9 @@ export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => un
   if (cell('D4') > 1) add('warning', 4, '원본 면적 사용률 100% 초과 · 직접 재계산');
   if (cell('E4') < 0) add('warning', 4, '원본 통로 비중 음수 · 실제 통로로 사용하지 않음');
   if (rows.length && rows.every((r) => String(r.rackUtilizationSource) === '0')) add('warning', null, '원본 랙 용적률은 모두 0 · 실제 적재율로 사용하지 않음');
+  // D-049: 숫자로 시작하는 열 이름(예: 2A)은 재구축만 읽는다. 이 랙을 담은 프로젝트 JSON은 v2.4.1에서 열 수 없다.
+  const modern = [...new Set([...racks.values()].filter((r) => !r.invalid && !legacyColumn(r.column)).map((r) => r.column))];
+  if (modern.length) add('warning', null, `열 이름 ${modern.slice(0, 8).join('·')}${modern.length > 8 ? ' …' : ''}은(는) v2.4.1이 읽지 못하는 형식입니다. 이 랙을 적용한 프로젝트 JSON은 v2.4.1에서 열 수 없습니다.`);
   add('warning', null, '현재고·수량 단위·실제 평면 좌표가 없습니다. MAX Stock/평균 입고는 현재고로 대입하지 않습니다.');
   add('warning', null, '자동 배치 위치는 사용자 규칙에 따른 초기 설계안이며 실측 관계는 미확인입니다.');
   return { rows, racks: [...racks.values()].filter((r) => !r.invalid), issues, duplicates, dataRows, referenceArea, area, dimensionConflicts };
