@@ -44,8 +44,15 @@ export function readExcelConfig(raw) {
   return {
     ...c, target: raw.target, missingPolicy: raw.missingPolicy, specPolicy: raw.specPolicy,
     // 92 W.config: 열 줄바꿈·외부 방향, 열 우선이면 구조물 항상 유지
-    autoPlacement: { mode: raw.autoMode, keepManual: !!raw.keepManual, allowRotation: !!raw.allowRotation, allowWarnings: !!raw.allowWarnings, preserveStructures: raw.autoMode === 'column' || !!raw.preserveStructures, allowWrap: !!raw.allowWrap, externalDirection: 'right' },
+    autoPlacement: { mode: raw.autoMode === 'fixed' ? 'order' : raw.autoMode, ...(raw.autoMode === 'fixed' ? { fixedColumns: fixedColumnsOf(raw) } : {}), keepManual: !!raw.keepManual, allowRotation: !!raw.allowRotation, allowWarnings: !!raw.allowWarnings, preserveStructures: raw.autoMode === 'column' || !!raw.preserveStructures, allowWrap: !!raw.allowWrap, externalDirection: 'right' },
   };
+}
+
+// D-041: 로케이션 열 고정은 v2.4.1 호환을 위해 저장 모드 'order' + 확장 필드 fixedColumns로 표현한다.
+function fixedColumnsOf(raw) {
+  const pairing = raw.fixedPairing ?? 'all', spacing = raw.fixedSpacing ?? 'max';
+  if (!['all', 'pairs'].includes(pairing) || !['max', 'target'].includes(spacing)) throw new Error('로케이션 열 고정 설정 오류');
+  return { pairing, spacing };
 }
 
 /**
@@ -63,7 +70,7 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
   const dot = (p, u) => p[0] * u[0] + p[1] * u[1];
   const out = [];
   let maxEast = null;
-  for (const col of order) {
+  for (const [ci, col] of order.entries()) {
     const cfg = c.perColumnSettings[col] || {}, first = cfg.first || c.firstRackPosition, rotation = cfg.rotation ?? c.rotation;
     const D = S.map((v) => v * (first === 'north' ? 1 : -1));
     const group = racks.filter((r) => r.column === col).sort((a, b) => a.rackNumber - b.rackNumber);
@@ -92,11 +99,11 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
     const relMin = Math.min(...relative.flatMap((o) => polygon(o).map((p) => dot(p, E))));
     let shift = [c.originX, c.originY];
     if (maxEast !== null) {
-      const delta = maxEast + c.columnGap - relMin - dot(shift, E);
+      const delta = maxEast + (c.columnGaps ? c.columnGaps[ci] : c.columnGap) - relMin - dot(shift, E); // D-041 열별 간격
       shift = [shift[0] + E[0] * delta, shift[1] + E[1] * delta];
     }
-    if (cfg.x !== undefined) shift[0] = cfg.x;
-    if (cfg.y !== undefined) shift[1] = cfg.y;
+    if (cfg.x !== undefined && !c.fixedAlign) shift[0] = cfg.x;
+    if (cfg.y !== undefined && !c.fixedAlign) shift[1] = cfg.y;
     for (const o of relative) {
       o.x += shift[0];
       o.y += shift[1];
@@ -104,7 +111,27 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
     }
     maxEast = Math.max(maxEast ?? -Infinity, ...relative.flatMap((o) => polygon(o).map((p) => dot(p, E))));
   }
+  if (c.fixedAlign) alignToWalls(out, c, E, S, dot);
   return out;
+}
+
+// D-041 로케이션 열 고정: 첫 열을 진행 방향 시작 벽에서 벽 이격만큼 띄우고, 각 열의 첫 랙을 시작 벽(북/남)에 붙인다.
+function alignToWalls(out, c, E, S, dot) {
+  if (!out.length) return;
+  const corners = [[0, 0], [c.width, 0], [c.width, c.depth], [0, c.depth]];
+  const lo = (u) => Math.min(...corners.map((p) => dot(p, u))), hi = (u) => Math.max(...corners.map((p) => dot(p, u)));
+  const pts = (list) => list.flatMap((o) => polygon(o));
+  const dE = lo(E) + c.wallGap - Math.min(...pts(out).map((p) => dot(p, E)));
+  const byCol = new Map();
+  for (const o of out) byCol.set(o.excel.column, [...(byCol.get(o.excel.column) ?? []), o]);
+  for (const [col, list] of byCol) {
+    const first = (c.perColumnSettings[col] || {}).first || c.firstRackPosition, s = pts(list).map((p) => dot(p, S));
+    const dS = first === 'north' ? lo(S) + c.wallGap - Math.min(...s) : hi(S) - c.wallGap - Math.max(...s);
+    for (const o of list) {
+      o.x += E[0] * dE + S[0] * dS;
+      o.y += E[1] * dE + S[1] * dS;
+    }
+  }
 }
 
 /**

@@ -284,6 +284,7 @@ export function validateLayout(l) {
     const r = l.autoPlacementRules;
     if (!PLACEMENT_MODES.includes(r.mode)) fail('배치 기준 모드 오류');
     for (const n of ['wallGap', 'rackGap', 'columnGap', 'aisleTarget']) finite(r[n], n, 0, 50);
+    if (r.fixedColumns !== undefined) checkFixedColumns(r.fixedColumns, true);
   }
   for (const o of l.objects) if (o.placementMeta !== undefined && !validPlacementMeta(o.placementMeta)) fail('랙 위치 보호 정보 오류');
   // 92
@@ -293,6 +294,12 @@ export function validateLayout(l) {
     validateColumnOptions(r.columnOptions);
   }
   return l;
+}
+
+// D-041 로케이션 열 고정(확장 필드, v2.4.1은 무시). 저장 모드는 'order'.
+function checkFixedColumns(f, withAisle) {
+  if (!f || typeof f !== 'object' || !['all', 'pairs'].includes(f.pairing) || !['max', 'target'].includes(f.spacing)) fail('로케이션 열 고정 설정 오류');
+  if (withAisle && f.aisle !== undefined) finite(f.aisle, 'aisle', 0, 50);
 }
 
 function checkExcelHierarchy(e, counter) { // 40 checkExcel

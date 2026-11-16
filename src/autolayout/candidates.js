@@ -5,7 +5,9 @@ import { bounds } from '../geometry/polygons.js';
 import { overlaps, gap } from '../geometry/collision.js';
 import { GEOMETRY_EPS_M as EPS, roundMm } from '../geometry/tolerance.js';
 import { scanLayout } from '../warehouse/constraints.js';
-import { buildProposal } from '../excel/proposal.js';
+import { buildProposal, generateRacks } from '../excel/proposal.js';
+import { createIdGenerator } from '../core/ids.js';
+import { axesOf, isAxisAligned, spans, columnProfile, planFixed, gapsFor, BACK_GAP } from './fixed-columns.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { buildColumnCandidates, columnBase } from './column.js';
 
@@ -163,6 +165,7 @@ export const ROTATE_STRATEGY = ['90° 회전 허용', 'rotate'];
  */
 export function buildCandidates(project, analysis, c, opts) {
   if (c.autoPlacement.mode === 'column') return buildColumnCandidates(project, analysis, c, opts);
+  if (c.autoPlacement.fixedColumns) return buildFixedCandidates(project, analysis, c, opts);
   const proposal = buildProposal(project, analysis, c, opts), old = project.scenarios[c.target];
   const candidates = [makeCandidate('기존 배치 규칙', proposal.layout, c, old, project)];
   for (const [name, s] of [...STRATEGIES, ...(c.autoPlacement.allowRotation ? [ROTATE_STRATEGY] : [])]) candidates.push(makeCandidate(name, pack(proposal.layout, c, s, { project }), c, old, project));
@@ -196,7 +199,33 @@ export function reoptimize(prior, c, scope, { project, chosen = new Set() }) {
   return { candidate: next, worse, note };
 }
 
+/**
+ * D-041 로케이션 열 고정: 후보 탐색 없이 계산된 간격으로 한 가지 배치만 만든다(열·번호 순서 불변).
+ * 1) 간격 0으로 시험 생성해 열 두께·길이를 잰다 2) 창고 치수로 간격 계산 3) 그 간격으로 생성하고 벽에 맞춘다.
+ */
+export function fixedConfig(analysis, c, project) {
+  if (!isAxisAligned(c.northRotation)) throw new Error('로케이션 열 고정 배치는 북쪽 방향 0·90·180·270°에서만 사용할 수 있습니다.');
+  const { pairing, spacing } = c.autoPlacement.fixedColumns, ax = axesOf(c.northRotation, c.columnDirection);
+  const probe = generateRacks(analysis, { ...c, columnGap: 0, columnGaps: null, fixedAlign: false }, { nextId: createIdGenerator({ seed: 'fixed-probe' }) });
+  const sp = spans(c.width, c.depth, ax);
+  const plan = planFixed(columnProfile(probe, ax), { spanE: sp.E[1] - sp.E[0], spanS: sp.S[1] - sp.S[0], wallGap: c.wallGap, aisleTarget: c.aisleTarget, backGap: Math.max(BACK_GAP, project?.settings?.minGap || 0) });
+  const { gaps, aisle } = gapsFor(plan, pairing, spacing);
+  return { plan, aisle, config: { ...c, columnGaps: gaps, fixedAlign: true }, minGap: Math.min(...gaps.slice(1), aisle) };
+}
+
+export function buildFixedCandidates(project, analysis, c, opts) {
+  const f = fixedConfig(analysis, c, project), old = project.scenarios[c.target];
+  const proposal = buildProposal(project, analysis, f.config, opts);
+  const { pairing, spacing } = c.autoPlacement.fixedColumns;
+  // 실제 쓴 가장 좁은 열 간격(등 맞댐이면 등 간격)을 설계 간격으로 기록한다. 기준본 간격 검사는 랙 간격을 모든 랙 쌍에 적용하므로
+  // 등 맞댐이면 랙 간격 기록값도 등 간격 이하로 둔다(같은 열 안 실제 간격은 사용자 값 그대로 생성). 통로 목표는 사용자 값 그대로.
+  proposal.layout.autoPlacementRules = { ...proposal.layout.autoPlacementRules, columnGap: Math.max(0, f.minGap), ...(pairing === 'pairs' ? { rackGap: Math.min(c.rackGap, f.plan.backGap) } : {}), fixedColumns: { pairing, spacing, aisle: f.aisle } };
+  const name = `로케이션 열 고정 · ${pairing === 'pairs' ? '등 맞댐 쌍' : '모든 열 사이 통로'} · ${fmt(f.aisle, 3)}m`;
+  return { proposal, candidates: [makeCandidate(name, proposal.layout, c, old, project)], choice: 0, fixed: f.plan };
+}
+
 /** 기준본 W.base(92 래퍼 포함): 열 우선이면 columnBase, 아니면 buildProposal. */
 export function baseProposal(project, analysis, c, opts) {
+  if (c.autoPlacement.fixedColumns) return buildFixedCandidates(project, analysis, c, opts).proposal;
   return c.autoPlacement.mode === 'column' ? columnBase(project, analysis, c, opts) : buildProposal(project, analysis, c, opts);
 }
