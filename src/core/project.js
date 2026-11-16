@@ -299,6 +299,11 @@ export function validateLayout(l) {
 // D-041 로케이션 열 고정(확장 필드, v2.4.1은 무시). 저장 모드는 'order'.
 function checkFixedColumns(f, withAisle) {
   if (!f || typeof f !== 'object' || !['all', 'pairs'].includes(f.pairing) || !['max', 'target'].includes(f.spacing)) fail('로케이션 열 고정 설정 오류');
+  // 2단계 확장(선택): 축·한 줄 열 수·시작 방향·실제 적용 형태
+  if (f.axis !== undefined && !['column', 'row', 'auto'].includes(f.axis)) fail('로케이션 열 고정 설정 오류');
+  if (f.perLine !== undefined && ![1, 2].includes(f.perLine)) fail('로케이션 열 고정 설정 오류');
+  if (f.start !== undefined && !['config', 'zigzag'].includes(f.start)) fail('로케이션 열 고정 설정 오류');
+  if (f.applied !== undefined && (!f.applied || !['column', 'row'].includes(f.applied.axis) || ![1, 2].includes(f.applied.perLine) || !['all', 'pairs'].includes(f.applied.pairing))) fail('로케이션 열 고정 설정 오류');
   if (withAisle && f.aisle !== undefined) finite(f.aisle, 'aisle', 0, 50);
 }
 

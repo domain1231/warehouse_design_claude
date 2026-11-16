@@ -50,9 +50,9 @@ export function readExcelConfig(raw) {
 
 // D-041: 로케이션 열 고정은 v2.4.1 호환을 위해 저장 모드 'order' + 확장 필드 fixedColumns로 표현한다.
 function fixedColumnsOf(raw) {
-  const pairing = raw.fixedPairing ?? 'all', spacing = raw.fixedSpacing ?? 'max';
-  if (!['all', 'pairs'].includes(pairing) || !['max', 'target'].includes(spacing)) throw new Error('로케이션 열 고정 설정 오류');
-  return { pairing, spacing };
+  const f = { pairing: raw.fixedPairing ?? 'all', spacing: raw.fixedSpacing ?? 'max', axis: raw.fixedAxis ?? 'column', perLine: Number(raw.fixedPerLine ?? 1), start: raw.fixedStart ?? 'config' };
+  if (!['all', 'pairs'].includes(f.pairing) || !['max', 'target'].includes(f.spacing) || !['column', 'row', 'auto'].includes(f.axis) || ![1, 2].includes(f.perLine) || !['config', 'zigzag'].includes(f.start)) throw new Error('로케이션 열 고정 설정 오류');
+  return f;
 }
 
 /**
@@ -66,12 +66,13 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
   const order = c.order ? c.order.toUpperCase().split(/[\s,]+/).filter(Boolean) : columns;
   if (new Set(order).size !== order.length || order.some((k) => !columns.includes(k)) || columns.some((k) => !order.includes(k))) throw new Error('사용자 정의 순서는 등록된 모든 열을 한 번씩 포함해야 합니다.');
   const angle = (c.northRotation * Math.PI) / 180, sgn = c.columnDirection === 'east' ? 1 : -1;
-  const E = [Math.cos(angle) * sgn, Math.sin(angle) * sgn], S = [-Math.sin(angle), Math.cos(angle)];
+  const fx = c.fixedLayout; // D-041: 행 배치는 축과 랙 회전을 바꿔서 넘긴다(도면 북쪽 방향은 그대로)
+  const E = fx?.axes?.E ?? [Math.cos(angle) * sgn, Math.sin(angle) * sgn], S = fx?.axes?.S ?? [-Math.sin(angle), Math.cos(angle)];
   const dot = (p, u) => p[0] * u[0] + p[1] * u[1];
   const out = [];
   let maxEast = null;
-  for (const [ci, col] of order.entries()) {
-    const cfg = c.perColumnSettings[col] || {}, first = cfg.first || c.firstRackPosition, rotation = cfg.rotation ?? c.rotation;
+  for (const col of order) {
+    const cfg = c.perColumnSettings[col] || {}, first = fx?.targets?.[col]?.first || cfg.first || c.firstRackPosition, rotation = fx?.rotationOffset ? (((cfg.rotation ?? c.rotation) + fx.rotationOffset) % 360 + 360) % 360 : cfg.rotation ?? c.rotation;
     const D = S.map((v) => v * (first === 'north' ? 1 : -1));
     const group = racks.filter((r) => r.column === col).sort((a, b) => a.rackNumber - b.rackNumber);
     if (c.empty) {
@@ -99,11 +100,11 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
     const relMin = Math.min(...relative.flatMap((o) => polygon(o).map((p) => dot(p, E))));
     let shift = [c.originX, c.originY];
     if (maxEast !== null) {
-      const delta = maxEast + (c.columnGaps ? c.columnGaps[ci] : c.columnGap) - relMin - dot(shift, E); // D-041 열별 간격
+      const delta = maxEast + c.columnGap - relMin - dot(shift, E);
       shift = [shift[0] + E[0] * delta, shift[1] + E[1] * delta];
     }
-    if (cfg.x !== undefined && !c.fixedAlign) shift[0] = cfg.x;
-    if (cfg.y !== undefined && !c.fixedAlign) shift[1] = cfg.y;
+    if (cfg.x !== undefined && !c.fixedLayout) shift[0] = cfg.x;
+    if (cfg.y !== undefined && !c.fixedLayout) shift[1] = cfg.y;
     for (const o of relative) {
       o.x += shift[0];
       o.y += shift[1];
@@ -111,22 +112,20 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
     }
     maxEast = Math.max(maxEast ?? -Infinity, ...relative.flatMap((o) => polygon(o).map((p) => dot(p, E))));
   }
-  if (c.fixedAlign) alignToWalls(out, c, E, S, dot);
+  if (fx?.targets) placeTargets(out, fx.targets, E, S, dot);
   return out;
 }
 
-// D-041 로케이션 열 고정: 첫 열을 진행 방향 시작 벽에서 벽 이격만큼 띄우고, 각 열의 첫 랙을 시작 벽(북/남)에 붙인다.
-function alignToWalls(out, c, E, S, dot) {
-  if (!out.length) return;
-  const corners = [[0, 0], [c.width, 0], [c.width, c.depth], [0, c.depth]];
-  const lo = (u) => Math.min(...corners.map((p) => dot(p, u))), hi = (u) => Math.max(...corners.map((p) => dot(p, u)));
-  const pts = (list) => list.flatMap((o) => polygon(o));
-  const dE = lo(E) + c.wallGap - Math.min(...pts(out).map((p) => dot(p, E)));
+// D-041 로케이션 열 고정: 계산된 목표 위치로 열을 통째로 옮긴다(열 안 랙 간격·순서 불변).
+// 목표 = 진행 방향 시작 쪽 끝(e)과, 첫 랙 쪽 끝(북쪽 시작이면 sMin, 남쪽 시작이면 sMax).
+function placeTargets(out, targets, E, S, dot) {
   const byCol = new Map();
   for (const o of out) byCol.set(o.excel.column, [...(byCol.get(o.excel.column) ?? []), o]);
   for (const [col, list] of byCol) {
-    const first = (c.perColumnSettings[col] || {}).first || c.firstRackPosition, s = pts(list).map((p) => dot(p, S));
-    const dS = first === 'north' ? lo(S) + c.wallGap - Math.min(...s) : hi(S) - c.wallGap - Math.max(...s);
+    const t = targets[col];
+    if (!t) continue;
+    const pts = list.flatMap((o) => polygon(o)), e = pts.map((p) => dot(p, E)), s = pts.map((p) => dot(p, S));
+    const dE = t.e - Math.min(...e), dS = t.sMin !== undefined ? t.sMin - Math.min(...s) : t.sMax - Math.max(...s);
     for (const o of list) {
       o.x += E[0] * dE + S[0] * dS;
       o.y += E[1] * dE + S[1] * dS;

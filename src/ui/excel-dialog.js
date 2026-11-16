@@ -6,7 +6,7 @@ import { readWorkbook, sheetMatrix, encodeCol } from '../excel/xlsx.js';
 import { FIELDS, detectHeaderRow, autoMap, analyzeSheet } from '../excel/analyze.js';
 import { readExcelConfig } from '../excel/proposal.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
-import { planText } from '../autolayout/fixed-columns.js';
+import { fixedText } from '../autolayout/fixed-columns.js';
 import { buildCandidates, reoptimize, candidateSummary } from '../autolayout/candidates.js';
 import { columnReoptimize, columnSafe, stopText, COLUMN_LIMITS } from '../autolayout/column.js';
 import { unionArea } from '../warehouse/metrics.js';
@@ -162,7 +162,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     const ws = spatialWarnings(pr.layout, p);
     pr.warnings = ws;
     state.proposal = pr;
-    $('[data-fixedplan]').textContent = state.fixedPlan ? planText(state.fixedPlan, c.autoPlacement.fixedColumns.pairing, c.autoPlacement.fixedColumns.spacing).join('\n') : '';
+    $('[data-fixedplan]').textContent = state.fixedPlan ? fixedText(state.fixedPlan).join('\n') : '';
     const key = JSON.stringify([c, cand.name, ws.map((w) => w.text)]);
     if (state.ackKey !== key) {
       $('[data-ack]').checked = false;
