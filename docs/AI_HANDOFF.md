@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.1 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 장애물 회피(D-047) · feature/fixed-obstacles(#51 위에 쌓음)
+- `avoidObstacles`(candidates.js): 생성 랙이 구조물과 겹치면 열 방향으로 밀기. 진단 문구 추가. 화면 요소 추가 없음.
+- `pnpm check`: unit 150, golden 286(todo 2), e2e 97 PASS.
+- 한계: 형태 추천·최대 통로 계산은 구조물 미고려.
+
 ### 2026-11-16 누락 번호 처리(D-046) · feature/fixed-missing-gaps
 - '누락 번호' 선택(당겨 붙임 / 빈자리 비워 둠), 진단에 누락 목록 표시. 단위 검사 `tests/unit/fixed-gaps.test.js`.
 - `pnpm check`: unit 148, golden 286(todo 2), e2e 97 PASS. UI 대조 고정 차이 15건.
