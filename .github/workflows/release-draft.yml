@@ -111,7 +111,6 @@ jobs:
             echo
             echo "---"
             echo "자동 생성 정보(Release Draft 워크플로): main ${COMMIT:0:7} · \`$FILE\` · $BYTES bytes · sha256 \`$SHA\` · \`pnpm check\` PASS(ubuntu-latest)."
-            echo "이 Release는 Draft입니다. 내용 확인 후 사용자가 게시합니다."
           } >> notes.md
 
       - name: Draft Release 생성
@@ -128,4 +127,4 @@ jobs:
           if [ "$PRE" = "true" ]; then ARGS+=(--prerelease); fi
           gh release create "v$VERSION" "dist/$FILE" "${ARGS[@]}"
           echo "### Draft 생성: v$VERSION" >> "$GITHUB_STEP_SUMMARY"
-          echo "Releases에서 확인 후 Publish 하세요." >> "$GITHUB_STEP_SUMMARY"
+          echo "Releases에서 Draft 내용을 확인한 뒤 Publish 하세요. (본문에는 Draft 안내 문구를 넣지 않습니다)" >> "$GITHUB_STEP_SUMMARY"
