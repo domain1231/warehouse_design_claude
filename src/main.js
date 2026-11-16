@@ -12,7 +12,7 @@ import { rackLabelParts, labelStatusText } from './cad/labels.js';
 import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js';
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
 import { pixelsPerMeter } from './cad/camera.js';
-import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, MM_INPUT_MESSAGE, isMmInput, setPositionLock, setLimit, setAspectLock, setAisleField, setReviewMark, LIMIT_COMMAND, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
+import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, mmInputMessage, isMmInput, setPositionLock, setLimit, setAspectLock, setAisleField, setReviewMark, LIMIT_COMMAND, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { setObjectColor, setColorMode, applyThresholdColors, resetColors } from './warehouse/appearance.js';
 import { renderInspector } from './ui/inspector.js';
 import { selectedCsvRows, SELECTED_CSV_NAME } from './warehouse/group-panel.js';
@@ -480,7 +480,7 @@ async function start() {
 
   function editField(id, field, raw, isNumber) {
     if (selected.size === 1 && MM_INPUT_FIELDS.has(field) && !isMmInput(raw)) {
-      showToast(MM_INPUT_MESSAGE);
+      showToast(mmInputMessage(field, raw));
       renderPlan(true);
       return;
     }
@@ -522,13 +522,20 @@ async function start() {
   async function addAt(kind, point) {
     const p = project();
     const add = addObjectAt(p, kind, point, { nextId: session.nextId, rack: { width: Number(ui.newWidth.value), depth: Number(ui.newDepth.value), height: Number(ui.newHeight.value), type: ui.rackType.value, unit: ui.newUnit.value } });
-    if (!add) return;
-    const r = await command('객체 추가', add.mutate);
+    // D-040: 거부 사유와 해결 방법을 알린다(기준본은 창고 밖 클릭을 조용히 무시).
+    if (!add) return showToast(`${OBJECT_NAMES[kind] || '객체'}를 추가하지 않았습니다: 창고 범위 밖입니다. 창고 안쪽을 클릭하세요.`);
+    let res;
+    const r = await run('객체 추가', (q, ctx) => (res = applyCommand(q, add.mutate, { command: COMMAND_DEFAULT, selection: [...selected], ...ctx })));
     if (r?.ok) commitSelection(new Set([add.id]));
+    else if (res?.spatial) showToast(`전체 취소: ${res.reason} · 빈 곳을 다시 클릭하거나, 겹침을 허용하려면 '공간 위반을 경고 후 허용'을 켜세요.`);
   }
   const selectedObjects = () => layout().objects.filter((o) => selected.has(o.id));
+  const OBJECT_NAMES = { rack: '랙', wall: '내부 벽', column: '기둥', door: '출입문', aisle: '통로', blocked: '보관 불가 구역', work: '작업 공간' };
+  const deleteNoun = () => { const k = new Set(selectedObjects().map((o) => o.kind)); return k.size === 1 && k.has('rack') ? '랙' : '객체'; };
   async function deleteSelected() {
     if (!selected.size) return;
+    // D-040: 2개 이상 삭제는 확인 후 진행(1개는 기준본처럼 즉시).
+    if (selected.size >= 2 && !confirm(`${deleteNoun()} ${selected.size}개를 삭제합니다. 자동 백업 후 삭제되며 ↶로 되돌릴 수 있습니다.`)) return;
     const r = await command('객체 삭제', deleteObjects([...selected]));
     if (r?.ok) commitSelection(new Set());
   }
@@ -619,7 +626,12 @@ async function start() {
     const upper = Math.max(60, Math.min(360, pn.panelHeights.upper)), lower = Math.max(80, Math.min(420, pn.panelHeights.lower));
     const fullDock = document.getElementById('bDatebar').getBoundingClientRect().height + 2 * 38 + upper + lower + 20;
     const room = Math.max(700, innerHeight - ws.getBoundingClientRect().top - scrollY - 36);
-    work.style.height = Math.max(room, mainMin + fullDock + 10) + 'px';
+    // D-040: 하단 패널을 닫으면 화면 높이에 맞춘다(페이지 세로 스크롤 없음). 열면 기준본 높이.
+    // 3단 화면(폭 1100px 초과)에서만 적용. 아래 꼬리(footer)는 작업 영역을 따라 움직이므로 높이 계산이 되먹임하지 않는다.
+    const wb = work.getBoundingClientRect(), foot = document.querySelector('body > footer');
+    const tail = foot ? Math.max(0, foot.getBoundingClientRect().bottom - wb.bottom) : 0;
+    const fit = !pn.bottomOpen && innerWidth > 1100;
+    work.style.height = (fit ? Math.max(mainMin, Math.floor(innerHeight - wb.top - scrollY - tail)) : Math.max(room, mainMin + fullDock + 10)) + 'px';
     work.style.gridTemplateRows = pn.bottomOpen ? `minmax(${mainMin}px,1fr) 10px auto` : `minmax(${mainMin}px,1fr)`;
   }
   let workFrame = 0;
@@ -729,7 +741,16 @@ async function start() {
 
   // ── 프로젝트 명령 ──
   ui.name.addEventListener('change', () => guard(() => session.edit('프로젝트 이름 변경', (p) => { p.metadata.name = ui.name.value; })));
-  ui.saveBtn.addEventListener('click', () => guard(() => session.save()));
+  let lastSave = null;
+  ui.saveBtn.addEventListener('click', () => guard(() => (lastSave = session.save())));
+  // D-040: Ctrl+S 결과를 짧게 알린다(저장 버튼과 같은 경로).
+  async function saveByKey() {
+    lastSave = null;
+    ui.saveBtn.click();
+    if (!lastSave) return showToast('저장 중이거나 저장할 수 없는 상태입니다.');
+    const r = await lastSave.catch((e) => ({ state: 'FAILED', error: e }));
+    showToast(r?.state === 'FAILED' ? `저장 실패: ${r.error?.message || '원인 미확인'} · 작업은 메모리에 유지됩니다 (UNSAVED)` : r?.state === 'UNCHANGED' ? '변경 없음 · 이미 저장됨 (SAVED)' : '저장됨 (SAVED) · 저장 후 읽기 확인 완료');
+  }
   ui.histDate.addEventListener('change', () => setHistory(/^\d{4}-\d{2}-\d{2}$/.test(ui.histDate.value) ? ui.histDate.value : ''));
   ui.histSlider.addEventListener('input', () => { const d = historyDates(project())[Number(ui.histSlider.value)]; if (d) setHistory(d); });
   ui.histMode.addEventListener('change', () => { historyMode = ui.histMode.value; syncHistory(); renderPlan(true); });
@@ -1253,7 +1274,7 @@ async function start() {
   ui.plan.addEventListener('pointercancel', (e) => finish(e, true));
   document.addEventListener('keydown', (e) => {
     cancelWheel();
-    if (e.key.toLowerCase() === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); document.getElementById('vSave').click(); return; } // 기준본: 입력칸·대화상자 여부와 무관
+    if (e.key.toLowerCase() === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveByKey(); return; } // 기준본: 입력칸·대화상자 여부와 무관
     if (document.querySelector('dialog[open]') || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable || !project()) return;
     const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
     const dir = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];

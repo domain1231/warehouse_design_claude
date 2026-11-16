@@ -10,6 +10,18 @@ const STATE_TEXT = { saved: '저장됨 (SAVED)', unsaved: '저장되지 않음 (
 
 export const QUOTA_TEXT = '저장 공간이 부족하여 저장에 성공하지 못했습니다. 현재 작업은 메모리에 남아 있으며 저장되지 않았습니다 (UNSAVED). JSON 백업을 보관하고 브라우저 저장 공간을 확인하세요.';
 
+/** JSON 파일 해석(D-040). 형식 오류는 위치만 알리고 파일 내용은 보여주지 않는다. */
+export function parseJsonText(text) {
+  const s = String(text).replace(/^﻿/, '');
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    const m = /position (\d+)/.exec(e?.message || '');
+    const at = m ? Number(m[1]) + 1 : Math.max(1, s.length);
+    throw new Error(s.trim() ? `JSON 형식이 아닙니다 (${at.toLocaleString('ko-KR')}번째 글자 근처)` : 'JSON 형식이 아닙니다 (빈 파일)');
+  }
+}
+
 const dlg = (cls, testid, html, id) => {
   const d = document.createElement('dialog');
   d.id = id;
@@ -104,7 +116,7 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   async function importFile(f) {
     try {
       if (f.size > 12e6) throw new Error('12MB 이하 파일만 지원합니다.');
-      const data = validate(JSON.parse(await f.text()));
+      const data = validate(parseJsonText(await f.text()));
       const label = 'JSON ' + f.name;
       if (await confirmReplace(label)) await install(data, label);
     } catch (e) {

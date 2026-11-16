@@ -57,6 +57,8 @@ test('랙 더블클릭 상세: 선반·자재 카드, 자재 원본 정보, 검�
   await box.locator('[data-extab=items]').click();
   assert.match(await page.locator('#exDetailPane').textContent(), /현재고 정보 없음/);
   await box.locator('[data-extab=basic]').click();
+  // D-040: 하단 패널을 닫은 기본 화면은 높이가 화면에 맞춰져 배율이 작다. 선택 핸들이 랙 중심을 덮지 않도록 선택 확대 후 더블클릭한다.
+  await page.locator('[data-testid=focus-selection]').click();
   await page.locator(`[data-testid=plan] g[data-id="${rack.id}"]`).first().dblclick();
   const dialog = page.locator('[data-testid=detail-dialog]');
   await dialog.waitFor({ state: 'visible' });

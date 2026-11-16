@@ -5,6 +5,13 @@
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 사용성 개선 6건(D-040) · fix/ux-improvements
+- Release v2.5.0-alpha.0 Draft는 세션에서 API 403(Release 생성 불가)이라 사용자가 직접 생성(대상 main 1aa4aa4).
+- 변경: 2개 이상 삭제 확인, 하단 패널 닫힘 시 높이 맞춤(3단 화면), JSON 형식 오류 위치 안내, 정밀 입력 문구 통일, 배치 거부 사유·해결 안내, Ctrl+S 결과 알림.
+- 검사: `tests/unit/ux-messages.test.js`, `tests/e2e/ux-improvements.test.js`. `details.test.js` 더블클릭 전 '선택 확대' 추가(높이 맞춤으로 배율이 작아져 선택 핸들이 랙 중심을 덮음).
+- `pnpm check`: unit 138, golden 286(skip 2), e2e 96 PASS(Linux Chrome). NOT RUN: Windows Edge, 실제 마우스·터치패드, 모바일.
+- 다음: 자동 배치 개선안(제안 1~3) 검토·승인 후 진행.
+
 ### 2026-11-15 UI 동일성(D-032) · Phase 9b-0
 - 사용자 지시: UI 구성·문구·디자인은 v2.4.1과 동일. 감사 결과 `docs/UI_PARITY_AUDIT.md`(PR #29 병합).
 - 9b-0: `tools/ui-inventory.mjs`(기준본 UI 목록 생성) → `fixtures/legacy/ui-inventory.json`. 검사 `tests/e2e/ui-parity.test.js`, 고정 차이 `tests/e2e/ui-parity-gaps.json` 707건. 차이가 늘면 실패, 고친 차이를 목록에서 안 지워도 실패(래칫). 갱신: `UPDATE_UI_GAPS=1 node --test tests/e2e/ui-parity.test.js`.
