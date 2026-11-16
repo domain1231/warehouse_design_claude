@@ -98,6 +98,22 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     return view();
   }
 
+  // 편집 확정은 한 번에 하나씩(백업 압축 대기 중 들어온 편집이 같은 원본에서 출발해 한쪽이 사라지지 않게). 저장은 아래 save 체인이 따로 순서를 지킨다.
+  let commitChain = Promise.resolve();
+  function serial(fn) {
+    const run = commitChain.then(fn);
+    commitChain = run.catch(() => {});
+    return run;
+  }
+  // 확정 대기 중 setView로 바뀐 화면 상태(배율·선택·패널 등)는 편집이 건드리지 않은 항목에 한해 유지한다.
+  const VIEW_KEYS = ['viewport', 'editing', 'settings', 'precision', 'locationLayout', 'scenarioMeta', 'panels', 'rackInfographic'];
+  function rebaseView(next, before) {
+    if (state.project === before) return next;
+    const out = { ...next };
+    for (const k of VIEW_KEYS) if (JSON.stringify(next[k]) === JSON.stringify(before[k])) out[k] = state.project[k];
+    return projectValidator(out);
+  }
+
   // 저장은 한 번에 하나씩 순서대로 실행한다(편집 자동 저장과 화면 상태 저장이 겹쳐 스스로 충돌로 보이지 않게).
   let chain = Promise.resolve();
   let viewTimer = null;
@@ -136,17 +152,22 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
    * 성공하면 실행취소에 기록하고 autosave가 켜져 있으면 저장한다(저장 실패는 상태로 보고, 편집은 유지).
    */
   async function edit(label, mutate) {
-    const before = state.project;
-    const draft = structuredClone(before);
-    mutate(draft);
-    const next = projectValidator(draft);
-    if (JSON.stringify(next) === JSON.stringify(before)) return { changed: false };
-    const receipt = await checkpointFor(before, next, label); // 실패하면 오류를 던지고 편집을 적용하지 않는다
-    if (!history.record(before, next, label)) return { changed: false };
-    state.project = next;
-    state.status = 'unsaved';
-    emit();
-    if (autosave) await saveWithReceipt(receipt);
+    const c = await serial(async () => {
+      const before = state.project;
+      const draft = structuredClone(before);
+      mutate(draft);
+      let next = projectValidator(draft);
+      if (JSON.stringify(next) === JSON.stringify(before)) return null;
+      const receipt = await checkpointFor(before, next, label); // 실패하면 오류를 던지고 편집을 적용하지 않는다
+      next = rebaseView(next, before);
+      if (!history.record(state.project, next, label)) return null;
+      state.project = next;
+      state.status = 'unsaved';
+      emit();
+      return { receipt };
+    });
+    if (!c) return { changed: false };
+    if (autosave && !state.corrupt) await saveWithReceipt(c.receipt);
     return { changed: true };
   }
 
@@ -183,7 +204,10 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
    * 저장에 실패하면 이전 프로젝트로 되돌리고 백업도 되돌린다(전체 교체 취소).
    * @returns {{ ok: boolean, reason?: string }}
    */
-  async function replaceProject(data, label) {
+  function replaceProject(data, label) {
+    return serial(() => replaceNow(data, label));
+  }
+  async function replaceNow(data, label) {
     const before = state.project;
     let next;
     try {
@@ -233,34 +257,44 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
    */
   async function apply(label, compute) {
     if (!state.project) throw new Error('init() 전에는 편집할 수 없습니다.');
-    const before = state.project;
-    const r = compute(before, { nextId: ids, now });
-    if (r && r.ok === false && r.project === before) {
-      state.lastFailure = { reason: r.reason, text: JSON.stringify(before), time: now() };
-      emit();
-    }
-    if (!r || r.project === before) return r;
-    let receipt = null;
-    if (r.ok) {
-      const next = projectValidator(r.project);
-      if (JSON.stringify(next) === JSON.stringify(before)) return { ...r, changed: false };
-      try {
-        receipt = await checkpointFor(before, next, label);
-      } catch (e) {
-        return { ...r, ok: false, reason: e.message, project: before };
+    const c = await serial(async () => {
+      const before = state.project;
+      const r = compute(before, { nextId: ids, now });
+      if (r && r.ok === false && r.project === before) {
+        state.lastFailure = { reason: r.reason, text: JSON.stringify(before), time: now() };
+        emit();
       }
-      if (!history.record(before, next, label)) return { ...r, changed: false };
-      state.project = next;
-    } else {
-      state.project = projectValidator(r.project);
-    }
-    state.status = 'unsaved';
-    emit();
-    if (autosave && !state.corrupt) await saveWithReceipt(receipt);
-    return r;
+      if (!r || r.project === before) return { r, save: false };
+      let receipt = null;
+      if (r.ok) {
+        let next = projectValidator(r.project);
+        if (JSON.stringify(next) === JSON.stringify(before)) return { r: { ...r, changed: false }, save: false };
+        try {
+          receipt = await checkpointFor(before, next, label);
+        } catch (e) {
+          return { r: { ...r, ok: false, reason: e.message, project: before }, save: false };
+        }
+        next = rebaseView(next, before);
+        if (!history.record(state.project, next, label)) return { r: { ...r, changed: false }, save: false };
+        state.project = next;
+      } else {
+        state.project = projectValidator(r.project);
+      }
+      state.status = 'unsaved';
+      emit();
+      return { r, save: true, receipt };
+    });
+    if (c.save && autosave && !state.corrupt) await saveWithReceipt(c.receipt);
+    return c.r;
   }
 
-  async function step(kind) {
+  function step(kind) {
+    return serial(() => stepNow(kind)).then(async (r) => {
+      if (r.changed && autosave && !state.corrupt) await save();
+      return r;
+    });
+  }
+  async function stepNow(kind) {
     const snapshot = history.snapshot();
     const draft = structuredClone(state.project);
     const label = kind === 'undo' ? history.undo(draft) : history.redo(draft);
@@ -273,7 +307,6 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     }
     state.status = 'unsaved';
     emit();
-    if (autosave) await save();
     return { changed: true, label };
   }
 
