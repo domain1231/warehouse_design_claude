@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.2 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 로케이션 형식 확장(D-049) · 운영 JSON 왕복 · feature/location-format-ext
+- `src/core/location.js`: 숫자로 시작하는 열(2A), 로마 숫자 랙(II=2). 2A 열 프로젝트는 v2.4.1에서 열 수 없음(경고 표시).
+- 운영 JSON 2개(v2.3.4 저장본, 사용자 제공·미커밋): 재구축·v2.4.1 모두 열림, 공간 검사 결과 일치, 좌표 변경 0, 재구축 저장본을 v2.4.1에서 다시 열기 성공, 실제 화면 JSON 불러오기 SAVED. (정식 판 확인 목록 2번, Linux Chrome 기준)
+- 실제 전체 Excel(12시트, 미커밋): 인식 랙 202호 32, 205호 65, 214호 31, 706호 56, 709호 38.
+- `pnpm check`: unit 154, golden 286(todo 2), e2e 97 PASS.
+
 ### 2026-11-16 정식 판 확인 목록 · 성능 재측정 · docs/release-checklist-perf
 - `docs/RELEASE_CHECKLIST.md`: Windows Edge 실사용·운영 JSON·전체 Excel·백업 복구 수동 확인표(사용자 실행). 자료 필요: 전체 Excel, 운영 JSON.
 - `docs/perf/2026-11-16-alpha2.md`: v2.4.1 대비 56·200·500랙 측정. 라벨 방식 전환 500랙만 느림(355→459ms) → 최적화 후보.

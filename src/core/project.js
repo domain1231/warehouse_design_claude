@@ -8,6 +8,7 @@
 // - 기본값 보정은 입력 객체를 직접 수정하고 같은 객체를 반환한다(기준본과 같은 계약).
 // - Golden Master G5(샘플·빈 프로젝트)와 일치해야 한다(tests/golden/G5-project.test.js).
 // - 아직 이식하지 않은 부분: 열 우선 모드 프로젝트의 검사 결과 재계산(92, W.scan 필요 — Phase 2·6).
+import { parseLocationCode } from './location.js';
 import { createIdGenerator } from './ids.js';
 import { isSimplePolygon } from '../geometry/polygons.js';
 
@@ -53,14 +54,7 @@ const todayLocal = () => new Intl.DateTimeFormat('en-CA', { year: 'numeric', mon
 
 /** 로케이션 문자열 7F-C-5-3-1 파싱(기준본 EX.parse). 건물은 포함하지 않는다. */
 export function parseLocation(v) {
-  const m = String(v ?? '').replace(/\s/g, '').toUpperCase().match(/^(\d+)F-([A-Z]+)-(\d+)-(\d+)-(\d+)$/);
-  if (!m) return null;
-  const n = [m[1], m[3], m[4], m[5]].map(Number);
-  if (n.some((x) => !Number.isSafeInteger(x) || x < 1 || x > 1e5)) return null;
-  return {
-    floor: `${n[0]}F`, floorNumber: n[0], column: m[2], rackNumber: n[1], shelfNumber: n[2], position: n[3],
-    key: `${n[0]}F-${m[2]}-${n[1]}`, shelfKey: `${n[0]}F-${m[2]}-${n[1]}-${n[2]}`, location: `${n[0]}F-${m[2]}-${n[1]}-${n[2]}-${n[3]}`,
-  };
+  return parseLocationCode(v); // D-049 공용 구현(기존 형식 결과 동일)
 }
 
 /** 기준본 object(): 객체 기본 속성 */
