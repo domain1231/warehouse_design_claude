@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.1 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 실제 창고 검토 · 기본값 자동 추천(D-045) · feature/fixed-default-auto
+- 사용자 창고 18.44×8.5m, 대차 통로 0.8m, A열 동쪽·01번 북쪽, 장애물 없음. 예시 Excel 56랙: 모든 열 사이 최대 0.70m(0.8m 불가, 52/56), 등 맞댐 1.22m 56/56 → 사용자 안1 선택.
+- 기본값을 자동 추천으로 변경. 랙 얇은 선은 장식 선 그대로(앞면 정의 안 함).
+- `pnpm check`: unit 146, golden 286(todo 2), e2e 97 PASS.
+
 ### 2026-11-16 Release Draft 워크플로(D-044) · chore/release-draft-workflow
 - Actions → 'Release Draft' → Run workflow(버전 입력) → 검사 통과 시 Draft pre-release 생성 → 사용자가 확인 후 Publish.
 - 본문 원본: `docs/releases/v<버전>.md`(v2.5.0-alpha.1 포함). 세션에서 workflow_dispatch API 호출 가능 여부는 병합 후 확인.

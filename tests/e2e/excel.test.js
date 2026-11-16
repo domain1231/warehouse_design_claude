@@ -279,6 +279,10 @@ test('Excel 로케이션 열 고정(D-041): 진단 표시, 통로 방식 전환,
   assert.match(t1, /형태별 최대 통로/);
   assert.match(t1, /적용:/);
   assert.match(await page.locator('[data-testid=excel-pstats]').textContent() + await page.locator('[data-testid=excel-comparison]').textContent(), /로케이션 열 고정/);
+  // D-045: 기본값은 자동 추천(한 줄 열 수·통로 방식 비활성)
+  assert.match(t1, /\(자동 추천\)/);
+  assert.equal(await page.locator('#fxPairing').isDisabled(), true);
+  await page.locator('[data-testid=fixed-axis]').selectOption('column');
   await page.locator('[data-testid=fixed-pairing]').selectOption('pairs');
   await page.waitForFunction(() => /적용: 열 배치\(세로\) · 한 줄 1열 · 등 맞댐 쌍/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
   await page.locator('[data-testid=fixed-axis]').selectOption('auto');
