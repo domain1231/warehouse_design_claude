@@ -99,6 +99,7 @@ export function createRecordsPanel({ getProject, today, saveSnapshot, saveInvent
     const find = (a) => { const b = e.target.closest(`[data-layout-${a}]`); return b && p.layoutSnapshots.find((x) => x.id === b.dataset[`layout${a[0].toUpperCase()}${a.slice(1)}`]); };
     const r = find('restore');
     if (r) {
+      if (isHistory()) return toast('과거 조회는 읽기 전용입니다.'); // 확인 창을 띄운 뒤 거부하지 않도록 먼저 확인
       if (confirm(`${r.date} / ${r.name}의 객체 구성·좌표·설계 치수를 현재 ${p.settings.scenario} 편집안에 복원합니까? 같은 ID 랙의 현재 수량·자재 연결, 날짜별 이력과 다른 편집안은 유지됩니다. 현재에 없는 과거 랙은 수량·자재 연결 미확인으로 추가됩니다. 실행 취소할 수 있습니다.`)) restoreSnapshot(r.id);
       return;
     }
