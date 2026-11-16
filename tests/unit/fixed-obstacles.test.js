@@ -37,3 +37,18 @@ test('구조물이 없으면 위치 변화 없음', () => {
   const r = run(false);
   assert.equal(r.fixed.obstacles.moved, 0);
 });
+
+test('D-048 자동 추천은 구조물이 있으면 실제 배치 결과로 형태를 고른다', () => {
+  const ids = createIdGenerator({ seed: 't2' });
+  const p = createProject({ sample: false, nextId: ids });
+  const l = p.scenarios.after;
+  l.warehouse.width = 8; l.warehouse.height = 4; l.objects = [];
+  // 가로 띠 모양 보관 불가 구역(y 1.5~2.0): 세로 열은 이 띠를 넘지 못한다
+  l.objects.push(createObject('blocked', 0, 1.5, 8, 0.5, {}, { nextId: ids }));
+  const a2 = { racks: [rack('A', 1), rack('A', 2), rack('A', 3), rack('B', 1), rack('B', 2), rack('B', 3)] };
+  const r = buildCandidates(p, a2, readExcelConfig({ ...raw, width: '8', depth: '4', fixedAxis: 'auto', fixedSpacing: 'max' }), { nextId: createIdGenerator({ seed: 'u2' }), filename: 's', sheet: 's', missingDelete: new Set() });
+  assert.ok(r.fixed.trials.length > 1);
+  assert.equal(r.fixed.chosen.axis, 'row');
+  assert.equal(r.candidates[0].result.counts.validInside, 6);
+  assert.equal(r.candidates[0].result.counts.structureCollision, 0);
+});

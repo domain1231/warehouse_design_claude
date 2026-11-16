@@ -203,7 +203,7 @@ export function reoptimize(prior, c, scope, { project, chosen = new Set() }) {
  * D-041 로케이션 열 고정: 후보 탐색 없이 계산된 간격으로 한 가지 배치만 만든다(열·번호 순서 불변).
  * 1) 간격 0으로 시험 생성해 열 두께·길이를 잰다 2) 창고 치수로 간격 계산 3) 그 간격으로 생성하고 벽에 맞춘다.
  */
-export function fixedConfig(analysis, c, project) {
+export function fixedConfig(analysis, c, project, pick = null) {
   if (!isAxisAligned(c.northRotation)) throw new Error('로케이션 열 고정 배치는 북쪽 방향 0·90·180·270°에서만 사용할 수 있습니다.');
   const f = c.autoPlacement.fixedColumns, backGap = Math.max(BACK_GAP, project?.settings?.minGap || 0);
   // 행 배치 = 열 배치를 통째로 -90° 돌린 것: 축은 (북쪽-90°, 진행 방향 반대), 랙 회전 -90°. 도면 북쪽 방향은 바꾸지 않는다.
@@ -222,7 +222,7 @@ export function fixedConfig(analysis, c, project) {
     return { ...sh, ev: evaluateShape(profile, { spanE: sp.E[1] - sp.E[0], spanS: sp.S[1] - sp.S[0], wallGap: c.wallGap, aisleTarget: c.aisleTarget, backGap, perLine: sh.perLine, pairing: sh.pairing }) };
   });
   const auto = f.axis === 'auto';
-  const chosen = auto ? recommend(shapes) : shapes.find((s) => s.axis === f.axis && s.perLine === (f.perLine ?? 1) && s.pairing === f.pairing);
+  const chosen = pick ? pick(shapes) : auto ? recommend(shapes) : shapes.find((s) => s.axis === f.axis && s.perLine === (f.perLine ?? 1) && s.pairing === f.pairing);
   const { fx, sp } = pr[chosen.axis], aisle = chooseAisle(chosen.ev, c.aisleTarget, f.spacing), start = f.start ?? 'config';
   const flip = (d) => (d === 'north' ? 'south' : 'north');
   const lineFirst = (k) => (start === 'zigzag' ? (k % 2 ? flip(c.firstRackPosition) : c.firstRackPosition) : (c.perColumnSettings[chosen.ev.lines[k].cols[0].column] || {}).first || c.firstRackPosition);
@@ -274,8 +274,8 @@ export function avoidObstacles(layout, { axes, targets, keys, clearance }) {
   return res;
 }
 
-export function buildFixedCandidates(project, analysis, c, opts) {
-  const fc = fixedConfig(analysis, c, project), old = project.scenarios[c.target], ch = fc.info.chosen;
+function buildFixedOne(project, analysis, c, opts, pick) {
+  const fc = fixedConfig(analysis, c, project, pick), ch = fc.info.chosen;
   const proposal = buildProposal(project, analysis, fc.config, opts);
   const f = c.autoPlacement.fixedColumns;
   const keys = new Set(analysis.racks.filter((r) => r.floor === c.floor).map((r) => r.key));
@@ -285,6 +285,31 @@ export function buildFixedCandidates(project, analysis, c, opts) {
   // 등 맞댐이면 랙 간격 기록값도 등 간격 이하로 둔다(같은 열 안 실제 간격은 사용자 값 그대로 생성). 통로 목표는 사용자 값 그대로.
   const paired = ch.ev.units.some((u) => u.length === 2);
   proposal.layout.autoPlacementRules = { ...proposal.layout.autoPlacementRules, columnGap: Math.max(0, fc.minGap), ...(paired ? { rackGap: Math.min(c.rackGap, fc.info.backGap) } : {}), fixedColumns: { ...f, applied: { axis: ch.axis, perLine: ch.perLine, pairing: ch.pairing }, aisle: fc.info.aisle } };
+  return { fc, proposal };
+}
+
+/**
+ * D-048 구조물 반영 추천: 자동 추천이고 구조물이 있으면, 들어가는 형태마다 실제로 배치(장애물 회피 포함)해 보고
+ * 창고 안 정상 랙 수 → 목표 통로 충족 → 최대 통로 → SHAPES 순서로 고른다. 시험 배치는 별도 ID 생성기를 쓴다(결정성 유지).
+ */
+export function buildFixedCandidates(project, analysis, c, opts) {
+  const old = project.scenarios[c.target];
+  let pick = null, trials = null;
+  if (c.autoPlacement.fixedColumns.axis === 'auto' && old.objects.some((o) => OBSTACLE_KINDS.includes(o.kind))) {
+    const base = fixedConfig(analysis, c, project);
+    trials = base.info.shapes.filter((s) => s.ev.fits).map((s, i) => {
+      const t = buildFixedOne(project, analysis, c, { ...opts, nextId: createIdGenerator({ seed: 'fixed-trial-' + i }) }, (all) => all.find((x) => x.axis === s.axis && x.perLine === s.perLine && x.pairing === s.pairing));
+      const k = scanLayout(t.proposal.layout, project).counts;
+      return { axis: s.axis, perLine: s.perLine, pairing: s.pairing, valid: k.validInside, total: k.total, meets: s.ev.meetsTarget, aMax: s.ev.aMax, order: base.info.shapes.indexOf(s) };
+    });
+    if (trials.length) {
+      const best = [...trials].sort((x, y) => y.valid - x.valid || Number(y.meets) - Number(x.meets) || y.aMax - x.aMax || x.order - y.order)[0];
+      pick = (all) => all.find((x) => x.axis === best.axis && x.perLine === best.perLine && x.pairing === best.pairing);
+    }
+  }
+  const { fc, proposal } = buildFixedOne(project, analysis, c, opts, pick);
+  if (trials) fc.info.trials = trials;
+  const ch = fc.info.chosen;
   const name = `로케이션 열 고정 · ${shapeName(ch)}${fc.info.auto ? ' (자동 추천)' : ''} · ${fmt(fc.info.aisle, 3)}m`;
   return { proposal, candidates: [makeCandidate(name, proposal.layout, c, old, project)], choice: 0, fixed: fc.info };
 }

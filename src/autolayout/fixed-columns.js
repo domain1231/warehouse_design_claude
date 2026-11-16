@@ -199,13 +199,15 @@ export function fixedText(info) {
     else if (!ev.fits) t = `불가 (폭 ${m(ev.shortE)}m 부족)`;
     else if (ev.meetsTarget) t = `${m(ev.aMax)}m ✔`;
     else t = `${m(ev.aMax)}m ✖ (목표까지 ${ev.shortE > ev.shortS ? '폭' : '길이'} ${m(Math.max(ev.shortE, ev.shortS))}m 부족)`;
-    lines.push(`${mark}${shapeName(s)}: ${t}`);
+    const tr = info.trials?.find((x) => x.axis === s.axis && x.perLine === s.perLine && x.pairing === s.pairing);
+    lines.push(`${mark}${shapeName(s)}: ${t}${tr ? ` · 구조물 반영 실제 배치 ${tr.valid}/${tr.total}` : ''}`);
   }
   const ev = chosen.ev;
   lines.push(`적용: ${shapeName(chosen)}${auto ? ' (자동 추천)' : ''} · 통로 ${m(aisle)}m${spacing === 'max' && ev.fits && Number.isFinite(ev.aMax) ? ' (남는 폭을 고르게 나눔)' : ''} · 시작 ${start === 'zigzag' ? '지그재그' : '설정대로'}${ev.fits ? '' : ' · 창고 밖으로 나가는 랙이 있습니다'}`);
+  if (info.trials) lines.push('자동 추천: 구조물이 있어 들어가는 형태를 모두 실제로 배치해 보고 창고 안 정상 랙이 가장 많은 형태를 골랐습니다.');
   if (info.obstacleCount) {
     const ob = info.obstacles ?? { moved: 0, columns: [] };
-    lines.push(`구조물 ${info.obstacleCount}개 · ${ob.moved ? `장애물을 피해 ${ob.columns.join('·')}열 랙을 열 방향으로 밀었습니다(${ob.moved}회)` : '겹치는 랙 없음'} · 최대 통로 계산은 구조물을 빼고 한 값입니다`);
+    lines.push(`구조물 ${info.obstacleCount}개 · ${ob.moved ? `장애물을 피해 ${ob.columns.join('·')}열 랙을 열 방향으로 밀었습니다(${ob.moved}회)` : '겹치는 랙 없음'} · 최대 통로 값은 구조물을 빼고 계산한 값입니다`);
   }
   if (info.missing?.length) lines.push(`누락 번호 ${info.missing.length}개: ${info.missing.slice(0, 20).join('·')}${info.missing.length > 20 ? ' …' : ''} → ${{ pack: '당겨 붙임(빈자리 없음)', keep: '빈자리 비워 둠', empty: '빈 랙 후보로 채움' }[info.gaps] ?? '당겨 붙임'}`);
   if (chosen.axis === 'row') lines.push('행 배치: 진행·첫 랙 위치는 화면의 행 기준 이름(북→남/남→북, 서쪽 끝/동쪽 끝)대로 배치됩니다.');

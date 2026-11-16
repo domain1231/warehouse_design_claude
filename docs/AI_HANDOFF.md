@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.2 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 구조물 반영 자동 추천(D-048) · feature/fixed-obstacle-aware
+- 자동 추천 + 구조물이 있으면 형태별 실제 배치로 비교해 선택(`buildFixedCandidates`). D-047 한계(추천이 구조물 미고려) 해소.
+- `pnpm check`: unit 151, golden 286(todo 2), e2e 97 PASS.
+
 ### 2026-11-16 장애물 회피(D-047) · feature/fixed-obstacles(#51 위에 쌓음)
 - `avoidObstacles`(candidates.js): 생성 랙이 구조물과 겹치면 열 방향으로 밀기. 진단 문구 추가. 화면 요소 추가 없음.
 - `pnpm check`: unit 150, golden 286(todo 2), e2e 97 PASS.
