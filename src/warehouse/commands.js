@@ -117,7 +117,7 @@ export function applyCommand(project, mutate, { command = COMMAND_DEFAULT, selec
     const finalAfter = clone(active(draft));
     const ids = changedIds(before, finalAfter);
     const invalid = ids.size ? newSpatialWarnings(draft, before, finalAfter, ids) : [];
-    if (invalid.length && !draft.editing.allowWarnings && !overrideAllow) throw new Error(invalid[0].text);
+    if (invalid.length && !draft.editing.allowWarnings && !overrideAllow) throw Object.assign(new Error(invalid[0].text), { spatial: true });
     if (ids.size) log(draft, { command, ids, before, after: finalAfter, success: true, now: () => time, nextId });
     // 기준본 commit resetCamera(배치 복원 등): 화면을 처음 상태로
     if (resetCamera) draft.viewport = { zoom: 1, panX: 0, panY: 0, centerLocked: true };
@@ -126,7 +126,7 @@ export function applyCommand(project, mutate, { command = COMMAND_DEFAULT, selec
     const failed = clone(project);
     const ids = new Set(before.objects.filter((o) => new Set(selection).has(o.id)).map((o) => o.id));
     log(failed, { command, ids, before, after: before, success: false, reason: e.message, now, nextId });
-    return { ok: false, project: failed, reason: e.message, logged: true };
+    return { ok: false, project: failed, reason: e.message, logged: true, spatial: e.spatial === true };
   }
 }
 
@@ -258,6 +258,9 @@ export const setDimension = (id, field, raw) => (draft, layout) => {
 /** 정밀 입력 칸(X·Y·폭·깊이, 객체 1개 선택) 검사: 빈 값·숫자 아님·1mm 단위 아님은 거부(기준본 80 Q.input, 명령 기록 없음). */
 export const MM_INPUT_FIELDS = new Set(['x', 'y', 'width', 'depth']);
 export const MM_INPUT_MESSAGE = '숫자를 0.001m 단위까지 입력하세요. 기존 위치·규격을 유지합니다.';
+const MM_FIELD_NAMES = { x: 'X', y: 'Y', width: '폭', depth: '깊이' };
+/** D-040: 칸 이름을 붙인 정밀 입력 오류 문구. */
+export const mmInputMessage = (field) => `${MM_FIELD_NAMES[field] || field} 값을 입력하세요 · 0.001m 단위. 기존 위치·규격을 유지합니다.`;
 export function isMmInput(raw) {
   const n = Number(raw);
   return raw !== '' && Number.isFinite(n) && Math.abs(n * 1e3 - Math.round(n * 1e3)) <= 1e-6;
