@@ -3,6 +3,7 @@
 // (기준본 대조 검사는 tests/golden/label-metrics.js의 Chrome 측정 표를 주입한다. 배포본에는 표를 넣지 않는다).
 import { bounds } from '../geometry/polygons.js';
 import { ratio } from '../warehouse/constraints.js';
+import { heightUtilization } from '../warehouse/appearance.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { esc } from './scene.js';
 
@@ -78,13 +79,17 @@ export function rackLabelsSvg(layout, project, { scope = project.settings.scenar
     const fill = external ? '#111821' : fillOf(o), color = textColor(fill);
     return `<g class="v-labels" data-label-for="${esc(o.id)}" data-zone="${esc(part.zone)}" data-rack-number="${esc(part.number)}" data-label-layout="${style}" data-label-fallback="${external ? 'external' : 'internal'}" data-label-cx="${cx}" data-label-cy="${cy}">${external ? `<path d="M ${o.x + o.width / 2} ${o.y + o.depth / 2} L ${cx} ${cy}" stroke="#b9cce3" stroke-width="${1 / u}"/><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="${3 / u}" fill="${fill}" stroke="#8ba3bf" stroke-width="${1 / u}"/>` : ''}<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="${color}" font-family="Segoe UI,Malgun Gothic,sans-serif" font-weight="600" font-size="${font / u}">${lines.map((t, i) => `<tspan x="${cx}" dy="${i ? font * 1.22 / u : -(lines.length - 1) * font * 0.61 / u}" data-line="${i}">${esc(t)}</tspan>`).join('')}</text></g>`;
   };
+  const heightSource = project.rackLabels?.ratioSource === 'height';
   for (const o of racks) {
     if ((mlayout === 'minimal' || mode === 'minimal') && (!selected.has(o.id) || report || mini)) continue;
     const p = rackLabelParts(o, project, scope), cx = o.x + o.width / 2, cy = o.y + o.depth / 2, b = bounds(o), narrow = b.maxX - b.minX < b.maxY - b.minY;
     const stacked = p.number ? [p.zone, p.number] : [p.zone], inline = [p.number ? p.zone + '-' + p.number : p.zone];
     const basis = mlayout === 'stacked' || (mlayout === 'auto' && narrow) ? [[stacked, 'stacked'], [inline, 'inline']] : [[inline, 'inline'], [stacked, 'stacked']];
     const ratioText = ratio(o) === null ? '재고 미확인' : fmt(ratio(o), 1) + '%';
-    const tail = mode === 'occupancy' ? [ratioText] : mode === 'detail' ? [p.location, ratioText, fmt(o.width, 3) + ' × ' + fmt(o.depth, 3) + 'm'] : [];
+    // D-039: '랙 번호 + 높이 활용률'은 displayMode 'occupancy' + ratioSource 'height'(v2.4.1 JSON 호환). 높이 활용률은 재고가 아니다.
+    const h = heightSource ? heightUtilization(o, project.settings.heightPolicy ?? 'weightedMax') : null;
+    const heightText = h === null ? '높이 미확인' : '높이 ' + fmt(h, 1) + '%';
+    const tail = mode === 'occupancy' ? [heightSource ? heightText : ratioText] : mode === 'detail' ? [p.location, ratioText, fmt(o.width, 3) + ' × ' + fmt(o.depth, 3) + 'm'] : [];
     let drawn = false;
     const variants = mlayout === 'stacked' ? [[stacked, 'stacked']] : mlayout === 'inline' ? [[inline, 'inline']] : basis;
     for (const [head, style] of variants) {
