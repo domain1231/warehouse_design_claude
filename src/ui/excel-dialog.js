@@ -6,6 +6,7 @@ import { readWorkbook, sheetMatrix, encodeCol } from '../excel/xlsx.js';
 import { FIELDS, detectHeaderRow, autoMap, analyzeSheet } from '../excel/analyze.js';
 import { readExcelConfig } from '../excel/proposal.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
+import { planText } from '../autolayout/fixed-columns.js';
 import { buildCandidates, reoptimize, candidateSummary } from '../autolayout/candidates.js';
 import { columnReoptimize, columnSafe, stopText, COLUMN_LIMITS } from '../autolayout/column.js';
 import { unionArea } from '../warehouse/metrics.js';
@@ -29,8 +30,9 @@ const MARKUP = `<div class="ex-sticky"><button type="button" id="exClose" class=
 <details><summary>기록 없는 번호의 랙 후보 생성</summary><label class="check"><input id="exEmpty" name="empty" type="checkbox">1번~최대 등록 번호 사이 누락 랙을 생성</label><div class="fields"><label>후보 폭 (m)<input id="exEmptyW" name="emptyW" value="1.2" type="number" min="0.01" step="0.01"></label><label>후보 깊이 (m)<input id="exEmptyD" name="emptyD" value="0.5" type="number" min="0.01" step="0.01"></label><label>후보 높이 (m)<input id="exEmptyH" name="emptyH" value="2" type="number" min="0.01" step="0.01"></label></div><p class="note">사용자가 선택한 후보이며 실존·빈 랙으로 확정하지 않습니다. 빈 선반·자재는 생성하지 않습니다.</p></details>
 <h3>3 / 적용 · 재불러오기 정책</h3><div class="fields"><label>생성 방식<select id="exMode" name="mode"><option value="new">선택한 배치 전체 교체</option><option value="merge">선택한 배치에 병합</option><option value="update">기존 랙 정보만 업데이트 (신규 미추가)</option></select></label><label>기존 객체 위치<select id="exKeep" name="keep"><option value="">병합/업데이트 시 선택 필요</option><option value="keep">수동 위치·회전 유지</option><option value="reflow">규칙에 따라 재배치</option></select></label><label>가져오기 기준일<input id="exDate" name="date" type="date"></label><label>출처<input id="exSource" name="source" value="사용자 제공 Excel"></label></div><label class="check"><input id="exRecordLayout" name="recordLayout" type="checkbox" checked data-record>기준일의 배치 이력도 저장</label><label class="check"><input id="exAllowWarnings" name="allowWarnings" type="checkbox"> 경고가 발생해도 확인 후 설계안 적용 허용</label><p class="note">사라진 랙은 자동 삭제하지 않고 ‘이번 파일 미등록’으로 표시합니다. 현재고와 과거 수량 이력을 만들거나 덮어쓰지 않습니다.</p></section></div>
 <h3>4 / 적용 전 미리보기</h3><div id="exPreviewStats" class="info" data-pstats data-testid="excel-pstats"></div>
-<section id="wControls" class="w-box" data-testid="excel-cands"><h3>Excel 자동 배치 · v2.3.6</h3><div class="w-grid"><label>배치 방식<select id="wMode" name="autoMode"><option value="inside">창고 내부 수용 우선</option><option value="order">로케이션 순서 우선</option><option value="aisle">통로 확보 우선</option><option value="column">열 우선 최대 수용 · 미수용 외부 배치</option></select></label><label class="check"><input type="checkbox" id="wKeep" name="keepManual" checked>기존 수동 랙 위치 유지 (이전 자료의 미확인 위치 포함)</label><label class="check"><input type="checkbox" id="wRotate" name="allowRotation">자동 90° 회전 허용</label><label class="check"><input type="checkbox" id="wStructures" name="preserveStructures" checked>전체 교체 시 기존 구조물·보호 통로 유지</label><label>재최적화 대상<select id="wScope" data-scope data-testid="excel-scope"><option value="all">전체 랙</option><option value="boundary">경계 초과·대기 랙만</option><option value="collision">충돌·통로 침범 랙만</option><option value="new">신규 랙만</option><option value="selected">아래에서 선택한 랙만</option></select></label></div>
+<section id="wControls" class="w-box" data-testid="excel-cands"><h3>Excel 자동 배치 · v2.3.6</h3><div class="w-grid"><label>배치 방식<select id="wMode" name="autoMode"><option value="inside">창고 내부 수용 우선</option><option value="order">로케이션 순서 우선</option><option value="fixed">로케이션 열 고정 · 열·번호 순서 유지</option><option value="aisle">통로 확보 우선</option><option value="column">열 우선 최대 수용 · 미수용 외부 배치</option></select></label><label class="check"><input type="checkbox" id="wKeep" name="keepManual" checked>기존 수동 랙 위치 유지 (이전 자료의 미확인 위치 포함)</label><label class="check"><input type="checkbox" id="wRotate" name="allowRotation">자동 90° 회전 허용</label><label class="check"><input type="checkbox" id="wStructures" name="preserveStructures" checked>전체 교체 시 기존 구조물·보호 통로 유지</label><label>재최적화 대상<select id="wScope" data-scope data-testid="excel-scope"><option value="all">전체 랙</option><option value="boundary">경계 초과·대기 랙만</option><option value="collision">충돌·통로 침범 랙만</option><option value="new">신규 랙만</option><option value="selected">아래에서 선택한 랙만</option></select></label></div>
 <details id="clOptions" data-colonly hidden><summary>열 우선 고급 설정</summary><p>엄격한 열·번호 순서 유지. 기본값: 줄바꿈 OFF / 회전 OFF / 수동·잠금 보호 ON. 열 간 이격은 열 간격·통로 목표·전역 최소 간격 중 큰 값을 사용합니다.</p><label class="check"><input id="clWrap" name="allowWrap" type="checkbox">같은 열 내부 줄바꿈 허용</label><p>미수용 외부 배치: 오른쪽만 지원 · 원래 회전 유지 · 좌표 범위 초과 시 적용 불가</p></details>
+<details id="fxOptions" data-fixedonly hidden open><summary>로케이션 열 고정 설정</summary><p>열 순서와 열 안 번호 순서를 바꾸지 않습니다. 창고 치수와 랙 깊이로 열 사이 간격을 계산하고, 들어가지 않으면 랙을 옮기지 않고 부족한 길이를 알립니다. 북쪽 방향 0·90·180·270°에서 사용하며 열별 X·Y 지정은 무시합니다.</p><label>통로 방식<select id="fxPairing" name="fixedPairing" data-testid="fixed-pairing"><option value="all">모든 열 사이 통로</option><option value="pairs">등 맞댐 쌍 (두 열씩 등을 붙임)</option></select></label><label>열 사이 간격<select id="fxSpacing" name="fixedSpacing" data-testid="fixed-spacing"><option value="max">남는 폭을 통로에 고르게 나눔</option><option value="target">통로 목표 폭 그대로</option></select></label><pre data-fixedplan data-testid="fixed-plan"></pre></details>
 <p>실제 규격과 보호 구역을 유지하는 제한된 후보 탐색입니다. 최적해를 보장하지 않습니다. 위치 잠금은 자동 이동하지 않습니다. 내부 미수용 랙은 외부 대기 영역에 보존됩니다.</p>
 <div class="row">${B('wOptimize', '배치 재최적화', 'data-optimize data-testid="excel-optimize"')}${B('wPrevious', '이전 후보로 돌아가기', 'disabled data-previous data-testid="excel-previous"')}${B('wPreviewAll', '모든 랙 보기')}${B('wPreviewViolations', '위반 랙 확인')}</div><div class="row" data-colonly hidden>${B('clReaccept', '외부 대기 랙 다시 수용 시도', 'data-reaccept data-testid="excel-reaccept"')}${B('clLegacy', '기존 내부 우선 방식으로 전환', 'data-legacy data-testid="excel-legacy"')}${B('clInsideFit', '창고 내부 맞춤', 'data-insidefit data-testid="excel-insidefit"')}</div>
 <p id="wOptimizeNote" role="status" data-note data-testid="excel-note"></p><div id="wComparison" class="excel-scroll" data-comparison data-testid="excel-comparison"></div><section id="clResults" class="w-box" hidden data-colresults data-testid="excel-colresults"></section>
@@ -125,13 +127,15 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
       const c = readExcelConfig(raw);
       const p = getProject();
       const res = buildCandidates(p, a, c, { nextId, filename: state.filename, sheet: state.sheetName, missingDelete: state.missingDelete });
-      Object.assign(state, { candidates: res.candidates, choice: res.choice, base: res.proposal, reference: res.reference, run: res.run, pages: { list: 0, groups: 0 }, cfg: c, analysisUsed: a, chosen: new Set(), previous: undefined, proposalProject: p });
+      Object.assign(state, { fixedPlan: res.fixed ?? null, candidates: res.candidates, choice: res.choice, base: res.proposal, reference: res.reference, run: res.run, pages: { list: 0, groups: 0 }, cfg: c, analysisUsed: a, chosen: new Set(), previous: undefined, proposalProject: p });
       $('[data-previous]').disabled = true;
       $('[data-note]').textContent = '';
       $('[data-detail]').hidden = true;
       showChoice();
     } catch (err) {
       state.candidates = null;
+      state.fixedPlan = null;
+      $('[data-fixedplan]').textContent = '';
       state.previewError = err.message;
       $('[data-pstats]').textContent = err.message;
       $('#rMissingList').innerHTML = '';
@@ -158,6 +162,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     const ws = spatialWarnings(pr.layout, p);
     pr.warnings = ws;
     state.proposal = pr;
+    $('[data-fixedplan]').textContent = state.fixedPlan ? planText(state.fixedPlan, c.autoPlacement.fixedColumns.pairing, c.autoPlacement.fixedColumns.spacing).join('\n') : '';
     const key = JSON.stringify([c, cand.name, ws.map((w) => w.text)]);
     if (state.ackKey !== key) {
       $('[data-ack]').checked = false;
@@ -198,6 +203,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
   function renderColumnResults(cand, col) {
     const box = $('[data-colresults]');
     for (const el of dialog.querySelectorAll('[data-colonly]')) el.hidden = !(form().autoMode.value === 'column');
+    for (const el of dialog.querySelectorAll('[data-fixedonly]')) el.hidden = form().autoMode.value !== 'fixed';
     box.hidden = !col;
     if (!col) return;
     const r = cand.result, c = r.column, groups = c.groups, run = state.run, l = cand.layout, w = l.warehouse;
@@ -214,6 +220,9 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
   function syncMode() {
     const f = form(), on = f.autoMode.value === 'column';
     for (const el of dialog.querySelectorAll('[data-colonly]')) el.hidden = !on;
+    const fx = f.autoMode.value === 'fixed';
+    for (const el of dialog.querySelectorAll('[data-fixedonly]')) el.hidden = !fx;
+    for (const el of dialog.querySelectorAll('[data-optimize],[data-reaccept],[data-scope]')) { el.disabled = fx; if (el.tagName === 'BUTTON') el.title = fx ? '로케이션 열 고정은 재최적화하지 않습니다(순서 유지).' : ''; }
     f.preserveStructures.disabled = on;
     if (on) f.preserveStructures.checked = true;
   }

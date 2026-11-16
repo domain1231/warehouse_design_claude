@@ -252,3 +252,36 @@ test('Excel 열 우선(Phase 6c): 후보 4개+비교 전용, 그룹 표, 외부 
   assert.deepEqual(problems, []);
   await ctx.close();
 });
+
+test('Excel 로케이션 열 고정(D-041): 진단 표시, 통로 방식 전환, 재최적화 비활성', async () => {
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 } });
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(e.message));
+  page.on('dialog', (d) => d.accept());
+  await page.goto(fileUrl);
+  await page.waitForFunction(() => window.__warehouseView);
+  await page.locator('[data-testid=excel-open]').click();
+  await page.locator('[data-testid=excel-file]').setInputFiles(path.join(root, 'fixtures/excel/synthetic-many.xlsx'));
+  await page.waitForFunction(() => /유효/.test(document.querySelector('[data-testid=excel-summary]').textContent));
+  const cfg = (n) => page.locator(`[data-testid=excel-config] [name=${n}]`);
+  await cfg('target').selectOption('after');
+  await cfg('mode').selectOption('new');
+  await cfg('building').fill('SYN');
+  await cfg('source').fill('가상 자료');
+  await cfg('width').fill('10');
+  await cfg('depth').fill('6');
+  await cfg('autoMode').selectOption('fixed');
+  const plan = page.locator('[data-testid=fixed-plan]');
+  await plan.waitFor({ state: 'visible' });
+  await page.waitForFunction(() => /적용:/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
+  const t1 = await plan.textContent();
+  assert.match(t1, /모든 열 사이 통로/);
+  assert.match(t1, /적용:/);
+  assert.match(await page.locator('[data-testid=excel-pstats]').textContent() + await page.locator('[data-testid=excel-comparison]').textContent(), /로케이션 열 고정/);
+  await page.locator('[data-testid=fixed-pairing]').selectOption('pairs');
+  await page.waitForFunction(() => /적용: 등 맞댐 쌍/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
+  assert.ok(await page.locator('[data-testid=excel-optimize]').isDisabled());
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});

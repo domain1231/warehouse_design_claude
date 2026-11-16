@@ -1,0 +1,120 @@
+// D-041 로케이션 열 고정 배치.
+// 열 순서·열 안 번호 순서를 바꾸지 않고, 창고 치수와 열 두께(랙 깊이)로 열 사이 간격을 계산한다.
+//   열 두께 tᵢ  = 열 진행 방향(E)으로 잰 열의 폭(가장 깊은 랙)
+//   열 길이 Lᵢ  = 열 방향(S)으로 잰 길이(랙 폭 합 + 랙 사이 간격)
+//   길이 조건   max Lᵢ ≤ S 방향 창고 길이 − 2·벽 이격
+//   모든 열 사이 통로   a_max = (E 방향 창고 길이 − 2·벽 이격 − Σt) / (n − 1)
+//   등 맞댐 쌍         a_max = (E 방향 창고 길이 − 2·벽 이격 − Σt − 쌍 수·등 간격) / (묶음 수 − 1)
+// 랙을 옮기거나 빼서 맞추지 않는다. 들어가지 않으면 부족한 길이를 그대로 알린다.
+import { polygon } from '../geometry/polygons.js';
+
+export const BACK_GAP = 0.1; // 등 맞댐 쌍 안쪽 간격(m)
+export const PAIRINGS = ['all', 'pairs'];
+export const SPACINGS = ['max', 'target'];
+
+const floorMm = (v) => Math.floor(v * 1000 + 1e-6) / 1000;
+const dot = (p, u) => p[0] * u[0] + p[1] * u[1];
+
+/** generateRacks와 같은 축: E = 열 진행 방향, S = 북→남. */
+export function axesOf(northRotation, columnDirection) {
+  const angle = (northRotation * Math.PI) / 180, sgn = columnDirection === 'east' ? 1 : -1;
+  return { E: [Math.cos(angle) * sgn, Math.sin(angle) * sgn], S: [-Math.sin(angle), Math.cos(angle)] };
+}
+
+/** 북쪽 방향이 0·90·180·270°(±0.001°)일 때만 창고 변과 축이 나란하다. */
+export function isAxisAligned(northRotation) {
+  const r = ((northRotation % 90) + 90) % 90;
+  return r < 1e-3 || 90 - r < 1e-3;
+}
+
+/** 창고 직사각형을 축에 투영한 범위. */
+export function spans(width, depth, { E, S }) {
+  const pts = [[0, 0], [width, 0], [width, depth], [0, depth]];
+  const range = (u) => { const v = pts.map((p) => dot(p, u)); return [Math.min(...v), Math.max(...v)]; };
+  return { E: range(E), S: range(S) };
+}
+
+/** 생성 순서대로 열별 두께·길이. racks는 excel.column을 가진 랙 객체. */
+export function columnProfile(racks, { E, S }) {
+  const by = new Map();
+  for (const o of racks) {
+    const k = o.excel.column, p = polygon(o);
+    const e = p.map((q) => dot(q, E)), s = p.map((q) => dot(q, S));
+    const m = by.get(k) ?? { column: k, count: 0, e0: Infinity, e1: -Infinity, s0: Infinity, s1: -Infinity };
+    m.count++;
+    m.e0 = Math.min(m.e0, ...e); m.e1 = Math.max(m.e1, ...e);
+    m.s0 = Math.min(m.s0, ...s); m.s1 = Math.max(m.s1, ...s);
+    by.set(k, m);
+  }
+  return [...by.values()].map((m) => ({ column: m.column, count: m.count, thickness: m.e1 - m.e0, length: m.s1 - m.s0 }));
+}
+
+/** 묶음: 첫 열은 벽 쪽 단독, 이후 둘씩 등 맞댐, 하나 남으면 마지막도 단독. 값은 열 순번. */
+export function pairUnits(n) {
+  if (n <= 0) return [];
+  const units = [[0]];
+  for (let i = 1; i < n; i += 2) units.push(i + 1 < n ? [i, i + 1] : [i]);
+  return units;
+}
+
+function option(availE, sumT, slots, extra, target) {
+  const room = availE - sumT - extra;
+  const aMax = slots > 0 ? room / slots : room >= -1e-9 ? Infinity : -Infinity;
+  return {
+    slots,
+    aMax: Number.isFinite(aMax) ? floorMm(aMax) : aMax,
+    fits: room >= -1e-9, // 통로 0이면 들어가는가
+    meetsTarget: aMax + 1e-9 >= target,
+    shortfall: aMax + 1e-9 >= target ? 0 : Math.max(0, floorMm(target * slots - room + 1e-6 > 0 ? target * slots - room : 0)),
+  };
+}
+
+/**
+ * 배치 가능 범위 계산(순수 함수).
+ * @param {{column,count,thickness,length}[]} profile 생성 순서
+ * @param {{ spanE:number, spanS:number, wallGap:number, aisleTarget:number, backGap?:number }} o
+ */
+export function planFixed(profile, { spanE, spanS, wallGap, aisleTarget, backGap = BACK_GAP }) {
+  const n = profile.length;
+  const sumT = profile.reduce((s, c) => s + c.thickness, 0);
+  const availE = spanE - 2 * wallGap, availS = spanS - 2 * wallGap;
+  const longest = profile.reduce((m, c) => (c.length > (m?.length ?? -1) ? c : m), null);
+  const tooLong = profile.filter((c) => c.length > availS + 1e-9).map((c) => c.column);
+  const units = pairUnits(n), pairs = units.filter((u) => u.length === 2).length;
+  return {
+    n, sumT, availE, availS, longest, tooLong, lengthOK: tooLong.length === 0, aisleTarget, backGap, units,
+    all: option(availE, sumT, n - 1, 0, aisleTarget),
+    pairs: option(availE, sumT, units.length - 1, pairs * backGap, aisleTarget),
+  };
+}
+
+/**
+ * 열 순번별 '앞 열과의 간격'. 0번은 0.
+ * spacing 'max': 남는 폭을 통로에 고르게 나눈 최대 폭(목표 미달이어도 들어가면 그 폭). 들어가지 않으면 목표 폭.
+ * spacing 'target': 통로 목표 폭 그대로(남는 폭은 끝 벽 쪽).
+ */
+export function gapsFor(plan, pairing, spacing) {
+  const opt = plan[pairing === 'pairs' ? 'pairs' : 'all'];
+  const aisle = spacing === 'target' || !opt.fits || !Number.isFinite(opt.aMax) ? plan.aisleTarget : opt.aMax;
+  const gaps = new Array(plan.n).fill(aisle);
+  gaps[0] = 0;
+  if (pairing === 'pairs') for (const u of plan.units) if (u.length === 2) gaps[u[1]] = plan.backGap;
+  return { gaps, aisle };
+}
+
+const m = (v) => (Number.isFinite(v) ? v.toFixed(2) : '제한 없음');
+
+/** 진단 문구(화면 표시용). */
+export function planText(plan, pairing, spacing) {
+  const lines = [];
+  const L = plan.longest;
+  lines.push(`열 ${plan.n}개 · 열 두께 합 ${m(plan.sumT)}m · 사용 가능 폭 ${m(plan.availE)}m / 길이 ${m(plan.availS)}m`);
+  lines.push(L ? `가장 긴 열 ${L.column} ${m(L.length)}m ${plan.lengthOK ? '≤' : '>'} ${m(plan.availS)}m ${plan.lengthOK ? '✔' : `✖ (${plan.tooLong.join('·')} 열이 창고 길이보다 깁니다)`}` : '배치할 열 없음');
+  const row = (name, o) => `${name}: 최대 통로 ${o.fits ? m(o.aMax) + 'm' : '불가'} · 목표 ${m(plan.aisleTarget)}m ${o.meetsTarget ? '✔' : `✖${o.fits ? '' : ''} (폭 ${m(o.shortfall)}m 부족)`}`;
+  lines.push(row('모든 열 사이 통로', plan.all));
+  lines.push(row(`등 맞댐 쌍(묶음 ${plan.units.length}개)`, plan.pairs));
+  const opt = plan[pairing === 'pairs' ? 'pairs' : 'all'], { aisle } = gapsFor(plan, pairing, spacing);
+  const how = pairing === 'pairs' ? '등 맞댐 쌍' : '모든 열 사이 통로';
+  lines.push(`적용: ${how} · 열 사이 ${m(aisle)}m${spacing === 'max' && opt.fits ? ' (남는 폭을 고르게 나눔)' : ''}${opt.fits && plan.lengthOK ? '' : ' · 창고 밖으로 나가는 랙이 있습니다'}`);
+  return lines;
+}

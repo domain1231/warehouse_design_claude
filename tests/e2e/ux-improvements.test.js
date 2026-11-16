@@ -139,6 +139,8 @@ test('벽 도구: 창고 밖 클릭과 경고 미허용 상태의 랙 위 클릭
 test('Ctrl+S는 저장 상태 토스트를 보인다', async () => {
   const { ctx, page } = await open();
   await page.locator('[data-testid=plan]').click({ position: { x: 5, y: 5 } });
+  // 첫 자동 저장·불러오기가 끝나 저장 버튼이 활성일 때 누른다(진행 중이면 '저장 중' 안내가 정상 동작).
+  await page.waitForFunction(() => !document.getElementById('vSave').disabled, null, { timeout: 15000 });
   await page.keyboard.press('Control+s');
   await waitToast(page, /저장됨 \(SAVED\)|변경 없음 · 이미 저장됨 \(SAVED\)/);
   await ctx.close();

@@ -5,6 +5,14 @@
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 로케이션 열 고정 배치(D-041) · feature/fixed-column-layout
+- Excel 자동 배치 방식 '로케이션 열 고정 · 열·번호 순서 유지' 추가(1단계). 계산 `src/autolayout/fixed-columns.js`, 생성 `generateRacks`의 `columnGaps`·`fixedAlign`, 후보 `buildFixedCandidates`, UI `#fxOptions`(통로 방식·열 사이 간격·진단).
+- 저장은 모드 'order' + 확장 필드 fixedColumns(v2.4.1 호환). v2.4.1 HTML의 validateProject로 직접 확인: 56랙, 모드 order, 확장 필드 유지, v2.4.1 scan 위반 0.
+- 예시 Excel 18.44×8.5m: 모든 열 사이 0.703m 56/56, 등 맞댐 1.22m 56/56.
+- UI 대조 고정 차이 7 → 11건(새 선택 항목·설정 패널, 사용자 승인).
+- `pnpm check`: unit 141, golden 286(todo 2), e2e 97 PASS(Linux Chrome). NOT RUN: Windows Edge, 실제 마우스·터치패드, 모바일, 실제 업무 Excel.
+- 다음(2단계): 행 배치(한 줄 두 열), 지그재그 시작, 방식 자동 추천.
+
 ### 2026-11-16 사용성 개선 6건(D-040) · fix/ux-improvements
 - Release v2.5.0-alpha.0 Draft는 세션에서 API 403(Release 생성 불가)이라 사용자가 직접 생성(대상 main 1aa4aa4).
 - 변경: 2개 이상 삭제 확인, 하단 패널 닫힘 시 높이 맞춤(3단 화면), JSON 형식 오류 위치 안내, 정밀 입력 문구 통일, 배치 거부 사유·해결 안내, Ctrl+S 결과 알림.
