@@ -208,11 +208,13 @@ export function fixedConfig(analysis, c, project) {
   const f = c.autoPlacement.fixedColumns, backGap = Math.max(BACK_GAP, project?.settings?.minGap || 0);
   // 행 배치 = 열 배치를 통째로 -90° 돌린 것: 축은 (북쪽-90°, 진행 방향 반대), 랙 회전 -90°. 도면 북쪽 방향은 바꾸지 않는다.
   const axisOf = (axis) => (axis === 'row'
-    ? { axes: axesOf(c.northRotation - 90, c.columnDirection === 'east' ? 'west' : 'east'), rotationOffset: -90 }
-    : { axes: axesOf(c.northRotation, c.columnDirection), rotationOffset: 0 });
+    ? { axes: axesOf(c.northRotation - 90, c.columnDirection === 'east' ? 'west' : 'east'), rotationOffset: -90, gaps: f.gaps ?? 'pack' }
+    : { axes: axesOf(c.northRotation, c.columnDirection), rotationOffset: 0, gaps: f.gaps ?? 'pack' });
   const probe = (axis) => {
-    const fx = axisOf(axis);
-    return { fx, profile: columnProfile(generateRacks(analysis, { ...c, columnGap: 0, fixedLayout: { ...fx, targets: null } }, { nextId: createIdGenerator({ seed: 'fixed-probe' }) }), fx.axes), sp: spans(c.width, c.depth, fx.axes) };
+    const fx = axisOf(axis), leadOut = {};
+    const profile = columnProfile(generateRacks(analysis, { ...c, columnGap: 0, fixedLayout: { ...fx, targets: null, leadOut } }, { nextId: createIdGenerator({ seed: 'fixed-probe' }) }), fx.axes);
+    for (const p of profile) p.length += leadOut[p.column] ?? 0; // 앞쪽 빠진 번호 빈자리도 열 길이에 포함
+    return { fx, profile, sp: spans(c.width, c.depth, fx.axes) };
   };
   const pr = { column: probe('column'), row: probe('row') };
   const shapes = SHAPES.map((sh) => {
@@ -226,7 +228,11 @@ export function fixedConfig(analysis, c, project) {
   const lineFirst = (k) => (start === 'zigzag' ? (k % 2 ? flip(c.firstRackPosition) : c.firstRackPosition) : (c.perColumnSettings[chosen.ev.lines[k].cols[0].column] || {}).first || c.firstRackPosition);
   const targets = targetsFor(chosen.ev, { aisle, backGap, wallGap: c.wallGap, loE: sp.E[0], loS: sp.S[0], hiS: sp.S[1], lineFirst });
   const minGap = Math.min(aisle, chosen.ev.units.some((u) => u.length === 2) ? backGap : aisle);
-  return { info: { shapes, chosen, aisle, target: c.aisleTarget, spacing: f.spacing, start, auto, backGap }, config: { ...c, fixedLayout: { ...fx, targets } }, minGap };
+  // 누락 번호(1..열 최대 번호 중 없는 번호). 빈 랙 후보 생성(c.empty)을 켜면 후보가 채우므로 표시만 한다.
+  const nums = {};
+  for (const r of analysis.racks) if (r.floor === c.floor && r.dimensions && !r.unresolved) (nums[r.column] ??= new Set()).add(r.rackNumber);
+  const missing = Object.keys(nums).sort().flatMap((k) => { const v = nums[k], out = []; for (let i = 1; i <= Math.max(...v); i++) if (!v.has(i)) out.push(k + i); return out; });
+  return { info: { shapes, chosen, aisle, target: c.aisleTarget, spacing: f.spacing, start, auto, backGap, missing, gaps: c.empty ? 'empty' : f.gaps ?? 'pack' }, config: { ...c, fixedLayout: { ...fx, targets, leadOut: {} } }, minGap };
 }
 
 export function buildFixedCandidates(project, analysis, c, opts) {

@@ -50,8 +50,8 @@ export function readExcelConfig(raw) {
 
 // D-041: 로케이션 열 고정은 v2.4.1 호환을 위해 저장 모드 'order' + 확장 필드 fixedColumns로 표현한다.
 function fixedColumnsOf(raw) {
-  const f = { pairing: raw.fixedPairing ?? 'all', spacing: raw.fixedSpacing ?? 'max', axis: raw.fixedAxis ?? 'auto', perLine: Number(raw.fixedPerLine ?? 1), start: raw.fixedStart ?? 'config' };
-  if (!['all', 'pairs'].includes(f.pairing) || !['max', 'target'].includes(f.spacing) || !['column', 'row', 'auto'].includes(f.axis) || ![1, 2].includes(f.perLine) || !['config', 'zigzag'].includes(f.start)) throw new Error('로케이션 열 고정 설정 오류');
+  const f = { pairing: raw.fixedPairing ?? 'all', spacing: raw.fixedSpacing ?? 'max', axis: raw.fixedAxis ?? 'auto', perLine: Number(raw.fixedPerLine ?? 1), start: raw.fixedStart ?? 'config', gaps: raw.fixedGaps ?? 'pack' };
+  if (!['all', 'pairs'].includes(f.pairing) || !['max', 'target'].includes(f.spacing) || !['column', 'row', 'auto'].includes(f.axis) || ![1, 2].includes(f.perLine) || !['config', 'zigzag'].includes(f.start) || !['pack', 'keep'].includes(f.gaps)) throw new Error('로케이션 열 고정 설정 오류');
   return f;
 }
 
@@ -83,7 +83,15 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
     }
     const relative = [];
     let center = null, prevSpan = 0;
+    // D-046 누락 번호 빈자리: 빠진 번호마다 그 열의 대표 길이(중앙값)+랙 간격만큼 비워 둔다(로케이션 열 고정에서만).
+    const keepGaps = fx?.gaps === 'keep' && !c.empty, rad = (rotation * Math.PI) / 180;
+    const spanOf = (r) => { const [w, d] = r.dimensions.map((v) => v / 1e3), bw = Math.abs(w * Math.cos(rad)) + Math.abs(d * Math.sin(rad)), bh = Math.abs(w * Math.sin(rad)) + Math.abs(d * Math.cos(rad)); return Math.abs(D[0]) * bw + Math.abs(D[1]) * bh; };
+    const slot = keepGaps && group.length ? [...group.map(spanOf)].sort((a, b) => a - b)[Math.floor((group.length - 1) / 2)] : 0;
+    let extra = 0, prevNum = 0;
+    if (keepGaps && fx.leadOut && group.length) fx.leadOut[col] = Math.max(0, group[0].rackNumber - 1) * (slot + c.rackGap);
     for (const r of group) {
+      if (keepGaps) extra += Math.max(0, r.rackNumber - prevNum - 1) * (slot + c.rackGap);
+      prevNum = r.rackNumber;
       const [w, d, h] = r.dimensions.map((v) => v / 1e3);
       const o = createObject('rack', 0, 0, w, d, {
         height: h, rotation, code: r.key, block: col, unit: '미설정', provenance: '자동 배치 · 위치 실측 미확인',
@@ -92,8 +100,8 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
       const b = bounds(o), bw = b.maxX - b.minX, bh = b.maxY - b.minY, span = Math.abs(D[0]) * bw + Math.abs(D[1]) * bh;
       if (!center) center = [bw / 2, bh / 2];
       else center = [center[0] + D[0] * (prevSpan / 2 + c.rackGap + span / 2), center[1] + D[1] * (prevSpan / 2 + c.rackGap + span / 2)];
-      o.x = center[0] - w / 2;
-      o.y = center[1] - d / 2;
+      o.x = center[0] + D[0] * extra - w / 2;
+      o.y = center[1] + D[1] * extra - d / 2;
       prevSpan = span;
       relative.push(o);
     }
@@ -112,20 +120,20 @@ export function generateRacks(analysis, c, { nextId, filename = '', sheet = '' }
     }
     maxEast = Math.max(maxEast ?? -Infinity, ...relative.flatMap((o) => polygon(o).map((p) => dot(p, E))));
   }
-  if (fx?.targets) placeTargets(out, fx.targets, E, S, dot);
+  if (fx?.targets) placeTargets(out, fx.targets, E, S, dot, fx.leadOut ?? {});
   return out;
 }
 
 // D-041 로케이션 열 고정: 계산된 목표 위치로 열을 통째로 옮긴다(열 안 랙 간격·순서 불변).
 // 목표 = 진행 방향 시작 쪽 끝(e)과, 첫 랙 쪽 끝(북쪽 시작이면 sMin, 남쪽 시작이면 sMax).
-function placeTargets(out, targets, E, S, dot) {
+function placeTargets(out, targets, E, S, dot, lead) {
   const byCol = new Map();
   for (const o of out) byCol.set(o.excel.column, [...(byCol.get(o.excel.column) ?? []), o]);
   for (const [col, list] of byCol) {
     const t = targets[col];
     if (!t) continue;
     const pts = list.flatMap((o) => polygon(o)), e = pts.map((p) => dot(p, E)), s = pts.map((p) => dot(p, S));
-    const dE = t.e - Math.min(...e), dS = t.sMin !== undefined ? t.sMin - Math.min(...s) : t.sMax - Math.max(...s);
+    const L = lead[col] ?? 0, dE = t.e - Math.min(...e), dS = t.sMin !== undefined ? t.sMin - (Math.min(...s) - L) : t.sMax - (Math.max(...s) + L); // L: 앞쪽 빠진 번호 빈자리
     for (const o of list) {
       o.x += E[0] * dE + S[0] * dS;
       o.y += E[1] * dE + S[1] * dS;
