@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.1 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 Release Draft 워크플로(D-044) · chore/release-draft-workflow
+- Actions → 'Release Draft' → Run workflow(버전 입력) → 검사 통과 시 Draft pre-release 생성 → 사용자가 확인 후 Publish.
+- 본문 원본: `docs/releases/v<버전>.md`(v2.5.0-alpha.1 포함). 세션에서 workflow_dispatch API 호출 가능 여부는 병합 후 확인.
+
 ### 2026-11-16 로케이션 열 고정 2단계(D-042) · feature/fixed-layout-stage2
 - 설정 추가: 배치 축(열/행/자동 추천), 한 줄 열 수(1/2), 시작 방향(설정대로/지그재그). 계산 `evaluateShape`·`recommend`·`targetsFor`, 생성은 `generateRacks`의 `fixedLayout {axes, rotationOffset, targets}`(열을 목표 위치로 통째 이동).
 - 진단: 8가지 형태 최대 통로 표 + 적용 형태. 행 배치 방향 읽는 법 안내.

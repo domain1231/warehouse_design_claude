@@ -277,3 +277,8 @@
 - 결정: Excel '로케이션 열 고정'에서 행 배치가 적용될 때(배치 축 '행 배치', 또는 '자동 추천'이 행 배치를 고른 경우) 방향 선택 항목의 이름만 바꾼다. 열 진행 방향 → '행 진행 방향'('A → N / 북→남 방향', 'A → N / 남→북 방향'), 첫 랙 위치 → '첫 랙 위치 / 번호 증가(행)'('서쪽 끝 시작 → 동쪽 증가', '동쪽 끝 시작 → 서쪽 증가'). 열별 시작 선택은 북쪽 → 서쪽 끝, 남쪽 → 동쪽 끝.
 - 값(east/west, north/south)·저장 형식·계산은 그대로. 열 배치와 다른 방식에서는 v2.4.1 이름을 그대로 보인다(기본 화면 UI 대조 변화 없음).
 - 사유: 행 배치는 열 배치를 통째로 −90° 돌린 것이라 기존 이름이 실제 방향과 달라 반대로 고르기 쉽다(D-042 미결 해소).
+
+## D-044 Release Draft 자동 생성 워크플로 (2026-11-16, 사용자 요청)
+- 결정: `.github/workflows/release-draft.yml`(수동 실행 workflow_dispatch) 추가. 입력 버전이 package.json과 같고 태그·Release가 없을 때만, main에서 `pnpm check` 통과 후 HTML 해시를 확인하고 **Draft**(기본 pre-release) Release를 만든다. 게시는 사용자가 한다. Draft는 게시 전까지 태그를 만들지 않는다.
+- 본문: `docs/releases/v<버전>.md`가 있으면 그대로, 없으면 직전 태그 이후 병합 PR 제목으로 자동 작성. 끝에 커밋·파일·크기·sha256·검사 결과를 자동으로 붙인다.
+- 사유: Claude Code 세션은 Release API가 막혀 있다(403 "not permitted for this session type"). Actions는 저장소 GITHUB_TOKEN(contents: write)으로 동작하므로 이 제한을 받지 않는다. AGENTS.md "Release는 Draft까지만" 규칙을 워크플로가 강제한다.
