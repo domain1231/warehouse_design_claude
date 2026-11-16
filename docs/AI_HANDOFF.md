@@ -8,6 +8,9 @@
 ### 2026-11-16 정식 판 확인 목록 · 성능 재측정 · docs/release-checklist-perf
 - `docs/RELEASE_CHECKLIST.md`: Windows Edge 실사용·운영 JSON·전체 Excel·백업 복구 수동 확인표(사용자 실행). 자료 필요: 전체 Excel, 운영 JSON.
 - `docs/perf/2026-11-16-alpha2.md`: v2.4.1 대비 56·200·500랙 측정. 라벨 방식 전환 500랙만 느림(355→459ms) → 최적화 후보.
+### 2026-11-16 구조물 반영 자동 추천(D-048) · feature/fixed-obstacle-aware
+- 자동 추천 + 구조물이 있으면 형태별 실제 배치로 비교해 선택(`buildFixedCandidates`). D-047 한계(추천이 구조물 미고려) 해소.
+- `pnpm check`: unit 151, golden 286(todo 2), e2e 97 PASS.
 
 ### 2026-11-16 장애물 회피(D-047) · feature/fixed-obstacles(#51 위에 쌓음)
 - `avoidObstacles`(candidates.js): 생성 랙이 구조물과 겹치면 열 방향으로 밀기. 진단 문구 추가. 화면 요소 추가 없음.
