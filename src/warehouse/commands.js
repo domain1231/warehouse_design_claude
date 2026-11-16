@@ -4,7 +4,7 @@
 // 실패해도 기준본처럼 명령 기록(success:false)은 남긴다. 실행취소 기록은 세션이 성공한 경우에만 만든다.
 import { validateProject, validateLayout, createObject, OBJECT_TYPES, AISLE_TYPES } from '../core/project.js';
 import { warnings } from './constraints.js';
-import { bounds } from '../geometry/polygons.js';
+import { bounds, isSimplePolygon } from '../geometry/polygons.js';
 import { addMm, roundMm, snapToStep, GEOMETRY_EPS_M as EPS } from '../geometry/tolerance.js';
 
 export const COMMAND_DEFAULT = '객체 수정';
@@ -156,6 +156,34 @@ export function addObjectAt(project, kind, point, { nextId, rack = RACK_DEFAULTS
       const o = createObject(kind, snapped(draft, point.x - w / 2), snapped(draft, point.y - d / 2), w, d, { id, code: nextCode(layout, kind) }, { nextId });
       if (kind === 'rack') Object.assign(o, { height: rack.height, type: rack.type, unit: String(rack.unit).trim() });
       layout.objects.push(o);
+    },
+  };
+}
+
+export const POLYGON_CLOSE_M = 0.02;
+export const POLYGON_INVALID_MESSAGE = '꼭짓점이 겹치거나 자기 교차하는 다각형입니다. Esc 후 다시 그리세요.';
+
+/** 월드 m 꼭짓점 → 통로 객체 상자(x,y,width,depth)와 상자 기준 0..1 꼭짓점. 끝점이 첫 점과 0.02m 이내면 닫힘 점으로 보고 뺀다. 올바르지 않으면 throw. */
+export function polygonAisleShape(points) {
+  const pts = points.map(([x, y]) => [x, y]);
+  if (pts.length > 3 && Math.hypot(pts[0][0] - pts.at(-1)[0], pts[0][1] - pts.at(-1)[1]) <= POLYGON_CLOSE_M) pts.pop();
+  if (pts.length < 3 || !isSimplePolygon(pts)) throw new Error(POLYGON_INVALID_MESSAGE);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const x = Math.min(...xs), y = Math.min(...ys), width = Math.max(...xs) - x, depth = Math.max(...ys) - y;
+  const vertices = pts.map(([px, py]) => [(px - x) / width, (py - y) / depth]);
+  if (!isSimplePolygon(vertices)) throw new Error(POLYGON_INVALID_MESSAGE);
+  return { x, y, width, depth, vertices };
+}
+
+/** 다각형 통로 추가 변경 함수(기준본 M.finishPolygon). 코드·통로 기준값은 사각형 통로와 같은 경로(nextCode, applyCommand)를 쓴다. */
+export function addPolygonAisle(points, aisleType, { nextId }) {
+  const shape = polygonAisleShape(points);
+  const id = nextId();
+  return {
+    id,
+    mutate(draft, layout) {
+      const { x, y, width, depth, vertices } = shape;
+      layout.objects.push(createObject('aisle', x, y, width, depth, { id, code: nextCode(layout, 'aisle'), aisleType, clearanceAxis: 'auto', vertices }, { nextId }));
     },
   };
 }
@@ -527,4 +555,44 @@ export const applyGroupPreview = (preview) => (draft, layout) => {
     o.rotation = next.rotation;
   }
   draft.editing.groupEditing = { gap: preview.config.gap, order: preview.config.order, anchor: preview.config.anchor };
+};
+
+/**
+ * 기준본 50 mApplyAisleRule: 통로 유형 기준(최소·목표 폭, 경고 사용)을 저장하고 같은 유형의 통로에 적용한다.
+ * 랙·다른 유형 통로는 바꾸지 않는다. 값 오류는 기준본 finite 문구로 던진다(호출부가 전체 취소).
+ */
+export function applyAisleRule(p, layout, type, { min, target, enabled }) {
+  const n = (v) => (typeof v === 'string' && v.trim() === '' ? NaN : Number(v));
+  const lo = n(min), hi = n(target);
+  if (!Number.isFinite(lo) || lo < 0 || lo > 500) throw new Error('최소 폭 값이 올바르지 않습니다.');
+  if (!Number.isFinite(hi) || hi < lo || hi > 500) throw new Error('목표 폭 값이 올바르지 않습니다.');
+  if (!(type in p.aisleRules)) throw new Error('통로 종류 값이 올바르지 않습니다.');
+  p.aisleRules[type] = { minWidth: lo, targetWidth: hi, enabled: !!enabled };
+  for (const o of layout.objects) if (o.kind === 'aisle' && o.aisleType === type) Object.assign(o, { minWidth: lo, targetWidth: hi, warningsEnabled: !!enabled });
+}
+
+// ── 선택 정보 패널 편집(기준본 60 크기 제한·비율 잠금, 50 통로 단면 설정, 90 검토 표시) ──
+const objectOf = (layout, id) => layout.objects.find((x) => x.id === id);
+export const LIMIT_COMMAND = '크기 조절 제한 설정';
+export const setLimit = (id, key, value) => (draft, layout) => {
+  if (!['minWidth', 'minDepth', 'maxWidth', 'maxDepth'].includes(key)) throw new Error('알 수 없는 크기 제한입니다.');
+  const o = objectOf(layout, id);
+  if (o) o.resizeConstraints[key] = value;
+};
+export const setAspectLock = (id, value) => (draft, layout) => {
+  const o = objectOf(layout, id);
+  if (o) o.resizeConstraints.aspectLocked = !!value;
+};
+/** 통로의 clearanceAxis / warningsEnabled / linkedDoorId / scopeIds 한 칸. 검증은 applyCommand가 한다. */
+export const AISLE_FIELDS = Object.freeze(['clearanceAxis', 'warningsEnabled', 'linkedDoorId', 'scopeIds']);
+export const setAisleField = (id, key, value) => (draft, layout) => {
+  if (!AISLE_FIELDS.includes(key)) throw new Error('알 수 없는 통로 설정입니다.');
+  const o = objectOf(layout, id);
+  if (o?.kind === 'aisle') o[key] = value;
+};
+/** 위반 '검토 중' 표시(기준본 90 wReview). 켜면 reviewNotes[배치][id]='review', 끄면 삭제. */
+export const setReviewMark = (id, on) => (draft) => {
+  const notes = draft.autoPlacement.reviewNotes[draft.settings.scenario];
+  if (on) notes[id] = 'review';
+  else delete notes[id];
 };

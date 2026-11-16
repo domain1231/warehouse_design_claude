@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
+import { waitPlanStable } from './helpers.js';
 
 const root = path.resolve(import.meta.dirname, '../..');
 const meta = JSON.parse(fs.readFileSync(path.join(root, 'dist/build-metadata.json'), 'utf8'));
@@ -20,7 +21,7 @@ after(async () => {
 });
 
 async function open() {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 850 } });
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 1500 } });
   const page = await ctx.newPage();
   page.problems = [];
   page.on('pageerror', (e) => page.problems.push(`pageerror: ${e.message}`));
@@ -74,6 +75,10 @@ test('드래그 이동: 스냅 이동·명령 기록, 경고 허용을 끄면 �
   const a = racks[12], b = racks[13];
   // 1) 빈 쪽으로 0.3m 이동(경고 허용 켬)
   await page.locator('[data-testid=allow-warnings]').check();
+  // 선택하면 도면 영역이 일시적으로 변하므로 먼저 선택해 정착시킨 뒤 드래그 좌표를 잰다
+  const ac = await screen(page, a.x + a.width / 2, a.y + a.depth / 2);
+  await page.mouse.click(ac.x, ac.y);
+  await waitPlanStable(page);
   const start = await screen(page, a.x + a.width / 2, a.y + a.depth / 2);
   const end = await screen(page, a.x + a.width / 2 + 0.3, a.y + a.depth / 2);
   await page.mouse.move(start.x, start.y);
@@ -92,6 +97,7 @@ test('드래그 이동: 스냅 이동·명령 기록, 경고 허용을 끄면 �
   // 2) 경고 허용 끄고 옆 랙 위로 이동 → 취소
   await page.locator('[data-testid=allow-warnings]').uncheck();
   await saved(page);
+  await waitPlanStable(page);
   const s2 = await screen(page, moved.x + moved.width / 2, moved.y + moved.depth / 2);
   const e2 = await screen(page, b.x + b.width / 2, b.y + b.depth / 2);
   await page.mouse.move(s2.x, s2.y);
@@ -178,7 +184,7 @@ test('BEFORE 잠금: 편집 단추·속성 칸이 잠기고 추가는 거부된�
   const { ctx, page } = await open();
   // 샘플은 BEFORE 잠금. 화면 전환 UI 전이므로 세션 편집으로 BEFORE를 보게 한다.
   await page.evaluate(() => window.__warehouseSession.edit('BEFORE 보기', (p) => { p.settings.scenario = 'before'; }));
-  await page.waitForFunction(() => document.querySelector('[data-testid=summary]').textContent.includes('현재 BEFORE'));
+  await page.waitForFunction(() => document.getElementById('rActive').textContent.includes('BEFORE ·'));
   const rack = (await P(page)).scenarios.before.objects.find((o) => o.kind === 'rack');
   const c = await screen(page, rack.x + rack.width / 2, rack.y + rack.depth / 2);
   await page.mouse.click(c.x, c.y);

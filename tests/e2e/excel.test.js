@@ -40,7 +40,7 @@ test('Excel 분석: 가상 XLSX를 읽어 머리글 8행 탐지, 20개 중 매�
   await ctx.close();
 });
 
-test('Excel 적용(Phase 5b): 배치안 미리보기 → 매핑 요약(값 제외) → 경고 확인·최종 확인 → AFTER만 변경·자동 백업 → 실행취소 복귀', async () => {
+test('Excel 적용(Phase 5b): 배치안 미리보기 → 경고 확인·최종 확인 → AFTER만 변경·자동 백업 → 실행취소 복귀', async () => {
   const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 } });
   const page = await ctx.newPage();
   const problems = [];
@@ -58,12 +58,6 @@ test('Excel 적용(Phase 5b): 배치안 미리보기 → 매핑 요약(값 제�
   assert.ok(await page.locator('[data-testid=excel-apply]').isDisabled());
   await page.locator('[data-testid=excel-dims] select').selectOption('1');
   await page.waitForFunction(() => /오류 행을 수정하거나/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
-  // 매핑 요약: 머리글·건수만, 품목명 등 데이터 값은 포함하지 않는다
-  const summary = await page.evaluate(() => window.__excelDialog?.mappingSummary?.() ?? null);
-  if (summary !== null) {
-    assert.match(summary, /로케이션 ← B "로케이션"/);
-    assert.doesNotMatch(summary, /가상 부품|P-001|7F-A-1-1-1/);
-  }
   await page.locator('[data-testid=excel-config] [name=target]').selectOption('after');
   await page.locator('[data-testid=excel-config] [name=mode]').selectOption('new');
   await page.locator('[data-testid=excel-config] [name=building]').fill('SYN');
@@ -73,8 +67,11 @@ test('Excel 적용(Phase 5b): 배치안 미리보기 → 매핑 요약(값 제�
   await page.waitForFunction(() => /적용 후/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
   assert.ok((await page.locator('[data-testid=excel-preview] g[data-id]').count()) > 0);
   const label = await page.locator('[data-testid=excel-apply]').textContent();
+  assert.ok(await page.locator('[data-testid=excel-apply]').isDisabled(), '대상 확인 전에는 적용할 수 없다');
+  await page.locator('#rTargetConfirm').check();
   if (/경고 확인/.test(label)) {
     assert.ok(await page.locator('[data-testid=excel-apply]').isDisabled());
+    await page.locator('#exAllowWarnings').check();
     await page.locator('[data-testid=excel-ack]').check();
   }
   await page.locator('[data-testid=excel-apply]').click();
@@ -117,7 +114,10 @@ test('Excel 자동 배치 후보(Phase 6a): 많은 랙을 좁은 창고에 적�
   await page.waitForFunction(() => /선택 후보: .* 내부 정상 21\/21/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
   const name = (await page.locator('[data-testid=excel-pstats]').textContent()).match(/선택 후보: (.+?) · 내부 정상/)[1];
   assert.notEqual(name, '기존 배치 규칙');
-  if (!(await page.locator('[data-testid=excel-ack]').isHidden())) await page.locator('[data-testid=excel-ack]').check();
+  await page.locator('#rTargetConfirm').check();
+  await page.locator('#exAllowWarnings').check();
+  await page.waitForFunction(() => /선택 후보: .* 내부 정상 21\/21/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
+  await page.locator('[data-testid=excel-ack]').check();
   await page.locator('[data-testid=excel-apply]').click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.layoutBackups.length === 1 && window.__warehouseSession.state.status === 'saved');
   const r = await page.evaluate(() => { const p = window.__warehouseSession.state.project; return { w: p.scenarios.after.warehouse, racks: p.scenarios.after.objects.filter((o) => o.kind === 'rack' && o.excel), cand: p.autoPlacement.history.at(-1).candidate }; });
@@ -152,6 +152,7 @@ test('Excel 후보 비교·선택·재최적화(Phase 6b): 비교표 선택은 �
   await cfg('width').fill('6');
   await cfg('depth').fill('4');
   await cfg('depth').dispatchEvent('change');
+  await cfg('allowWarnings').check();
   const rows = page.locator('[data-testid=excel-comparison] tbody tr');
   const stats = () => page.locator('[data-testid=excel-pstats]').textContent();
   await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 5);
@@ -184,10 +185,9 @@ test('Excel 후보 비교·선택·재최적화(Phase 6b): 비교표 선택은 �
   await page.locator('[data-testid=excel-comparison] input[data-cand="5"]').check();
   const name = (await stats()).match(/선택 후보: (.+?) · 내부 정상/)[1];
   assert.match(name, /^재최적화 · boundary/);
-  if (!(await page.locator('[data-testid=excel-ack]').isHidden())) {
-    assert.equal(await page.locator('[data-testid=excel-ack]').isChecked(), false);
-    await page.locator('[data-testid=excel-ack]').check();
-  }
+  assert.equal(await page.locator('[data-testid=excel-ack]').isChecked(), false);
+  await page.locator('#rTargetConfirm').check();
+  await page.locator('[data-testid=excel-ack]').check();
   await page.locator('[data-testid=excel-apply]').click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.layoutBackups.length === 1 && window.__warehouseSession.state.status === 'saved');
   assert.equal(await page.evaluate(() => window.__warehouseSession.state.project.autoPlacement.history.at(-1).candidate), name);
@@ -215,6 +215,8 @@ test('Excel 열 우선(Phase 6c): 후보 4개+비교 전용, 그룹 표, 외부 
   await cfg('depth').fill('6');
   await cfg('autoMode').selectOption('column');
   await cfg('keepManual').uncheck();
+  await cfg('allowWarnings').check();
+  await page.locator('#rTargetConfirm').check();
   const rows = page.locator('[data-testid=excel-comparison] tbody tr');
   await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 5);
   assert.match(await rows.first().textContent(), /비교 전용/);
@@ -226,6 +228,7 @@ test('Excel 열 우선(Phase 6c): 후보 4개+비교 전용, 그룹 표, 외부 
   await page.locator('[data-testid=excel-reaccept]').click();
   await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 6);
   assert.match(await rows.nth(5).textContent(), /^\s*외부 재수용/);
+  await page.locator('#clOptions summary').click(); // 기준본처럼 '열 우선 고급 설정'은 접혀 있다
   await cfg('allowWrap').check();
   await cfg('allowRotation').check();
   await page.waitForFunction(() => document.querySelectorAll('[data-testid=excel-comparison] tbody tr').length === 9);
@@ -240,7 +243,7 @@ test('Excel 열 우선(Phase 6c): 후보 4개+비교 전용, 그룹 표, 외부 
   await page.locator('[data-testid=excel-config] [name=depth]').fill('12');
   await page.locator('[data-testid=excel-config] [name=depth]').dispatchEvent('change');
   await page.waitForFunction(() => !document.querySelector('[data-testid=excel-apply]').disabled || /내부 정상 21\/21/.test(document.querySelector('[data-testid=excel-pstats]').textContent));
-  if (!(await page.locator('[data-testid=excel-ack]').isHidden())) await page.locator('[data-testid=excel-ack]').check();
+  await page.locator('[data-testid=excel-ack]').check();
   assert.ok(!(await apply.isDisabled()), await page.locator('[data-testid=excel-applymsg]').textContent());
   await apply.click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.layoutBackups.length === 1 && window.__warehouseSession.state.status === 'saved');

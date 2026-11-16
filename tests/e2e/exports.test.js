@@ -36,11 +36,16 @@ async function download(page, testid) {
 
 test('SVG·CSV 내보내기: 파일명과 내용 시작', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   const svg = await download(page, 'export-svg');
   assert.equal(svg.name, 'warehouse_layout.svg');
   assert.match(svg.text.toString('utf8'), /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" width="1500"/);
   const cases = [['export-racks-csv', 'warehouse_racks.csv', '"id","code","block","type"'], ['export-history-csv', 'inventory_history.csv', '"scenario","date","rackId"'], ['export-template-csv', 'inventory_template.csv', '"date","rackId","capacity"'], ['export-compare-csv', 'warehouse_comparison.csv', '"지표","BEFORE","AFTER"']];
   for (const [id, name, head] of cases) {
+    if (id === 'export-compare-csv') { // 비교 요약 CSV는 비교 대화상자 안(기준본 #compareCsv)
+      await page.locator('[data-testid=scenario-compare]').click();
+      await page.locator('[data-testid=compare-dialog]').waitFor({ state: 'visible' });
+    }
     const f = await download(page, id);
     assert.equal(f.name, name);
     assert.equal(f.text.subarray(0, 3).toString('hex'), 'efbbbf', 'BOM');
@@ -73,6 +78,7 @@ test('인쇄: 보고서 영역을 채우고 window.print 호출', async () => {
 
 test('과거 조회 중 내보내기는 조회 배치를 따른다(보고서 제목 줄)', async () => {
   const { ctx, page } = await open();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   await page.locator('[data-testid=history-date]').fill('2026-10-01');
   await page.locator('[data-testid=history-date]').dispatchEvent('change');
   const svg = (await download(page, 'export-svg')).text.toString('utf8');
@@ -99,6 +105,8 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
   await page.locator('[data-testid=bottom-toggle]').click();
   await panel.waitFor({ state: 'visible' });
   const s0 = await state();
+  const rectH = () => page.evaluate(() => document.querySelector('[data-testid=bottom-panel]').getBoundingClientRect().height);
+  const chrome = (await rectH()) - s0.h; // 날짜 막대 등 패널 높이 외 고정 부분(기준본과 동일 구조)
   // 높이: 키보드
   const grip = page.locator('[data-testid=bottom-grip]');
   await grip.focus();
@@ -110,9 +118,9 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
   assert.equal((await state()).h, 600);
   await page.keyboard.press('ArrowDown');
   assert.equal((await state()).h, 580);
-  assert.equal(await page.evaluate(() => document.querySelector('[data-testid=bottom-panel]').getBoundingClientRect().height), 580);
+  assert.equal(await rectH(), 580 + chrome);
   // 구역 접기
-  await page.locator('[data-testid=inventory-section] > summary').click();
+  await page.locator('[data-testid=inventory-section] [data-bottom]').click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.panels.bottomSections.inventory === false); // toggle 이벤트는 비동기
   assert.equal((await state()).preset, 'custom');
   // 전체 접기
@@ -126,7 +134,8 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
   assert.deepEqual([s1.open, s1.h, s1.s.inventory], [false, 580, false]);
   await page.locator('[data-testid=bottom-toggle]').click();
   await panel.waitFor({ state: 'visible' });
-  assert.equal(await page.locator('[data-testid=inventory-section]').evaluate((e) => e.open), false);
+  assert.equal(await page.locator('[data-testid=bottom-heading-inventory]').getAttribute('aria-expanded'), 'false');
+  assert.equal(await page.locator('[data-testid=bottom-heading-inventory] .b-toggle-heading').textContent(), '▸ 재고기록');
   // 기본 복원
   await page.locator('[data-testid=bottom-default]').click();
   const s2 = await state();
@@ -139,6 +148,7 @@ test('하단 패널: 접기·구역 접기·높이 키보드 조절이 새로고
 test('하단 패널: 상태 문구가 바뀌어도 도면 크기가 변하지 않는다', async () => {
   const { ctx, page } = await open();
   const box = () => page.locator('[data-testid=canvas-wrap]').boundingBox();
+  await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
   const b0 = await box();
   await page.locator('[data-testid=history-date]').fill('2026-10-01');
   await page.locator('[data-testid=history-date]').dispatchEvent('change');

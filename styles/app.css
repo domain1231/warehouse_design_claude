@@ -1,90 +1,13 @@
-:root {
-  color-scheme: dark;
-  --bg: #111821;
-  --panel: #182331;
-  --card: #202d3d;
-  --line: #34465a;
-  --text: #e5edf6;
-  --muted: #91a6be;
-  --blue: #80b3f1;
-  --accent: var(--blue);
-  --selected: #c4ddff;
-  --header: #162130;
-  --floor: #152231;
-  --control: #111c29;
-  --canvas: #101a25;
-  --warn: #ff7885;
-}
-
-* { box-sizing: border-box; }
-
-html, body { height: 100%; }
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: 14px/1.5 system-ui, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-}
-
-#app { height: 100%; }
-.app { display: flex; flex-direction: column; height: 100%; min-height: 0; }
-
-.topbar {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
-  padding: 8px 16px; background: var(--header); border-bottom: 1px solid var(--line);
-}
-.brand h1 { margin: 0; font-size: 16px; }
-.versions { color: var(--muted); margin: 0; font-size: 12px; }
-.name-field { flex: 1 1 220px; max-width: 360px; margin: 0; }
-/* 상태 문구 길이가 바뀌어도 머리 영역 높이가 바뀌지 않게(도면 위치 고정) 높이를 고정하고 넘치면 스크롤 */
-.status-box { flex: 1 1 220px; min-width: 0; height: 44px; overflow-y: auto; }
-.status-badge { margin: 0; font-weight: 600; }
-.status-badge[data-state="saved"] { color: #6fcf97; }
-.status-badge[data-state="unsaved"], .status-badge[data-state="saving"] { color: #f2c94c; }
-.status-badge[data-state="error"] { color: #eb5757; }
-.status-detail { color: var(--muted); margin: 0; font-size: 12px; overflow-wrap: anywhere; word-break: keep-all; }
-.notice { border-left: 3px solid #f2c94c; padding: 6px 12px; margin: 0; background: rgba(242, 201, 76, 0.08); }
-.notice[hidden] { display: none; }
-
+/* 재구축 보조 규칙. 화면 기본 디자인은 styles/baseline.css(v2.4.1)가 맡는다(D-033). 여기서는 기준본에 없는 재구축 대화상자·보조 요소만 꾸민다. */
+:root { --accent: var(--blue); --selected: #c4ddff; --header: #162130; --floor: #152231; --control: #111c29; --canvas: #101a25; --warn: #ff7885; }
+#saveStatus[data-state="saved"] { color: var(--green); }
+#saveStatus[data-state="unsaved"], #saveStatus[data-state="saving"] { color: var(--orange); }
+#saveStatus[data-state="error"] { color: var(--red); }
+.notice:empty { display: none; }
 .field { display: grid; gap: 4px; margin: 0 0 10px; font-size: 13px; }
-.field input, .field select {
-  padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--control); color: var(--text); font: inherit;
-}
-.check { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; font-size: 13px; }
-
-button {
-  padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--control); color: var(--text); font: inherit; cursor: pointer;
-}
-button:disabled { opacity: 0.45; cursor: default; }
-button.active { border-color: var(--accent); color: var(--accent); }
-button[data-testid="save"] { background: var(--accent); border-color: var(--accent); color: #0b1220; }
-.actions, .tool-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.tool-group { margin: 0 0 10px; }
-.zoom-label { min-width: 52px; text-align: center; font-variant-numeric: tabular-nums; }
-
-.workspace { flex: 1; display: grid; grid-template-columns: 240px minmax(0, 1fr) 260px; min-height: 0; }
-.side { padding: 12px; background: var(--panel); overflow: auto; min-height: 0; }
-.side.left { border-right: 1px solid var(--line); }
-.side.right { border-left: 1px solid var(--line); }
-.side h2 { margin: 4px 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
-.muted, .summary { color: var(--muted); margin: 0 0 10px; font-size: 12px; }
-.info { color: #75d9b1; font-size: 12px; margin: 0; }
+.tool-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 10px; }
 .warnbox { border-left: 3px solid var(--warn); padding: 6px 8px; background: rgba(255, 120, 133, 0.08); font-size: 12px; }
-.sel-status { margin: 0 0 6px; font-weight: 600; }
-.sel-list { margin: 0 0 10px; padding-left: 18px; font-size: 12px; max-height: 30vh; overflow: auto; }
-
-.canvas-wrap { position: relative; background: var(--canvas); min-width: 0; min-height: 0; overflow: hidden; }
-#plan { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
-.canvas-hint { position: absolute; left: 8px; bottom: 6px; margin: 0; font-size: 11px; color: var(--muted); pointer-events: none; }
-
-@media (max-width: 900px) {
-  .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(320px, 1fr) auto; }
-  .side.left, .side.right { border: 0; border-bottom: 1px solid var(--line); }
-}
-
+.toast[hidden] { display: none; }
 /* Phase 3b: 편집 */
 .box { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin: 0 0 10px; }
 .box summary { cursor: pointer; font-size: 13px; margin-bottom: 6px; }
@@ -127,19 +50,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 @media (max-width: 760px) { .group-grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* Phase 4: 통계·경고·랙 목록·범례·패널 접기 */
-.workspace.left-closed { grid-template-columns: 0 minmax(0, 1fr) 260px; }
-.workspace.right-closed { grid-template-columns: 240px minmax(0, 1fr) 0; }
-.workspace.left-closed.right-closed { grid-template-columns: 0 minmax(0, 1fr) 0; }
-/* 접힌 패널은 격자 칸(0px)을 유지해 도면이 다른 칸으로 밀리지 않게 한다 */
-.workspace.left-closed .side.left, .workspace.right-closed .side.right { visibility: hidden; padding: 0; border: 0; overflow: hidden; }
-.side-section { border-top: 1px solid var(--line); padding: 6px 0; }
-.side-section > summary { cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 600; }
 .section-body { padding-top: 6px; }
-.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-.kpis div { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; display: grid; }
-.kpis span { font-size: 11px; color: var(--muted); }
-.kpis strong { font-size: 14px; font-variant-numeric: tabular-nums; }
-.metricline { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 2px 0; }
 .unit-load { font-size: 12px; margin: 0 0 6px; }
 .warning-list { margin: 0; padding-left: 18px; font-size: 12px; max-height: 26vh; overflow: auto; }
 .warning-list li { cursor: pointer; padding: 2px 0; }
@@ -152,14 +63,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .rack-row { display: flex; justify-content: space-between; gap: 6px; padding: 3px 4px; font-size: 12px; border-radius: 4px; cursor: pointer; }
 .rack-row:hover, .rack-row:focus { background: var(--card); }
 .rack-row[aria-selected="true"] { outline: 1px solid var(--accent); }
-.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-.legend { position: absolute; right: 8px; bottom: 6px; max-width: min(520px, calc(100% - 16px)); display: flex; flex-wrap: wrap; gap: 2px 10px; padding: 4px 8px; font-size: 11px; background: rgba(17, 24, 33, 0.85); border: 1px solid var(--line); border-radius: 6px; pointer-events: none; }
-.legend strong { flex-basis: 100%; font-size: 11px; }
-@media (max-width: 900px) {
-  .workspace.left-closed, .workspace.right-closed, .workspace.left-closed.right-closed { grid-template-columns: minmax(0, 1fr); }
-  .legend { left: 8px; max-width: none; }
-  .canvas-hint { display: none; }
-}
 
 /* Phase 4b: 랙 상세·기록 */
 .detail-dialog, .compare-dialog { width: min(1400px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
@@ -189,7 +92,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 @media (max-width: 900px) { .detail-grid, .compare-plans { grid-template-columns: minmax(0, 1fr); } }
 
 /* Phase 5a: Excel 분석 */
-.excel-dialog { width: min(1300px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
 .excel-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 .excel-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-bottom: 10px; }
 .excel-top label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
@@ -217,7 +119,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .excel-table tr[data-rack] { cursor: pointer; }
 .excel-optrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 6px; font-size: 12px; }
 [data-changes] { white-space: pre-line; }
-.summary-text { white-space: pre-wrap; font-size: 11px; background: var(--bg); padding: 6px; border-radius: 4px; }
 @media (max-width: 900px) { .excel-preview-grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* 라벨은 클릭을 가로채지 않는다(기준본 .v-labels). */
@@ -237,16 +138,9 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 
 /* Phase 10: 내보내기 줄·하단 패널·인쇄 */
 .export-row { margin: 0 0 10px; }
-.bottom-grip { height: 8px; cursor: ns-resize; background: var(--line); touch-action: none; flex: none; }
-.bottom-grip:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.bottom-grip[hidden], .bottom[hidden] { display: none; }
-.bottom { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; min-height: 0; overflow: hidden; background: var(--panel); }
-.bottom > .side-section { overflow: auto; min-width: 0; padding: 6px 10px; border-top: 0; border-left: 1px solid var(--line); }
-.bottom > .side-section:first-child { border-left: 0; }
-.bottom > .side-section:not([open]) { overflow: hidden; }
 #printArea { display: none; }
 @media print {
-  #app, dialog { display: none !important; }
+  body > :not(#printArea) { display: none !important; }
   #printArea { display: block; }
   #printArea svg { width: 100%; height: auto; }
   @page { size: landscape; margin: 8mm; }
@@ -258,3 +152,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .theme-fields input[type=color] { height: 36px; width: 100%; }
 .theme-swatch { display: inline-block; width: 18px; height: 18px; border: 1px solid var(--line); vertical-align: middle; margin: 3px; }
 .theme-preview { max-height: 30vh; overflow: auto; font-size: 12px; }
+
+/* D-036: 저장 상태 문구 길이(저장 중 ↔ 저장됨 ↔ 미저장)에 따라 머리글 버튼 줄바꿈이 바뀌어 도면이 한 프레임 움직이던 문제 방지.
+   기준본 max-width(250px)를 고정 폭으로 써서 문구가 바뀌어도 머리글 높이가 그대로이게 한다. */
+.header-actions .save { display: inline-block; width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

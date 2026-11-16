@@ -9,10 +9,10 @@ const fmtTime = (v) => (typeof v === 'string' && Number.isFinite(Date.parse(v)) 
 const STATE_TEXT = { saved: '저장됨 (SAVED)', unsaved: '저장되지 않음 (UNSAVED)', saving: '저장 중', error: '저장 실패 (UNSAVED · 메모리에 유지)', loading: '불러오는 중' };
 
 export const QUOTA_TEXT = '저장 공간이 부족하여 저장에 성공하지 못했습니다. 현재 작업은 메모리에 남아 있으며 저장되지 않았습니다 (UNSAVED). JSON 백업을 보관하고 브라우저 저장 공간을 확인하세요.';
-const BACKUP_NOTE = '전체 프로젝트 백업은 최신 최대 3개 / 압축 합계 3.2MB로 순환 보관합니다. 정상 저장·검증 성공 시에만 한도에 맞춰 오래된 백업부터 교체합니다. 단일 백업도 한도를 넘거나 저장·검증에 실패하면 작업을 취소하고 기존 백업과 저장 바이트를 보존합니다. 날짜별 적용 스냅샷·재고 이력에는 이 순환 한도를 적용하지 않습니다.';
 
-const dlg = (cls, testid, html) => {
+const dlg = (cls, testid, html, id) => {
   const d = document.createElement('dialog');
+  d.id = id;
   d.className = cls;
   d.dataset.testid = testid;
   d.innerHTML = html;
@@ -55,8 +55,23 @@ export function createStorageDialogs({ session, store, backups, storage, validat
     return true;
   }
 
+  /** 기준본 vRecoverRaw: 읽지 못한 저장 원본(활성 슬롯, 없으면 포인터 원문)을 그대로 내려받는다. */
+  function exportProtectedRaw() {
+    let raw = null;
+    try {
+      raw = storage.getItem(store.keys.protected); // 교체 때 보존한 손상 원본(기준본 -protected-original)
+      if (raw !== null) return download('warehouse_protected_original.json', raw, 'application/json');
+      const ptr = storage.getItem(store.keys.pointer);
+      let active = null;
+      try { active = JSON.parse(ptr)?.active; } catch { /* 포인터 손상 */ }
+      raw = (active === 'a' || active === 'b' ? storage.getItem(store.keys[active]) : null) ?? ptr;
+    } catch { /* 읽기 실패 */ }
+    if (raw === null) return toast('보호 중인 저장 원본을 읽지 못했습니다.');
+    download('warehouse_protected_original.json', raw, 'application/json');
+  }
+
   // ── 교체 전 현재 작업 보호 ──
-  const rd = dlg('storage-dialog', 'replace-dialog', '<div class="dialog-head"><h2>교체 전 현재 작업 보호</h2><span></span></div><p data-text></p><div class="row"><button type="button" data-save data-testid="replace-save">현재 프로젝트 저장 후 교체</button><button type="button" data-backup data-testid="replace-backup">현재 JSON 다운로드 후 교체</button><button type="button" data-cancel data-testid="replace-cancel">취소</button></div><p class="muted">다운로드는 브라우저에 요청합니다. 파일 보관 여부는 다운로드 목록에서 확인하세요.</p>');
+  const rd = dlg('storage-dialog', 'replace-dialog', '<h2>교체 전 현재 작업 보호</h2><p id="vReplaceText" data-text></p><div class="row"><button type="button" id="vReplaceSave" data-save data-testid="replace-save">현재 프로젝트 저장 후 교체</button><button type="button" id="vReplaceBackup" data-backup data-testid="replace-backup">현재 JSON 다운로드 후 교체</button><button type="button" id="vReplaceCancel" data-cancel data-testid="replace-cancel">취소</button></div><p class="muted">다운로드는 브라우저에 요청합니다. 파일 보관 여부는 다운로드 목록에서 확인하세요.</p>', 'vReplaceDialog');
   let replaceResolve = null;
   const resolveReplace = (v) => {
     const done = replaceResolve;
@@ -98,7 +113,7 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   }
 
   // ── 프로젝트 이전 버전·백업 ──
-  const bd = dlg('storage-dialog', 'backup-dialog', `<div class="dialog-head"><h2>프로젝트 이전 버전·백업</h2><button type="button" data-close data-testid="backup-close">닫기 ×</button></div><p class="muted">이 PC·브라우저에만 보관됩니다. 직전 확인 저장 1개 + 주요 작업 전 전체 프로젝트 최신 최대 3개 / 압축 합계 3.2MB를 보관합니다. 정상 저장·검증 성공 시에만 한도에 맞춰 오래된 백업부터 교체합니다. 단일 백업도 한도를 넘거나 저장·검증에 실패하면 작업을 취소하고 기존 백업과 저장 바이트를 보존합니다. 날짜별 적용 스냅샷·재고 이력에는 이 순환 한도를 적용하지 않습니다. 필요한 프로젝트와 복구 자료를 JSON으로 보관하세요.</p><div data-rows data-testid="backup-list"></div>`);
+  const bd = dlg('storage-dialog', 'backup-dialog', `<button type="button" class="close" id="vBackupClose" data-close data-testid="backup-close">닫기 ×</button><h2>프로젝트 이전 버전·백업</h2><p class="muted">이 PC·브라우저에만 보관됩니다. 직전 확인 저장 1개 + 주요 작업 전 전체 프로젝트 최신 최대 3개 / 압축 합계 3.2MB를 보관합니다. 정상 저장·검증 성공 시에만 한도에 맞춰 오래된 백업부터 교체합니다. 단일 백업도 한도를 넘거나 저장·검증에 실패하면 작업을 취소하고 기존 백업과 저장 바이트를 보존합니다. 날짜별 적용 스냅샷·재고 이력에는 이 순환 한도를 적용하지 않습니다. 필요한 프로젝트와 복구 자료를 JSON으로 보관하세요.</p><div id="vBackupRows" data-rows data-testid="backup-list"></div>`, 'vBackupDialog');
   async function openBackups() {
     const box = bd.querySelector('[data-rows]');
     let choices = [];
@@ -125,7 +140,7 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   }
 
   // ── 저장소 관리(수동 측정) ──
-  const sd = dlg('storage-dialog', 'storage-dialog', `<div class="dialog-head"><h2>저장소 관리</h2><button type="button" data-close data-testid="storage-close">닫기 ×</button></div><p data-state role="status" data-testid="storage-state"></p><p>현재 메모리와 디스크 저장 값을 구분한 수동 측정입니다. 숫자는 UTF8 bytes이며 UTF16은 문자열 기준 근삿값입니다. origin 합계는 모든 localStorage 키+값, 앱 합계는 앱 키 접두사 키+값입니다. 읽기 실패·불완전·알 수 없는 값은 미확인으로 표시하며 상세 진단에는 null 또는 errorType을 남깁니다. 아래 후보 크기는 저장 성공이나 실제 남은 용량을 보장하지 않습니다. 이력·규격·이미지는 프로젝트에 포함된 부분 크기로 서로 중복될 수 있어 합산하지 않습니다. UTF16과 API estimate는 추정치이며 localStorage 한도나 실제 남은 용량이 아닙니다.</p><p>${BACKUP_NOTE} 현재 작업 및 적용 전 복구 JSON을 보관하세요.</p><div class="row"><button type="button" data-refresh data-testid="storage-refresh">측정 새로고침</button><button type="button" data-download data-testid="storage-download">현재 메모리 JSON 다운로드</button><button type="button" data-recovery data-testid="storage-recovery">적용 전 복구 JSON 다운로드</button><button type="button" data-retry data-testid="storage-retry">현재 프로젝트 다시 저장</button></div><p data-estimate data-testid="storage-estimate"></p><div class="records-table" data-summary data-testid="storage-summary"></div><details><summary>상세 진단 JSON</summary><pre data-metrics data-testid="storage-metrics" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>`);
+  const sd = dlg('storage-dialog', 'storage-dialog', `<button type="button" class="close" id="vStorageClose" data-close data-testid="storage-close">닫기 ×</button><h2>저장소 관리</h2><p id="vStorageState" data-state role="status" data-testid="storage-state"></p><p>현재 메모리와 디스크 저장 값을 구분한 수동 측정입니다. 숫자는 UTF8 bytes이며 UTF16은 문자열 기준 근삿값입니다. origin 합계는 모든 localStorage 키+값, application 합계는 앱 KEY 접두사 키+값입니다. 읽기 실패·불완전·알 수 없는 값은 미확인으로 표시하며 상세 진단에는 null 또는 errorType을 남깁니다. 아래 후보 크기는 저장 성공이나 실제 남은 용량을 보장하지 않습니다. 이력·규격·이미지는 프로젝트에 포함된 부분 크기로 서로 중복될 수 있어 합산하지 않습니다. UTF16과 API estimate는 추정치이며 localStorage 한도나 실제 남은 용량이 아닙니다.</p><p>전체 프로젝트 백업은 최신 최대 3개 / 압축 합계 3.2MB, 대상별 백업은 최신 최대 6개 / JSON 합계 3.2MB로 순환 보관합니다. 정상 저장·검증 성공 시에만 한도에 맞춰 오래된 백업부터 교체합니다. 단일 백업도 한도를 넘거나 저장·검증에 실패하면 작업을 취소하고 기존 백업과 저장 바이트를 보존합니다. 날짜별 적용 스냅샷·재고 이력에는 이 순환 한도를 적용하지 않습니다. 현재 작업 및 적용 전 복구 JSON을 보관하세요.</p><div class="row"><button type="button" id="vStorageRefresh" data-refresh data-testid="storage-refresh">측정 새로고침</button><button type="button" id="vStorageDownload" data-download data-testid="storage-download">현재 메모리 JSON 다운로드</button><button type="button" id="vStorageRecovery" data-recovery data-testid="storage-recovery">적용 전 복구 JSON 다운로드</button><button type="button" id="vStorageRetry" data-retry data-testid="storage-retry">현재 프로젝트 다시 저장</button></div><p id="vStorageEstimate" data-estimate data-testid="storage-estimate"></p><div id="vStorageSummary" class="records-table" data-summary data-testid="storage-summary"></div><details><summary>상세 진단 JSON</summary><pre id="vStorageMetrics" data-metrics data-testid="storage-metrics" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>`, 'vStorageDialog');
   const q = (s) => sd.querySelector(s);
   let request = 0;
 
@@ -242,5 +257,6 @@ export function createStorageDialogs({ session, store, backups, storage, validat
     await refresh();
   }
 
-  return { observe, riskText, exportCurrent, exportRecovery, importFile, openBackups, openStorage };
+  const hasProtectedRaw = () => { try { return storage.getItem(store.keys.protected) !== null; } catch { return false; } };
+  return { observe, riskText, hasProtectedRaw, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
 }

@@ -42,20 +42,22 @@ async function attachFixture(page) {
   }), fx);
   return racks[3];
 }
-const screen = (page, x, y) => page.evaluate(([x, y]) => {
-  const svg = document.querySelector('[data-testid=plan]');
-  const pt = svg.createSVGPoint();
-  pt.x = x;
-  pt.y = y;
-  const s = pt.matrixTransform(svg.getScreenCTM());
-  return { x: s.x, y: s.y };
-}, [x, y]);
 
 test('랙 더블클릭 상세: 선반·자재 카드, 자재 원본 정보, 검색·선반 필터, 방향 설정 저장, CSV 내려받기, 실제 설비 확인', async () => {
   const { ctx, page } = await open();
   const rack = await attachFixture(page);
-  const c = await screen(page, rack.x + rack.width / 2, rack.y + rack.depth / 2);
-  await page.mouse.dblclick(c.x, c.y);
+  await page.locator(`[data-testid=plan] g[data-id="${rack.id}"]`).first().click();
+  // 인스펙터의 Excel 연결 상세(기준본 exImportDetails, 읽기 전용)
+  const box = page.locator('#exImportDetails');
+  assert.match(await box.locator('h3').textContent(), /Excel 연결 · SYN 7/);
+  assert.deepEqual(await box.locator('[data-extab]').allTextContents(), ['기본정보', '선반정보', '자재정보', '분석정보', '이력']);
+  assert.ok(await box.locator('#exPhysical').isDisabled());
+  await box.locator('[data-extab=shelves]').click();
+  assert.match(await page.locator('#exDetailPane').textContent(), /선반은 수직 계층입니다/);
+  await box.locator('[data-extab=items]').click();
+  assert.match(await page.locator('#exDetailPane').textContent(), /현재고 정보 없음/);
+  await box.locator('[data-extab=basic]').click();
+  await page.locator(`[data-testid=plan] g[data-id="${rack.id}"]`).first().dblclick();
   const dialog = page.locator('[data-testid=detail-dialog]');
   await dialog.waitFor({ state: 'visible' });
   assert.match(await page.locator('[data-testid=detail-summary]').textContent(), /SYN \/ 7F \/ A열 \/ 1번째 랙/);
@@ -70,10 +72,11 @@ test('랙 더블클릭 상세: 선반·자재 카드, 자재 원본 정보, 검�
   await page.waitForFunction(() => window.__warehouseSession.state.project.rackInfographic.shelfOrder === 'top');
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=detail-dialog] [data-csv]').click()]);
   assert.match(dl.suggestedFilename(), /_materials\.csv$/);
-  await page.locator('[data-testid=detail-physical]').click();
-  await page.waitForFunction(() => window.__warehouseSession.state.project.specificationHistory.at(-1)?.type === 'physical-confirmed');
-  await page.locator('[data-testid=detail-close]').click();
+  await page.locator('#sInfoClose').click();
   await dialog.waitFor({ state: 'hidden' });
+  // 기준본처럼 실제 설비 변경 확인은 선택 정보의 #sPhysical 단추
+  await page.locator('#sPhysical').click();
+  await page.waitForFunction(() => window.__warehouseSession.state.project.specificationHistory.at(-1)?.type === 'physical-confirmed');
   assert.deepEqual(page.problems, []);
   await ctx.close();
 });
@@ -107,12 +110,12 @@ test('배치 이력: 현재 배치 기록 → 이동 → 복원(화면 초기화
   await page.waitForFunction(() => window.__warehouseSession.state.project.layoutSnapshots.length === 1);
   const rack = (await P(page)).scenarios.after.objects.filter((o) => o.kind === 'rack')[20];
   await page.evaluate((id) => window.__warehouseSession.edit('이동', (p) => { p.scenarios.after.objects.find((o) => o.id === id).x += 0.5; }), rack.id);
-  await page.locator('[data-testid=snap-rows] [data-restore]').click();
+  await page.locator('[data-testid=snap-rows] [data-layout-restore]').click();
   await page.waitForFunction((id) => window.__warehouseSession.state.project.commandHistory.at(-1)?.type === '저장된 배치 복원', rack.id);
   const p = await P(page);
   assert.equal(p.scenarios.after.objects.find((o) => o.id === rack.id).x, rack.x);
   assert.deepEqual([p.viewport.zoom, p.viewport.centerLocked], [1, true]);
-  await page.locator('[data-testid=snap-rows] [data-compare]').click();
+  await page.locator('[data-testid=snap-rows] [data-layout-compare]').click();
   await page.locator('[data-testid=snap-compare]').waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-testid=snap-compare] svg').count(), 2);
   await page.locator('[data-testid=snap-compare] [data-cclose]').click();

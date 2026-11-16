@@ -32,6 +32,11 @@ const saved = (page) => page.waitForFunction(() => document.querySelector('[data
 const project = (page) => page.evaluate(() => window.__warehouseSession.state.project);
 const fills = (page) => page.evaluate(() => [...document.querySelectorAll('[data-testid=plan] > g[data-id]')].map((g) => [g.dataset.id, g.querySelector('rect,polygon').getAttribute('fill')]));
 const rackFill = async (page, id) => (await fills(page)).find((f) => f[0] === id)[1];
+// 접힌 좌측 섹션은 사용자처럼 summary를 눌러 연다.
+const openSec = async (page, title) => {
+  const d = page.locator('details', { has: page.locator('summary', { hasText: title }) });
+  if (!(await d.evaluate((e) => e.open))) await d.locator('summary').click();
+};
 const toast = (page) => page.locator('[data-testid=toast]').textContent();
 
 // 시험용 재고(가상 값)를 첫 랙에 넣는다: 40% → 기본 색상 '여유'.
@@ -49,6 +54,7 @@ async function seed(page) {
 test('표시 모드: 도면 색상 기준을 바꾸면 랙 채움색과 범례가 바뀌고 실행취소된다', async () => {
   const { ctx, page } = await open();
   const id = await seed(page);
+  await openSec(page, '05 / 적재율 색상');
   const inv = await rackFill(page, id);
   assert.equal(inv, (await project(page)).settings.colors.low);
   await page.locator('[data-testid=viz-mode]').selectOption('management');
@@ -69,6 +75,7 @@ test('표시 모드: 도면 색상 기준을 바꾸면 랙 채움색과 범례�
 test('임계값·색 적용: 범례 문구가 바뀌고, 60/60은 거부되어 이전 값이 유지된다', async () => {
   const { ctx, page } = await open();
   const id = await seed(page);
+  await openSec(page, '05 / 적재율 색상');
   await page.locator('[data-testid=threshold-low]').fill('30');
   await page.locator('[data-testid=threshold-high]').fill('70');
   await page.locator('[data-testid=color-low]').fill('#112233');
@@ -122,6 +129,7 @@ test('객체별 지정색: 적용하면 사용자 지정 모드·채움색이 �
 test('전체 복원: 확인 후 기본 색·기준·지정색·데이터 기반 모드로 돌아가고, 취소하면 그대로', async () => {
   const { ctx, page } = await open();
   await page.locator('[data-testid=bottom-toggle]').click(); // 하단 패널은 기본으로 접혀 있다
+  await openSec(page, '05 / 적재율 색상');
   await page.locator('[data-testid=threshold-low]').fill('30');
   await page.locator('[data-testid=color-over]').fill('#010203');
   await page.locator('[data-testid=apply-colors]').click();

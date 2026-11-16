@@ -17,3 +17,4 @@ local-data/
 !fixtures/**/*.csv
 !fixtures/**/*.xlsx
 .env*
+.tmp-spec/

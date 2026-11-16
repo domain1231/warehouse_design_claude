@@ -145,7 +145,7 @@ function closest(a, b) {
 }
 
 /** 선택 객체에서 랙·벽·기둥·막힘·문까지 가까운 순 limit개(기준본 Q.nearest). */
-function nearest(layout, selected, limit = 3) {
+export function nearest(layout, selected, limit = 3) {
   const chosen = layout.objects.filter((o) => selected.has(o.id));
   if (!chosen.length) return [];
   const others = layout.objects.filter((o) => !selected.has(o.id) && ['rack', 'wall', 'column', 'blocked', 'door'].includes(o.kind));

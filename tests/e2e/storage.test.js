@@ -60,13 +60,15 @@ test('새로 시작 → 이름 변경 자동 저장 → 새로고침 복원 (SV0
   const ctx = await context();
   const page = await open(ctx);
   assert.equal(await state(page), 'unsaved');
-  assert.match(await page.textContent('[data-testid=summary]'), /AFTER 랙 47개 · 출처 new/);
+  assert.equal(await page.textContent('[data-testid=k-racks]'), '47');
+  assert.equal(await page.evaluate(() => window.__warehouseSession.state.source), 'new');
   await rename(page, 'E2E 창고');
   assert.equal(await state(page), 'saved');
   await page.reload();
   await waitState(page, 'saved');
   assert.equal(await nameValue(page), 'E2E 창고');
-  assert.match(await page.textContent('[data-testid=status-detail]'), /리비전 1/);
+  assert.equal(await page.evaluate(() => window.__warehouseSession.state.project.persistence?.revision), 1);
+  assert.match(await page.textContent('[data-testid=status-detail]'), /마지막 확인 저장:/);
   assert.deepEqual(page.problems, []);
   await ctx.close();
 });
@@ -94,13 +96,13 @@ test('기준본 v2.4.1 저장 데이터를 불러오고, 저장해도 기준본 
   await page.waitForFunction(() => document.querySelector('[data-testid=status]').dataset.state !== 'loading');
   assert.match(await page.textContent('[data-testid=notice]'), /기준본\(v2\.4\.1\)/);
   assert.equal(await nameValue(page), 'SYNTHETIC legacy fixture');
-  assert.match(await page.textContent('[data-testid=summary]'), /출처 legacy/);
+  assert.equal(await page.evaluate(() => window.__warehouseSession.state.source), 'legacy');
   await page.click('[data-testid=save]');
   await waitState(page, 'saved');
   assert.equal(await page.evaluate((k) => localStorage.getItem(k), LEGACY_KEY), legacyRaw);
   await page.reload();
   await waitState(page, 'saved');
-  assert.match(await page.textContent('[data-testid=summary]'), /출처 slot-a/);
+  assert.equal(await page.evaluate(() => window.__warehouseSession.state.source), 'slot-a');
   assert.deepEqual(page.problems, []);
   await ctx.close();
 });
@@ -136,20 +138,54 @@ test('다른 탭이 먼저 저장하면 알림·덮어쓰기 차단, 확인 시�
   await rename(b, 'B-1');
   assert.equal(await state(b), 'error');
   assert.match(await b.textContent('[data-testid=status-detail]'), /CONFLICT/);
-  assert.equal(await b.isVisible('[data-testid=overwrite]'), true);
+  assert.equal(await b.isVisible('#vRetry'), true);
+  assert.equal(await b.isVisible('#vOverwrite'), false);
   const fresh = await open(ctx);
   assert.equal(await nameValue(fresh), 'A-1');
   await fresh.close();
   b.once('dialog', (d) => d.dismiss());
-  await b.click('[data-testid=overwrite]');
+  await b.click('#vRetry');
   assert.equal(await state(b), 'error');
   b.once('dialog', (d) => d.accept());
-  await b.click('[data-testid=overwrite]');
+  await b.click('#vRetry');
   await waitState(b, 'saved');
   const after = await open(ctx);
   assert.equal(await nameValue(after), 'B-1');
   await rename(a, 'A-2'); // 이제 A가 오래된 탭
   assert.equal(await state(a), 'error');
   assert.deepEqual([...a.problems, ...b.problems, ...after.problems], []);
+  await ctx.close();
+});
+
+test('손상 저장본은 보호되고, 보호 원본 JSON을 받은 뒤 확인된 전체 교체(JSON 불러오기)로만 교체된다 (D-037)', async () => {
+  const ctx = await context();
+  const a = await open(ctx);
+  await rename(a, 'GOOD');
+  const json = await a.evaluate(() => JSON.stringify(window.__warehouseSession.state.project));
+  const garbage = '{손상';
+  const key = await a.evaluate((g) => { const k = Object.keys(localStorage).find((x) => x.endsWith(':pointer')); localStorage.setItem(k, g); return k; }, garbage);
+  await a.reload();
+  await a.waitForFunction(() => window.__warehouseSession && document.querySelector('[data-testid=status]').dataset.state !== 'loading');
+  assert.equal(await state(a), 'error');
+  assert.equal(await a.isVisible('#vOverwrite'), false);
+  assert.equal(await a.isVisible('#vReplaceCorrupt'), false);
+  assert.equal(await a.isVisible('#vRecoverRaw'), true);
+  // 저장 시도는 보호 원본을 바꾸지 않는다
+  await a.click('#vSave');
+  await waitState(a, 'error');
+  assert.equal(await a.evaluate((k) => localStorage.getItem(k), key), garbage);
+  // 보호 원본 JSON 다운로드 가능
+  const [dl] = await Promise.all([a.waitForEvent('download'), a.click('#vRecoverRaw')]);
+  assert.equal(dl.suggestedFilename(), 'warehouse_protected_original.json');
+  // 불러오기 확인을 취소하면 원본 유지
+  await a.setInputFiles('#jsonIn', { name: 'good.json', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await a.click('[data-testid=replace-cancel]');
+  assert.equal(await a.evaluate((k) => localStorage.getItem(k), key), garbage);
+  // 확인(JSON 백업 후 교체)하면 교체된다
+  await a.setInputFiles('#jsonIn', { name: 'good.json', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await Promise.all([a.waitForEvent('download'), a.click('[data-testid=replace-backup]')]);
+  await waitState(a, 'saved');
+  assert.notEqual(await a.evaluate((k) => localStorage.getItem(k), key), garbage);
+  assert.deepEqual(a.problems, []);
   await ctx.close();
 });

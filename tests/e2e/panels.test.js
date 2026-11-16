@@ -34,10 +34,10 @@ test('통계·범례: 샘플 배치의 면적·랙 수·경고 수, 범례 6항�
   const { ctx, page } = await open();
   const p = await page.evaluate(() => window.__warehouseSession.state.project);
   const racks = p.scenarios.after.objects.filter((o) => o.kind === 'rack').length;
-  assert.equal(await page.locator('[data-testid=k-racks]').textContent(), `${racks}개`);
-  assert.match(await page.locator('[data-testid=k-area]').textContent(), /㎡$/);
+  assert.equal(await page.locator('[data-testid=k-racks]').textContent(), `${racks}`);
+  assert.match(await page.locator('[data-testid=k-area]').textContent(), /^\d+(\.\d+)?$/);
   const warnCount = await page.locator('[data-testid=warnings-section] li').count();
-  assert.equal(await page.locator('[data-testid=k-warnings]').textContent(), `${warnCount}건`);
+  assert.equal(await page.locator('[data-testid=k-warnings]').textContent(), `${warnCount}`);
   assert.equal(await page.locator('[data-testid=legend] span').count(), 6);
   assert.match(await page.locator('[data-testid=legend]').textContent(), /보통 \(50% 이상 ~ 90% 미만\)/);
   assert.deepEqual(page.problems, []);
@@ -64,7 +64,7 @@ test('랙 목록: 검색·필터는 목록을 줄이고 도면에서 나머지�
   await page.locator('[data-testid=rack-search]').fill('b-7');
   await page.waitForFunction((n) => document.querySelectorAll('[data-testid=rack-list] [data-rack]').length < n, total);
   const shown = await page.locator('[data-testid=rack-list] [data-rack]').count();
-  assert.match(await page.locator('[data-testid=rack-count]').textContent(), new RegExp(`${total}개 중 ${shown}개`));
+  assert.equal(await page.locator('[data-testid=bottom-summary-racks]').textContent(), `${total}개`); // 기준본: 요약은 필터와 무관한 전체 랙 수
   const dimmed = await page.locator('[data-testid=plan] g[data-id][opacity="0.2"]').count();
   assert.equal(dimmed, total - shown);
   await page.locator('[data-testid=rack-sort]').selectOption('codeDesc');

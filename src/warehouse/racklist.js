@@ -4,7 +4,7 @@ import { formatNumber as fmt } from '../core/format.js';
 
 export const STATE_NAMES = Object.freeze({ empty: '빈 랙', low: '여유', mid: '보통', high: '적재 주의', over: '허용량 초과', unknown: '정보 없음' });
 export const LOAD_FILTERS = Object.freeze([['all', '전체'], ['empty', '빈 랙'], ['high', '90% 이상'], ['over', '100% 초과'], ['unknown', '정보 없음']]);
-export const RACK_SORTS = Object.freeze([['original', '도면 순서'], ['code', '번호 오름차순'], ['codeDesc', '번호 내림차순']]);
+export const RACK_SORTS = Object.freeze([['original', '기존 순서'], ['code', '랙 번호순'], ['codeDesc', '랙 번호 역순']]);
 
 /** Excel 연결 정보 검색 문자열(층·열·로케이션·자재 코드·이름). */
 export function excelSearchText(o) {

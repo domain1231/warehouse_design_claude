@@ -5,6 +5,13 @@
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-15 UI 동일성(D-032) · Phase 9b-0
+- 사용자 지시: UI 구성·문구·디자인은 v2.4.1과 동일. 감사 결과 `docs/UI_PARITY_AUDIT.md`(PR #29 병합).
+- 9b-0: `tools/ui-inventory.mjs`(기준본 UI 목록 생성) → `fixtures/legacy/ui-inventory.json`. 검사 `tests/e2e/ui-parity.test.js`, 고정 차이 `tests/e2e/ui-parity-gaps.json` 707건. 차이가 늘면 실패, 고친 차이를 목록에서 안 지워도 실패(래칫). 갱신: `UPDATE_UI_GAPS=1 node --test tests/e2e/ui-parity.test.js`.
+- 다음: 9b-1(헤더·KPI·상태 줄·3단 배치·글꼴·버튼 치수) → 9b-2 … 9b-7. 재구축 화면은 기준본 id·섹션 제목·문구를 그대로 사용한다.
+- 독립 검토: 사용자 지시로 Opus. frugal 훅이 격리 Opus 에이전트를 막으므로 현재는 main 세션(Opus)에서 검토한다.
+- 성능 비교(tools/perf-compare.mjs, 브랜치 chore/phase11-perf)는 25분 제한에 걸려 결과 없음. 사례 축소 후 재실행 필요.
+
 ## 기준 데이터 (2026-11-11)
 - `fixtures/golden/` G1–G5: 기준본 `tools/golden-master.cjs`(기준본 PR #22)로 생성, 3회 독립 실행 sha256 동일. 사용법은 `fixtures/golden/README.md`.
 - 기준본 함수 체인: 기준본 `docs/FUNCTION_CHAIN.md` (340개 중 74개 체인, `validateProject` 12단계, `commit` 6단계).
@@ -118,6 +125,12 @@
 
 ## 출시 준비 (2026-11-15, chore/release-prep)
 - D-031: `pnpm golden:refresh`(확인 모드)·`golden:write`, `tools/legacy-json-compat.mjs`(v2.4.1 JSON 불러오기 PASS), docs/MIGRATION.md. 실사용 시험판 v2.5.0-alpha.0(main ad45ae0) 사용자 전달.
+
+### 2026-11-16 Phase 9b-3~9b-7 자동 진행 결과
+- PR(쌓인 순서대로 병합 필요): #33 9b-3 다중 랙 편집 패널·인스펙터 → #34 9b-4 위반 목록·Ctrl+S → #35 9b-5 하단 패널(D-034) → #36 9b-6a 정보·안내·비교 SVG/PNG·첨부 도면·도면 흔들림 수정(D-035, D-036) → #37 9b-6b Excel 대화상자 안전 확인·4방향 → #38 9b-7 남은 대화상자 id·문구.
+- UI 차이 고정 목록 376 → 9건. 남은 9건 처리안은 docs/UI_PARITY_AUDIT.md '남은 차이 9건과 처리안'.
+- PR #33~#38 병합 완료(2026-11-16, 사용자 승인, 쌓인 브랜치라 병합 커밋 방식). D-037(사용자 결정): 덮어쓰기·손상 저장본 교체 버튼을 기준본 흐름으로 통합, 매핑 요약 복사 삭제, 손상 원본 보존 키(:protected-original). 남은 UI 차이 6건(버전 2 + 모바일 4).
+- 검사 도우미: tests/e2e/helpers.js waitPlanStable(끌기 전 도면 위치 안정 대기).
 
 ## 다음 작업
 - Phase 9a 완료(D-029, feature/phase9a-room-reference). 남은 Phase 9b(선택): 미뤄 둔 UI(색 직접 입력·미수용 상세·모든 랙 보기·첨부 도면 사용). 모바일(F-042)은 정책상 보류.
