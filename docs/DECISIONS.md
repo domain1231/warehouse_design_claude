@@ -280,5 +280,5 @@
 
 ## D-044 Release Draft 자동 생성 워크플로 (2026-11-16, 사용자 요청)
 - 결정: `.github/workflows/release-draft.yml`(수동 실행 workflow_dispatch) 추가. 입력 버전이 package.json과 같고 태그·Release가 없을 때만, main에서 `pnpm check` 통과 후 HTML 해시를 확인하고 **Draft**(기본 pre-release) Release를 만든다. 게시는 사용자가 한다. Draft는 게시 전까지 태그를 만들지 않는다.
-- 본문: `docs/releases/v<버전>.md`가 있으면 그대로, 없으면 직전 태그 이후 병합 PR 제목으로 자동 작성. 끝에 커밋·파일·크기·sha256·검사 결과를 자동으로 붙인다.
+- 본문: `docs/releases/v<버전>.md`가 있으면 그대로, 없으면 직전 태그 이후 병합 PR 제목으로 자동 작성. 끝에 커밋·파일·크기·sha256·검사 결과를 자동으로 붙인다. Draft 안내 문구는 본문에 넣지 않고 실행 요약에만 표시한다(게시 후 본문에 남지 않도록, 2026-11-16 alpha.1 게시 후 수정).
 - 사유: Claude Code 세션은 Release API가 막혀 있다(403 "not permitted for this session type"). Actions는 저장소 GITHUB_TOKEN(contents: write)으로 동작하므로 이 제한을 받지 않는다. AGENTS.md "Release는 Draft까지만" 규칙을 워크플로가 강제한다.
