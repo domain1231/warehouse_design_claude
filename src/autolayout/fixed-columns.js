@@ -203,6 +203,7 @@ export function fixedText(info) {
   }
   const ev = chosen.ev;
   lines.push(`적용: ${shapeName(chosen)}${auto ? ' (자동 추천)' : ''} · 통로 ${m(aisle)}m${spacing === 'max' && ev.fits && Number.isFinite(ev.aMax) ? ' (남는 폭을 고르게 나눔)' : ''} · 시작 ${start === 'zigzag' ? '지그재그' : '설정대로'}${ev.fits ? '' : ' · 창고 밖으로 나가는 랙이 있습니다'}`);
+  if (info.missing?.length) lines.push(`누락 번호 ${info.missing.length}개: ${info.missing.slice(0, 20).join('·')}${info.missing.length > 20 ? ' …' : ''} → ${{ pack: '당겨 붙임(빈자리 없음)', keep: '빈자리 비워 둠', empty: '빈 랙 후보로 채움' }[info.gaps] ?? '당겨 붙임'}`);
   if (chosen.axis === 'row') lines.push('행 배치: 진행·첫 랙 위치는 화면의 행 기준 이름(북→남/남→북, 서쪽 끝/동쪽 끝)대로 배치됩니다.');
   return lines;
 }

@@ -282,6 +282,10 @@ test('Excel 로케이션 열 고정(D-041): 진단 표시, 통로 방식 전환,
   // D-045: 기본값은 자동 추천(한 줄 열 수·통로 방식 비활성)
   assert.match(t1, /\(자동 추천\)/);
   assert.equal(await page.locator('#fxPairing').isDisabled(), true);
+  // D-046: 누락 번호 처리 선택이 진단에 반영된다(가상 자료에 누락 번호가 있으면 문구 표시)
+  await page.locator('[data-testid=fixed-gaps]').selectOption('keep');
+  await page.waitForFunction(() => !/누락 번호/.test(document.querySelector('[data-testid=fixed-plan]').textContent) || /빈자리 비워 둠/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
+  await page.locator('[data-testid=fixed-gaps]').selectOption('pack');
   await page.locator('[data-testid=fixed-axis]').selectOption('column');
   await page.locator('[data-testid=fixed-pairing]').selectOption('pairs');
   await page.waitForFunction(() => /적용: 열 배치\(세로\) · 한 줄 1열 · 등 맞댐 쌍/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
