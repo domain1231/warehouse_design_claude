@@ -7,7 +7,7 @@ import { GEOMETRY_EPS_M as EPS, roundMm } from '../geometry/tolerance.js';
 import { scanLayout } from '../warehouse/constraints.js';
 import { buildProposal, generateRacks } from '../excel/proposal.js';
 import { createIdGenerator } from '../core/ids.js';
-import { axesOf, isAxisAligned, spans, columnProfile, planFixed, gapsFor, BACK_GAP } from './fixed-columns.js';
+import { axesOf, isAxisAligned, spans, columnProfile, SHAPES, evaluateShape, chooseAisle, recommend, targetsFor, shapeName, BACK_GAP } from './fixed-columns.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { buildColumnCandidates, columnBase } from './column.js';
 
@@ -205,23 +205,40 @@ export function reoptimize(prior, c, scope, { project, chosen = new Set() }) {
  */
 export function fixedConfig(analysis, c, project) {
   if (!isAxisAligned(c.northRotation)) throw new Error('로케이션 열 고정 배치는 북쪽 방향 0·90·180·270°에서만 사용할 수 있습니다.');
-  const { pairing, spacing } = c.autoPlacement.fixedColumns, ax = axesOf(c.northRotation, c.columnDirection);
-  const probe = generateRacks(analysis, { ...c, columnGap: 0, columnGaps: null, fixedAlign: false }, { nextId: createIdGenerator({ seed: 'fixed-probe' }) });
-  const sp = spans(c.width, c.depth, ax);
-  const plan = planFixed(columnProfile(probe, ax), { spanE: sp.E[1] - sp.E[0], spanS: sp.S[1] - sp.S[0], wallGap: c.wallGap, aisleTarget: c.aisleTarget, backGap: Math.max(BACK_GAP, project?.settings?.minGap || 0) });
-  const { gaps, aisle } = gapsFor(plan, pairing, spacing);
-  return { plan, aisle, config: { ...c, columnGaps: gaps, fixedAlign: true }, minGap: Math.min(...gaps.slice(1), aisle) };
+  const f = c.autoPlacement.fixedColumns, backGap = Math.max(BACK_GAP, project?.settings?.minGap || 0);
+  // 행 배치 = 열 배치를 통째로 -90° 돌린 것: 축은 (북쪽-90°, 진행 방향 반대), 랙 회전 -90°. 도면 북쪽 방향은 바꾸지 않는다.
+  const axisOf = (axis) => (axis === 'row'
+    ? { axes: axesOf(c.northRotation - 90, c.columnDirection === 'east' ? 'west' : 'east'), rotationOffset: -90 }
+    : { axes: axesOf(c.northRotation, c.columnDirection), rotationOffset: 0 });
+  const probe = (axis) => {
+    const fx = axisOf(axis);
+    return { fx, profile: columnProfile(generateRacks(analysis, { ...c, columnGap: 0, fixedLayout: { ...fx, targets: null } }, { nextId: createIdGenerator({ seed: 'fixed-probe' }) }), fx.axes), sp: spans(c.width, c.depth, fx.axes) };
+  };
+  const pr = { column: probe('column'), row: probe('row') };
+  const shapes = SHAPES.map((sh) => {
+    const { profile, sp } = pr[sh.axis];
+    return { ...sh, ev: evaluateShape(profile, { spanE: sp.E[1] - sp.E[0], spanS: sp.S[1] - sp.S[0], wallGap: c.wallGap, aisleTarget: c.aisleTarget, backGap, perLine: sh.perLine, pairing: sh.pairing }) };
+  });
+  const auto = f.axis === 'auto';
+  const chosen = auto ? recommend(shapes) : shapes.find((s) => s.axis === f.axis && s.perLine === (f.perLine ?? 1) && s.pairing === f.pairing);
+  const { fx, sp } = pr[chosen.axis], aisle = chooseAisle(chosen.ev, c.aisleTarget, f.spacing), start = f.start ?? 'config';
+  const flip = (d) => (d === 'north' ? 'south' : 'north');
+  const lineFirst = (k) => (start === 'zigzag' ? (k % 2 ? flip(c.firstRackPosition) : c.firstRackPosition) : (c.perColumnSettings[chosen.ev.lines[k].cols[0].column] || {}).first || c.firstRackPosition);
+  const targets = targetsFor(chosen.ev, { aisle, backGap, wallGap: c.wallGap, loE: sp.E[0], loS: sp.S[0], hiS: sp.S[1], lineFirst });
+  const minGap = Math.min(aisle, chosen.ev.units.some((u) => u.length === 2) ? backGap : aisle);
+  return { info: { shapes, chosen, aisle, target: c.aisleTarget, spacing: f.spacing, start, auto, backGap }, config: { ...c, fixedLayout: { ...fx, targets } }, minGap };
 }
 
 export function buildFixedCandidates(project, analysis, c, opts) {
-  const f = fixedConfig(analysis, c, project), old = project.scenarios[c.target];
-  const proposal = buildProposal(project, analysis, f.config, opts);
-  const { pairing, spacing } = c.autoPlacement.fixedColumns;
+  const fc = fixedConfig(analysis, c, project), old = project.scenarios[c.target], ch = fc.info.chosen;
+  const proposal = buildProposal(project, analysis, fc.config, opts);
+  const f = c.autoPlacement.fixedColumns;
   // 실제 쓴 가장 좁은 열 간격(등 맞댐이면 등 간격)을 설계 간격으로 기록한다. 기준본 간격 검사는 랙 간격을 모든 랙 쌍에 적용하므로
   // 등 맞댐이면 랙 간격 기록값도 등 간격 이하로 둔다(같은 열 안 실제 간격은 사용자 값 그대로 생성). 통로 목표는 사용자 값 그대로.
-  proposal.layout.autoPlacementRules = { ...proposal.layout.autoPlacementRules, columnGap: Math.max(0, f.minGap), ...(pairing === 'pairs' ? { rackGap: Math.min(c.rackGap, f.plan.backGap) } : {}), fixedColumns: { pairing, spacing, aisle: f.aisle } };
-  const name = `로케이션 열 고정 · ${pairing === 'pairs' ? '등 맞댐 쌍' : '모든 열 사이 통로'} · ${fmt(f.aisle, 3)}m`;
-  return { proposal, candidates: [makeCandidate(name, proposal.layout, c, old, project)], choice: 0, fixed: f.plan };
+  const paired = ch.ev.units.some((u) => u.length === 2);
+  proposal.layout.autoPlacementRules = { ...proposal.layout.autoPlacementRules, columnGap: Math.max(0, fc.minGap), ...(paired ? { rackGap: Math.min(c.rackGap, fc.info.backGap) } : {}), fixedColumns: { ...f, applied: { axis: ch.axis, perLine: ch.perLine, pairing: ch.pairing }, aisle: fc.info.aisle } };
+  const name = `로케이션 열 고정 · ${shapeName(ch)}${fc.info.auto ? ' (자동 추천)' : ''} · ${fmt(fc.info.aisle, 3)}m`;
+  return { proposal, candidates: [makeCandidate(name, proposal.layout, c, old, project)], choice: 0, fixed: fc.info };
 }
 
 /** 기준본 W.base(92 래퍼 포함): 열 우선이면 columnBase, 아니면 buildProposal. */

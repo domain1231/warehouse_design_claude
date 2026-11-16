@@ -118,3 +118,91 @@ export function planText(plan, pairing, spacing) {
   lines.push(`적용: ${how} · 열 사이 ${m(aisle)}m${spacing === 'max' && opt.fits ? ' (남는 폭을 고르게 나눔)' : ''}${opt.fits && plan.lengthOK ? '' : ' · 창고 밖으로 나가는 랙이 있습니다'}`);
   return lines;
 }
+
+// ── 2단계: 배치 형태(축 · 한 줄 열 수 · 통로 방식), 지그재그, 자동 추천 ─────────────────────────
+// 한 줄 = 열 방향(S)으로 이어 놓은 열 묶음(한 줄 1열 또는 2열, 로케이션 순서대로). 줄 안 열 사이·줄 사이 간격은 같은 통로 폭.
+export const SHAPES = [
+  { axis: 'column', perLine: 1, pairing: 'all' }, { axis: 'column', perLine: 1, pairing: 'pairs' },
+  { axis: 'column', perLine: 2, pairing: 'all' }, { axis: 'column', perLine: 2, pairing: 'pairs' },
+  { axis: 'row', perLine: 1, pairing: 'all' }, { axis: 'row', perLine: 1, pairing: 'pairs' },
+  { axis: 'row', perLine: 2, pairing: 'all' }, { axis: 'row', perLine: 2, pairing: 'pairs' },
+];
+
+export function linesOf(profile, perLine) {
+  const lines = [];
+  for (let i = 0; i < profile.length; i += perLine) {
+    const cols = profile.slice(i, i + perLine);
+    lines.push({ cols, m: cols.length, thickness: Math.max(...cols.map((c) => c.thickness)), sumL: cols.reduce((s, c) => s + c.length, 0) });
+  }
+  return lines;
+}
+
+/** 한 배치 형태의 가능 범위. aMax = 줄 사이(E)와 줄 안 열 사이(S) 조건을 함께 만족하는 최대 통로 폭(mm 내림). */
+export function evaluateShape(profile, { spanE, spanS, wallGap, aisleTarget, backGap = BACK_GAP, perLine = 1, pairing = 'all' }) {
+  const EPS = 1e-9;
+  const lines = linesOf(profile, perLine), availE = spanE - 2 * wallGap, availS = spanS - 2 * wallGap;
+  const units = pairing === 'pairs' ? pairUnits(lines.length) : lines.map((_, i) => [i]);
+  const pairs = units.filter((u) => u.length === 2).length, sumT = lines.reduce((s, l) => s + l.thickness, 0);
+  const roomE = availE - sumT - pairs * backGap, slotsE = units.length - 1;
+  const aE = slotsE > 0 ? roomE / slotsE : roomE >= -EPS ? Infinity : -Infinity;
+  const multi = lines.filter((l) => l.m > 1);
+  const aS = multi.length ? Math.min(...multi.map((l) => (availS - l.sumL) / (l.m - 1))) : Infinity;
+  const tooLong = lines.filter((l) => l.sumL > availS + EPS).flatMap((l) => l.cols.map((c) => c.column));
+  const lengthOK = tooLong.length === 0, fits = roomE >= -EPS && lengthOK;
+  const raw = Math.min(aE, aS), aMax = Number.isFinite(raw) ? floorMm(raw) : raw;
+  const meetsTarget = fits && raw + EPS >= aisleTarget;
+  const shortE = slotsE > 0 ? Math.max(0, aisleTarget * slotsE - roomE) : Math.max(0, -roomE);
+  const shortS = Math.max(0, ...lines.map((l) => l.sumL + aisleTarget * (l.m - 1) - availS));
+  return { perLine, pairing, lines, units, availE, availS, sumT, lengthOK, tooLong, fits, aMax, meetsTarget, shortE, shortS, longestLine: Math.max(...lines.map((l) => l.sumL)) };
+}
+
+export const chooseAisle = (ev, target, spacing) => (spacing === 'target' || !ev.fits || !Number.isFinite(ev.aMax) ? target : ev.aMax);
+
+/** 자동 추천: 목표 충족 형태 중 최대 통로 → 없으면 들어가는 형태 중 최대 통로 → 없으면 첫 형태. 동점은 SHAPES 순서. */
+export function recommend(shapes) {
+  const best = (list) => list.reduce((b, s) => (b === null || s.ev.aMax > b.ev.aMax + 1e-9 ? s : b), null);
+  return best(shapes.filter((s) => s.ev.meetsTarget)) ?? best(shapes.filter((s) => s.ev.fits)) ?? shapes[0];
+}
+
+/**
+ * 열별 목표 위치(진행 축 E의 시작 끝 e, 첫 랙 쪽 끝 sMin/sMax). lineFirst(k)는 줄 k의 첫 랙 방향('north'|'south').
+ * 줄 안에서는 열을 순서대로 첫 랙 방향으로 이어 놓는다.
+ */
+export function targetsFor(ev, { aisle, backGap = BACK_GAP, wallGap, loE, loS, hiS, lineFirst }) {
+  const second = new Set(ev.units.filter((u) => u.length === 2).map((u) => u[1]));
+  const targets = {};
+  let e = loE + wallGap;
+  ev.lines.forEach((line, k) => {
+    if (k > 0) e += ev.lines[k - 1].thickness + (second.has(k) ? backGap : aisle);
+    const first = lineFirst(k), sign = first === 'north' ? 1 : -1;
+    let cur = first === 'north' ? loS + wallGap : hiS - wallGap;
+    for (const c of line.cols) {
+      targets[c.column] = first === 'north' ? { first, e, sMin: cur } : { first, e, sMax: cur };
+      cur += sign * (c.length + aisle);
+    }
+  });
+  return targets;
+}
+
+export const SHAPE_NAMES = { column: '열 배치(세로)', row: '행 배치(가로)', all: '모든 줄 사이 통로', pairs: '등 맞댐 쌍' };
+export const shapeName = (s) => `${SHAPE_NAMES[s.axis]} · 한 줄 ${s.perLine}열 · ${SHAPE_NAMES[s.pairing]}`;
+
+/** 진단 문구(2단계). info = buildFixedCandidates의 fixed. */
+export function fixedText(info) {
+  const { shapes, chosen, aisle, target, spacing, start, auto } = info;
+  const ev0 = shapes[0].ev;
+  const lines = [`열 ${ev0.lines.reduce((s, l) => s + l.m, 0)}개 · 열 두께 합 ${m(ev0.sumT)}m · 통로 목표 ${m(target)}m`, '형태별 최대 통로 (✔ 목표 충족 · ✖ 목표 미달 · 불가):'];
+  for (const s of shapes) {
+    const ev = s.ev, mark = s === chosen ? '▶ ' : '  ';
+    let t;
+    if (!ev.lengthOK) t = `불가 (가장 긴 줄 ${m(ev.longestLine)}m > ${m(ev.availS)}m)`;
+    else if (!ev.fits) t = `불가 (폭 ${m(ev.shortE)}m 부족)`;
+    else if (ev.meetsTarget) t = `${m(ev.aMax)}m ✔`;
+    else t = `${m(ev.aMax)}m ✖ (목표까지 ${ev.shortE > ev.shortS ? '폭' : '길이'} ${m(Math.max(ev.shortE, ev.shortS))}m 부족)`;
+    lines.push(`${mark}${shapeName(s)}: ${t}`);
+  }
+  const ev = chosen.ev;
+  lines.push(`적용: ${shapeName(chosen)}${auto ? ' (자동 추천)' : ''} · 통로 ${m(aisle)}m${spacing === 'max' && ev.fits && Number.isFinite(ev.aMax) ? ' (남는 폭을 고르게 나눔)' : ''} · 시작 ${start === 'zigzag' ? '지그재그' : '설정대로'}${ev.fits ? '' : ' · 창고 밖으로 나가는 랙이 있습니다'}`);
+  if (chosen.axis === 'row') lines.push('행 배치에서는 열 진행 동쪽 = 북→남, 서쪽 = 남→북 · 첫 랙 북쪽 = 서쪽 끝부터, 남쪽 = 동쪽 끝부터로 읽습니다.');
+  return lines;
+}
