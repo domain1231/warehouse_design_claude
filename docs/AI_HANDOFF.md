@@ -5,6 +5,9 @@
 - 앱 2.5.0-alpha.2 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 정식 판 확인 목록 · 성능 재측정 · docs/release-checklist-perf
+- `docs/RELEASE_CHECKLIST.md`: Windows Edge 실사용·운영 JSON·전체 Excel·백업 복구 수동 확인표(사용자 실행). 자료 필요: 전체 Excel, 운영 JSON.
+- `docs/perf/2026-11-16-alpha2.md`: v2.4.1 대비 56·200·500랙 측정. 라벨 방식 전환 500랙만 느림(355→459ms) → 최적화 후보.
 ### 2026-11-16 구조물 반영 자동 추천(D-048) · feature/fixed-obstacle-aware
 - 자동 추천 + 구조물이 있으면 형태별 실제 배치로 비교해 선택(`buildFixedCandidates`). D-047 한계(추천이 구조물 미고려) 해소.
 - `pnpm check`: unit 151, golden 286(todo 2), e2e 97 PASS.
