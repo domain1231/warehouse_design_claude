@@ -108,6 +108,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
       const c = state.perColumnSettings[col] || {};
       return `<tr data-column="${esc(col)}"><td>${esc(col)}</td><td><input data-colfield="x" type="number" step=".01" placeholder="자동" value="${c.x ?? ''}"></td><td><input data-colfield="y" type="number" step=".01" placeholder="자동" value="${c.y ?? ''}"></td><td><select data-colfield="first"><option value="">일괄</option><option value="north" ${c.first === 'north' ? 'selected' : ''}>북쪽</option><option value="south" ${c.first === 'south' ? 'selected' : ''}>남쪽</option></select></td><td><input data-colfield="rotation" type="number" step="1" placeholder="일괄" value="${c.rotation ?? ''}"></td></tr>`;
     }).join('');
+    syncDirectionLabels();
   }
   function preview() {
     state.proposal = null;
@@ -128,6 +129,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
       const p = getProject();
       const res = buildCandidates(p, a, c, { nextId, filename: state.filename, sheet: state.sheetName, missingDelete: state.missingDelete });
       Object.assign(state, { fixedPlan: res.fixed ?? null, candidates: res.candidates, choice: res.choice, base: res.proposal, reference: res.reference, run: res.run, pages: { list: 0, groups: 0 }, cfg: c, analysisUsed: a, chosen: new Set(), previous: undefined, proposalProject: p });
+      syncDirectionLabels();
       $('[data-previous]').disabled = true;
       $('[data-note]').textContent = '';
       $('[data-detail]').hidden = true;
@@ -135,6 +137,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     } catch (err) {
       state.candidates = null;
       state.fixedPlan = null;
+      syncDirectionLabels();
       $('[data-fixedplan]').textContent = '';
       state.previewError = err.message;
       $('[data-pstats]').textContent = err.message;
@@ -217,6 +220,20 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     const c = state.candidates?.[state.choice]?.result.column;
     return state.cfg?.autoPlacement.mode === 'column' && c ? (c.fatal[0] ?? c.failures[0]?.text ?? '') : '';
   };
+  /** D-043: 행 배치(열 고정)에서는 방향 이름을 행 기준으로 표시. 값·로직은 그대로, 문구만 바꾼다. */
+  function syncDirectionLabels() {
+    const f = form(), ax = f.fixedAxis?.value;
+    const row = f.autoMode.value === 'fixed' && (ax === 'row' || (ax === 'auto' && state.fixedPlan?.chosen?.axis === 'row'));
+    const set = (sel, cap, texts) => {
+      if (!sel) return;
+      const t = sel.closest('label')?.firstChild;
+      if (cap && t?.nodeType === 3) { t.__o ??= t.textContent; t.textContent = row ? cap : t.__o; }
+      for (const o of sel.options) if (texts[o.value]) { o.__o ??= o.textContent; o.textContent = row ? texts[o.value] : o.__o; }
+    };
+    set(f.columnDirection, '행 진행 방향', { east: 'A → N / 북→남 방향', west: 'A → N / 남→북 방향' });
+    set(f.firstRackPosition, '첫 랙 위치 / 번호 증가(행)', { north: '서쪽 끝 시작 → 동쪽 증가', south: '동쪽 끝 시작 → 서쪽 증가' });
+    for (const sel of dialog.querySelectorAll('select[data-colfield=first]')) set(sel, '', { north: '서쪽 끝', south: '동쪽 끝' });
+  }
   function syncMode() {
     const f = form(), on = f.autoMode.value === 'column';
     for (const el of dialog.querySelectorAll('[data-colonly]')) el.hidden = !on;
@@ -226,6 +243,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     for (const el of dialog.querySelectorAll('[data-optimize],[data-reaccept],[data-scope]')) { el.disabled = fx; if (el.tagName === 'BUTTON') el.title = fx ? '로케이션 열 고정은 재최적화하지 않습니다(순서 유지).' : ''; }
     f.preserveStructures.disabled = on;
     if (on) f.preserveStructures.checked = true;
+    syncDirectionLabels();
   }
   function focusRack(id) {
     const cand = state.candidates[state.choice], o = cand.layout.objects.find((x) => x.id === id), r = cand.result.rows.find((x) => x.id === id);

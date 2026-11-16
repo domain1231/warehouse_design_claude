@@ -11,7 +11,7 @@
 - v2.4.1 호환 직접 확인(행·한 줄 2열·등 맞댐·지그재그, 24×14): 56랙, 위반 0.
 - UI 대조 고정 차이 11 → 14건(#fxAxis·#fxPerLine·#fxStart, 사용자 승인).
 - `pnpm check`: unit 146, golden 286(todo 2), e2e 97 PASS(Linux Chrome). NOT RUN: Windows Edge, 실제 마우스·터치패드, 모바일, 실제 업무 Excel.
-- 미결: 행 배치 전용 방향 이름 표시 여부(사용자 판단 대기).
+- 행 배치 방향 이름: D-043(제안 B)로 해결 — feature/row-direction-labels(#46 위에 쌓음).
 
 ### 2026-11-16 로케이션 열 고정 배치(D-041) · feature/fixed-column-layout
 - Excel 자동 배치 방식 '로케이션 열 고정 · 열·번호 순서 유지' 추가(1단계). 계산 `src/autolayout/fixed-columns.js`, 생성 `generateRacks`의 `columnGaps`·`fixedAlign`, 후보 `buildFixedCandidates`, UI `#fxOptions`(통로 방식·열 사이 간격·진단).
