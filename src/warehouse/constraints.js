@@ -19,7 +19,7 @@ export function ratio(o) {
 const SOLID_PAIR_WITH_AISLE = ['wall', 'column', 'blocked'];
 
 // [10] 기본 경고
-function baseWarnings(layout, project) {
+export function baseWarnings(layout, project, allPairs = false) {
   const out = [];
   const os = layout.objects;
   const w = layout.warehouse;
@@ -39,29 +39,51 @@ function baseWarnings(layout, project) {
       if (w.ceiling && o.height > w.ceiling + EPS) add(`height:${o.id}`, `${o.code} · 천장 높이 초과`, [o.id], false);
     }
   }
-  for (let i = 0; i < os.length; i++) {
-    for (let j = i + 1; j < os.length; j++) {
-      const a = os[i];
-      const b = os[j];
-      const relevant = (a.kind === 'rack' && b.kind !== 'work') || (b.kind === 'rack' && a.kind !== 'work') || (a.kind === 'aisle' && SOLID_PAIR_WITH_AISLE.includes(b.kind)) || (b.kind === 'aisle' && SOLID_PAIR_WITH_AISLE.includes(a.kind));
-      if (!relevant) continue;
-      // 보수적 사전 제외: 회전 외곽 AABB 사이 거리가 검사 한계보다 확실히 크면 정밀 판정 생략(기준본 v2.3.7 성능 개선과 동일)
-      const A = boxes.get(a);
-      const B = boxes.get(b);
-      const distance = Math.hypot(Math.max(0, A.minX - B.maxX, B.minX - A.maxX), Math.max(0, A.minY - B.maxY, B.minY - A.maxY));
-      const limit = a.kind === 'rack' && b.kind === 'rack' ? Math.max(0, minGap) : 0;
-      if (Number.isFinite(distance) && distance > limit + EPS) continue;
-      if (overlaps(a, b)) {
-        const why = a.kind === 'door' || b.kind === 'door' ? '출입문 개방 안전 구역 침범' : a.kind === 'aisle' || b.kind === 'aisle' ? '통로 침범' : '객체 충돌';
-        add(`pair:${a.id}:${b.id}`, `${a.code} ↔ ${b.code} · ${why}`, [a.id, b.id]);
-      } else if (a.kind === 'rack' && b.kind === 'rack' && minGap > 0) {
-        const d = gap(a, b);
-        if (d + EPS < minGap) add(`gap:${a.id}:${b.id}`, `${a.code} ↔ ${b.code} · 여유 ${fmt(d)}m < ${fmt(minGap)}m`, [a.id, b.id]);
+  const check = (a, b) => {
+    const relevant = (a.kind === 'rack' && b.kind !== 'work') || (b.kind === 'rack' && a.kind !== 'work') || (a.kind === 'aisle' && SOLID_PAIR_WITH_AISLE.includes(b.kind)) || (b.kind === 'aisle' && SOLID_PAIR_WITH_AISLE.includes(a.kind));
+    if (!relevant) return;
+    // 보수적 사전 제외: 회전 외곽 AABB 사이 거리가 검사 한계보다 확실히 크면 정밀 판정 생략(기준본 v2.3.7 성능 개선과 동일)
+    const A = boxes.get(a);
+    const B = boxes.get(b);
+    const distance = Math.hypot(Math.max(0, A.minX - B.maxX, B.minX - A.maxX), Math.max(0, A.minY - B.maxY, B.minY - A.maxY));
+    const limit = a.kind === 'rack' && b.kind === 'rack' ? Math.max(0, minGap) : 0;
+    if (Number.isFinite(distance) && distance > limit + EPS) return;
+    if (overlaps(a, b)) {
+      const why = a.kind === 'door' || b.kind === 'door' ? '출입문 개방 안전 구역 침범' : a.kind === 'aisle' || b.kind === 'aisle' ? '통로 침범' : '객체 충돌';
+      add(`pair:${a.id}:${b.id}`, `${a.code} ↔ ${b.code} · ${why}`, [a.id, b.id]);
+    } else if (a.kind === 'rack' && b.kind === 'rack' && minGap > 0) {
+      const d = gap(a, b);
+      if (d + EPS < minGap) add(`gap:${a.id}:${b.id}`, `${a.code} ↔ ${b.code} · 여유 ${fmt(d)}m < ${fmt(minGap)}m`, [a.id, b.id]);
+    }
+  };
+  // 광역 단계: X축 정렬 후 스윕. 어떤 쌍 검사도 AABB 거리 limit(최대 max(0,minGap))+EPS 초과면 건너뛰므로 같은 쌍만 정밀 검사한다.
+  // 원래 (i,j) 순서로 경고를 내기 위해 후보 쌍을 정렬한다. 유한하지 않은 값이 있으면 전수 검사로 되돌린다.
+  const reach = Math.max(0, minGap) + EPS;
+  const finite = Number.isFinite(reach) && os.every((o) => { const b = boxes.get(o); return Number.isFinite(b.minX) && Number.isFinite(b.maxX) && Number.isFinite(b.minY) && Number.isFinite(b.maxY); });
+  if (allPairs || !finite) {
+    for (let i = 0; i < os.length; i++) for (let j = i + 1; j < os.length; j++) check(os[i], os[j]);
+  } else {
+    const n = os.length;
+    const order = os.map((_, i) => i).sort((p, q) => boxes.get(os[p]).minX - boxes.get(os[q]).minX);
+    const pairs = [];
+    for (let p = 0; p < n; p++) {
+      const A = boxes.get(os[order[p]]);
+      for (let q = p + 1; q < n; q++) {
+        const B = boxes.get(os[order[q]]);
+        if (B.minX > A.maxX + reach) break;
+        if (B.minY > A.maxY + reach || A.minY > B.maxY + reach) continue;
+        const i = order[p], j = order[q];
+        pairs.push(i < j ? i * n + j : j * n + i);
       }
     }
+    pairs.sort((x, y) => x - y);
+    for (const k of pairs) check(os[Math.floor(k / n)], os[k % n]);
   }
   return out;
 }
+
+/** 시험 전용 기준 구현(전수 쌍 검사). 실행 경로에서는 쓰지 않는다. */
+export const baseWarningsReference = (layout, project) => baseWarnings(layout, project, true);
 
 const wallClearanceOf = (layout, project) => layout.wallGap ?? project.locationLayout?.wallGap ?? 0;
 

@@ -1015,9 +1015,11 @@ async function start() {
 
   // ── 포인터: 선택·영역 선택·팬·두 손가락 확대 ──
   const capture = (e) => { try { ui.plan.setPointerCapture(e.pointerId); } catch { /* 이미 해제됨 */ } };
+  let moveEvent = null, moveFrame = 0;
   function abortGesture() {
     const g = gesture;
     if (!g) return;
+    moveEvent = null;
     gesture = null;
     if (g.kind === 'marquee') {
       marquee = null;
@@ -1117,8 +1119,23 @@ async function start() {
     if (!add) selected = new Set();
     renderPlan();
   });
+  // 포인터 이동은 프레임당 한 번만 처리한다(마지막 위치 기준). 포인터 종료·취소 때는 먼저 동기 반영한다.
+  const flushMove = () => {
+    cancelAnimationFrame(moveFrame);
+    moveFrame = 0;
+    const e = moveEvent;
+    moveEvent = null;
+    if (e && gesture) onPointerMove(e);
+  };
   ui.plan.addEventListener('pointermove', (e) => {
     if (e.pointerType === 'touch' && touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (!gesture) return;
+    e.preventDefault();
+    if (moveEvent && moveEvent.pointerId !== e.pointerId) flushMove();
+    moveEvent = e;
+    if (!moveFrame) moveFrame = requestAnimationFrame(flushMove);
+  });
+  function onPointerMove(e) {
     const g = gesture;
     if (!g) return;
     e.preventDefault();
@@ -1171,8 +1188,9 @@ async function start() {
       selected = marqueeSelect(layout().objects, g.start, marquee.b, { rule: project().editing.selectionRule, previous: g.previous, add: g.add });
       renderPlan();
     }
-  });
+  }
   const finish = (e, cancel) => {
+    flushMove();
     if (e.pointerType === 'touch') touches.delete(e.pointerId);
     const g = gesture;
     if (!g) return;

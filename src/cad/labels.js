@@ -20,7 +20,17 @@ export function rackLabelParts(o, project, scope = project.settings.scenario) {
 }
 
 /** 기준본 75 V.fullLabel(기본형). */
-const baseFullLabel = (o) => [o.code, o.excel?.key, ratio(o) === null ? '실제 적재율 미확인' : '실제 적재율 ' + fmt(ratio(o), 1) + '%', fmt(o.width, 3) + ' × ' + fmt(o.depth, 3) + 'm'].filter(Boolean).join(' · ');
+const computeBaseFullLabel = (o) => [o.code, o.excel?.key, ratio(o) === null ? '실제 적재율 미확인' : '실제 적재율 ' + fmt(ratio(o), 1) + '%', fmt(o.width, 3) + ' × ' + fmt(o.depth, 3) + 'm'].filter(Boolean).join(' · ');
+// 성능: 드래그·재렌더마다 모든 랙의 툴팁 문구를 다시 만들지 않도록 객체별로 캐시한다. 문구가 의존하는 값 전부를 키에 넣어 객체를 제자리 수정해도 안전하다.
+const baseLabelCache = new WeakMap();
+const baseFullLabel = (o) => {
+  const k = `${o.code}\u0001${o.excel?.key}\u0001${o.capacity}\u0001${o.quantity}\u0001${o.width}\u0001${o.depth}`;
+  const c = baseLabelCache.get(o);
+  if (c && c.k === k) return c.v;
+  const v = computeBaseFullLabel(o);
+  baseLabelCache.set(o, { k, v });
+  return v;
+};
 
 /** 기준본 80 V.fullLabel: 도면 툴팁용 전체 이름. */
 export function rackFullLabel(o, project, scope = project.settings.scenario) {
