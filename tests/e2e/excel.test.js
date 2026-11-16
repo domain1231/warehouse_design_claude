@@ -276,11 +276,14 @@ test('Excel 로케이션 열 고정(D-041): 진단 표시, 통로 방식 전환,
   await plan.waitFor({ state: 'visible' });
   await page.waitForFunction(() => /적용:/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
   const t1 = await plan.textContent();
-  assert.match(t1, /모든 열 사이 통로/);
+  assert.match(t1, /형태별 최대 통로/);
   assert.match(t1, /적용:/);
   assert.match(await page.locator('[data-testid=excel-pstats]').textContent() + await page.locator('[data-testid=excel-comparison]').textContent(), /로케이션 열 고정/);
   await page.locator('[data-testid=fixed-pairing]').selectOption('pairs');
-  await page.waitForFunction(() => /적용: 등 맞댐 쌍/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
+  await page.waitForFunction(() => /적용: 열 배치\(세로\) · 한 줄 1열 · 등 맞댐 쌍/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
+  await page.locator('[data-testid=fixed-axis]').selectOption('auto');
+  await page.waitForFunction(() => /\(자동 추천\)/.test(document.querySelector('[data-testid=fixed-plan]').textContent));
+  assert.ok(await page.locator('#fxPerLine').isDisabled());
   assert.ok(await page.locator('[data-testid=excel-optimize]').isDisabled());
   assert.deepEqual(problems, []);
   await ctx.close();

@@ -5,6 +5,14 @@
 - 앱 2.5.0-alpha.0 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-16 로케이션 열 고정 2단계(D-042) · feature/fixed-layout-stage2
+- 설정 추가: 배치 축(열/행/자동 추천), 한 줄 열 수(1/2), 시작 방향(설정대로/지그재그). 계산 `evaluateShape`·`recommend`·`targetsFor`, 생성은 `generateRacks`의 `fixedLayout {axes, rotationOffset, targets}`(열을 목표 위치로 통째 이동).
+- 진단: 8가지 형태 최대 통로 표 + 적용 형태. 행 배치 방향 읽는 법 안내.
+- v2.4.1 호환 직접 확인(행·한 줄 2열·등 맞댐·지그재그, 24×14): 56랙, 위반 0.
+- UI 대조 고정 차이 11 → 14건(#fxAxis·#fxPerLine·#fxStart, 사용자 승인).
+- `pnpm check`: unit 146, golden 286(todo 2), e2e 97 PASS(Linux Chrome). NOT RUN: Windows Edge, 실제 마우스·터치패드, 모바일, 실제 업무 Excel.
+- 미결: 행 배치 전용 방향 이름 표시 여부(사용자 판단 대기).
+
 ### 2026-11-16 로케이션 열 고정 배치(D-041) · feature/fixed-column-layout
 - Excel 자동 배치 방식 '로케이션 열 고정 · 열·번호 순서 유지' 추가(1단계). 계산 `src/autolayout/fixed-columns.js`, 생성 `generateRacks`의 `columnGaps`·`fixedAlign`, 후보 `buildFixedCandidates`, UI `#fxOptions`(통로 방식·열 사이 간격·진단).
 - 저장은 모드 'order' + 확장 필드 fixedColumns(v2.4.1 호환). v2.4.1 HTML의 validateProject로 직접 확인: 56랙, 모드 order, 확장 필드 유지, v2.4.1 scan 위반 0.
