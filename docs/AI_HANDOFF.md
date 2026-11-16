@@ -123,6 +123,9 @@
 ## 매트릭스 감사·잔여 기능 (2026-11-15, chore/matrix-audit)
 - D-030: F-010 거리 표시(Q1), F-020 UI 색·복원 미리보기, F-041 검사 결과 재계산. 42개 중 40개 구현, F-042 보류, 나머지 0.
 
+## 출시 준비 (2026-11-15, chore/release-prep)
+- D-031: `pnpm golden:refresh`(확인 모드)·`golden:write`, `tools/legacy-json-compat.mjs`(v2.4.1 JSON 불러오기 PASS), docs/MIGRATION.md. 실사용 시험판 v2.5.0-alpha.0(main ad45ae0) 사용자 전달.
+
 ### 2026-11-16 Phase 9b-3~9b-7 자동 진행 결과
 - PR(쌓인 순서대로 병합 필요): #33 9b-3 다중 랙 편집 패널·인스펙터 → #34 9b-4 위반 목록·Ctrl+S → #35 9b-5 하단 패널(D-034) → #36 9b-6a 정보·안내·비교 SVG/PNG·첨부 도면·도면 흔들림 수정(D-035, D-036) → #37 9b-6b Excel 대화상자 안전 확인·4방향 → #38 9b-7 남은 대화상자 id·문구.
 - UI 차이 고정 목록 376 → 9건. 남은 9건 처리안은 docs/UI_PARITY_AUDIT.md '남은 차이 9건과 처리안'.
