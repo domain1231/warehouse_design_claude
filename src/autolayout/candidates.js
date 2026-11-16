@@ -171,7 +171,6 @@ export function buildCandidates(project, analysis, c, opts) {
   return { proposal, candidates, choice };
 }
 
-export const REOPTIMIZE_SCOPES = ['all', 'new', 'selected', 'boundary', 'collision'];
 
 /** 기준본 W.summary: 배치 검사 결과 한 줄 요약. */
 export function candidateSummary(r) {

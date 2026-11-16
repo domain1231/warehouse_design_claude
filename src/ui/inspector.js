@@ -17,7 +17,6 @@ const PROVENANCE = ['사용자 입력', '사용자 실측', '도면 참고 샘�
 const MM_TITLE = '0.001m 단위 입력 · 직접 좌표는 스냅/가이드로 변경하지 않습니다.';
 export const STATE_NAMES = Object.freeze({ empty: '빈 랙', low: '여유', mid: '보통', high: '적재 주의', over: '허용량 초과', unknown: '정보 없음' });
 /** 이 칸들은 기하를 바꾸지 않는다(기준본 commit spatial:false 목록). */
-export const NON_SPATIAL_FIELDS = new Set(['capacity', 'quantity', 'unit', 'note', 'code', 'block', 'type', 'provenance']);
 
 const wBox = (o, row, reviewing, history) => {
   const [a, b, c] = placementLines(o, row, reviewing, excessText);

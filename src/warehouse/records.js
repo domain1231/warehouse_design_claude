@@ -7,7 +7,6 @@ const sameDims = (a, b) => ['width', 'depth', 'height'].every((k) => a[k] === b[
 /** 랙 ID → 표시 코드(BEFORE·AFTER 모두). */
 export const rackCodeMap = (p) => new Map([...p.scenarios.before.objects, ...p.scenarios.after.objects].filter((o) => o.kind === 'rack').map((o) => [o.id, o.code]));
 
-export const INVENTORY_SCOPES = Object.freeze([['current', '현재 편집안'], ['all', '전체 배치 기록'], ['legacy', '배치 미지정 이전 기록']]);
 export const PAGE_SIZE_INVENTORY = 100;
 export const PAGE_SIZE_LAYOUT = 50;
 
