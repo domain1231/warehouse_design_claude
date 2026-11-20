@@ -257,7 +257,6 @@ export const setDimension = (id, field, raw) => (draft, layout) => {
 
 /** 정밀 입력 칸(X·Y·폭·깊이, 객체 1개 선택) 검사: 빈 값·숫자 아님·1mm 단위 아님은 거부(기준본 80 Q.input, 명령 기록 없음). */
 export const MM_INPUT_FIELDS = new Set(['x', 'y', 'width', 'depth']);
-export const MM_INPUT_MESSAGE = '숫자를 0.001m 단위까지 입력하세요. 기존 위치·규격을 유지합니다.';
 const MM_FIELD_NAMES = { x: 'X', y: 'Y', width: '폭', depth: '깊이' };
 /** D-040: 칸 이름을 붙인 정밀 입력 오류 문구. */
 export const mmInputMessage = (field) => `${MM_FIELD_NAMES[field] || field} 값을 입력하세요 · 0.001m 단위. 기존 위치·규격을 유지합니다.`;

@@ -9,8 +9,6 @@
 import { polygon } from '../geometry/polygons.js';
 
 export const BACK_GAP = 0.1; // 등 맞댐 쌍 안쪽 간격(m)
-export const PAIRINGS = ['all', 'pairs'];
-export const SPACINGS = ['max', 'target'];
 
 const floorMm = (v) => Math.floor(v * 1000 + 1e-6) / 1000;
 const dot = (p, u) => p[0] * u[0] + p[1] * u[1];
@@ -57,67 +55,7 @@ export function pairUnits(n) {
   return units;
 }
 
-function option(availE, sumT, slots, extra, target) {
-  const room = availE - sumT - extra;
-  const aMax = slots > 0 ? room / slots : room >= -1e-9 ? Infinity : -Infinity;
-  return {
-    slots,
-    aMax: Number.isFinite(aMax) ? floorMm(aMax) : aMax,
-    fits: room >= -1e-9, // 통로 0이면 들어가는가
-    meetsTarget: aMax + 1e-9 >= target,
-    shortfall: aMax + 1e-9 >= target ? 0 : Math.max(0, floorMm(target * slots - room + 1e-6 > 0 ? target * slots - room : 0)),
-  };
-}
-
-/**
- * 배치 가능 범위 계산(순수 함수).
- * @param {{column,count,thickness,length}[]} profile 생성 순서
- * @param {{ spanE:number, spanS:number, wallGap:number, aisleTarget:number, backGap?:number }} o
- */
-export function planFixed(profile, { spanE, spanS, wallGap, aisleTarget, backGap = BACK_GAP }) {
-  const n = profile.length;
-  const sumT = profile.reduce((s, c) => s + c.thickness, 0);
-  const availE = spanE - 2 * wallGap, availS = spanS - 2 * wallGap;
-  const longest = profile.reduce((m, c) => (c.length > (m?.length ?? -1) ? c : m), null);
-  const tooLong = profile.filter((c) => c.length > availS + 1e-9).map((c) => c.column);
-  const units = pairUnits(n), pairs = units.filter((u) => u.length === 2).length;
-  return {
-    n, sumT, availE, availS, longest, tooLong, lengthOK: tooLong.length === 0, aisleTarget, backGap, units,
-    all: option(availE, sumT, n - 1, 0, aisleTarget),
-    pairs: option(availE, sumT, units.length - 1, pairs * backGap, aisleTarget),
-  };
-}
-
-/**
- * 열 순번별 '앞 열과의 간격'. 0번은 0.
- * spacing 'max': 남는 폭을 통로에 고르게 나눈 최대 폭(목표 미달이어도 들어가면 그 폭). 들어가지 않으면 목표 폭.
- * spacing 'target': 통로 목표 폭 그대로(남는 폭은 끝 벽 쪽).
- */
-export function gapsFor(plan, pairing, spacing) {
-  const opt = plan[pairing === 'pairs' ? 'pairs' : 'all'];
-  const aisle = spacing === 'target' || !opt.fits || !Number.isFinite(opt.aMax) ? plan.aisleTarget : opt.aMax;
-  const gaps = new Array(plan.n).fill(aisle);
-  gaps[0] = 0;
-  if (pairing === 'pairs') for (const u of plan.units) if (u.length === 2) gaps[u[1]] = plan.backGap;
-  return { gaps, aisle };
-}
-
 const m = (v) => (Number.isFinite(v) ? v.toFixed(2) : '제한 없음');
-
-/** 진단 문구(화면 표시용). */
-export function planText(plan, pairing, spacing) {
-  const lines = [];
-  const L = plan.longest;
-  lines.push(`열 ${plan.n}개 · 열 두께 합 ${m(plan.sumT)}m · 사용 가능 폭 ${m(plan.availE)}m / 길이 ${m(plan.availS)}m`);
-  lines.push(L ? `가장 긴 열 ${L.column} ${m(L.length)}m ${plan.lengthOK ? '≤' : '>'} ${m(plan.availS)}m ${plan.lengthOK ? '✔' : `✖ (${plan.tooLong.join('·')} 열이 창고 길이보다 깁니다)`}` : '배치할 열 없음');
-  const row = (name, o) => `${name}: 최대 통로 ${o.fits ? m(o.aMax) + 'm' : '불가'} · 목표 ${m(plan.aisleTarget)}m ${o.meetsTarget ? '✔' : `✖${o.fits ? '' : ''} (폭 ${m(o.shortfall)}m 부족)`}`;
-  lines.push(row('모든 열 사이 통로', plan.all));
-  lines.push(row(`등 맞댐 쌍(묶음 ${plan.units.length}개)`, plan.pairs));
-  const opt = plan[pairing === 'pairs' ? 'pairs' : 'all'], { aisle } = gapsFor(plan, pairing, spacing);
-  const how = pairing === 'pairs' ? '등 맞댐 쌍' : '모든 열 사이 통로';
-  lines.push(`적용: ${how} · 열 사이 ${m(aisle)}m${spacing === 'max' && opt.fits ? ' (남는 폭을 고르게 나눔)' : ''}${opt.fits && plan.lengthOK ? '' : ' · 창고 밖으로 나가는 랙이 있습니다'}`);
-  return lines;
-}
 
 // ── 2단계: 배치 형태(축 · 한 줄 열 수 · 통로 방식), 지그재그, 자동 추천 ─────────────────────────
 // 한 줄 = 열 방향(S)으로 이어 놓은 열 묶음(한 줄 1열 또는 2열, 로케이션 순서대로). 줄 안 열 사이·줄 사이 간격은 같은 통로 폭.
@@ -184,7 +122,7 @@ export function targetsFor(ev, { aisle, backGap = BACK_GAP, wallGap, loE, loS, h
   return targets;
 }
 
-export const SHAPE_NAMES = { column: '열 배치(세로)', row: '행 배치(가로)', all: '모든 줄 사이 통로', pairs: '등 맞댐 쌍' };
+const SHAPE_NAMES = { column: '열 배치(세로)', row: '행 배치(가로)', all: '모든 줄 사이 통로', pairs: '등 맞댐 쌍' };
 export const shapeName = (s) => `${SHAPE_NAMES[s.axis]} · 한 줄 ${s.perLine}열 · ${SHAPE_NAMES[s.pairing]}`;
 
 /** 진단 문구(2단계). info = buildFixedCandidates의 fixed. */
@@ -210,6 +148,7 @@ export function fixedText(info) {
     lines.push(`구조물 ${info.obstacleCount}개 · ${ob.moved ? `장애물을 피해 ${ob.columns.join('·')}열 랙을 열 방향으로 밀었습니다(${ob.moved}회)` : '겹치는 랙 없음'} · 최대 통로 값은 구조물을 빼고 계산한 값입니다`);
   }
   if (info.missing?.length) lines.push(`누락 번호 ${info.missing.length}개: ${info.missing.slice(0, 20).join('·')}${info.missing.length > 20 ? ' …' : ''} → ${{ pack: '당겨 붙임(빈자리 없음)', keep: '빈자리 비워 둠', empty: '빈 랙 후보로 채움' }[info.gaps] ?? '당겨 붙임'}`);
+  if (!shapes.some((s) => s.ev.fits)) lines.push('들어가는 형태가 없습니다. 창고 크기·통로 목표·랙 회전(북쪽 방향을 90°로 두면 회전도 함께 바꿔야 함)을 확인하세요.');
   if (chosen.axis === 'row') lines.push('행 배치: 진행·첫 랙 위치는 화면의 행 기준 이름(북→남/남→북, 서쪽 끝/동쪽 끝)대로 배치됩니다.');
   return lines;
 }
