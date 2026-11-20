@@ -3,8 +3,8 @@ import { applyCommand, COMMAND_DEFAULT } from './commands.js';
 import { formatNumber as fmt } from '../core/format.js';
 
 const range = (v) => Number.isFinite(v) && v >= 1 && v <= 500;
-/** 최솟값 1에서 0.1m 간격의 배수인지(HTML step 검사와 같은 기준). */
-const onStep = (v) => Math.abs((v - 1) * 10 - Math.round((v - 1) * 10)) <= 1e-6;
+/** D-052: 0.001m(1mm) 단위인지. 기준본은 0.1m였으나 프로젝트 정밀도 원칙(입력 최소 1mm)에 맞춘다. */
+const onStep = (v) => Math.abs(v * 1000 - Math.round(v * 1000)) <= 1e-6;
 
 /** 치수 적용 불가 사유. 빈 문자열이면 적용할 수 있다. width·height는 입력 칸의 문자열. */
 export function roomApplyReason({ width, height }, { locked = false, history = false, busy = false } = {}) {
@@ -13,7 +13,7 @@ export function roomApplyReason({ width, height }, { locked = false, history = f
   if (history) return '과거 조회 중입니다. 현재 편집으로 돌아온 뒤 적용하세요.';
   if (busy) return '처리 중입니다. 완료 후 치수를 적용하세요.';
   if (raw.some((s, i) => !String(s).trim() || !range(v[i]))) return '가로와 세로에 1~500m의 숫자를 입력하세요.';
-  if (!v.every(onStep)) return '가로와 세로는 0.1m 단위로 입력하세요.';
+  if (!v.every(onStep)) return '가로와 세로는 0.001m 단위로 입력하세요.';
   return '';
 }
 

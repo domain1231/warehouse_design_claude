@@ -74,9 +74,12 @@ test('치수 적용: 창고만 바뀌고 실행취소로 복원, 잘못된 단�
   await page.waitForFunction((w) => window.__warehouseSession.state.project.scenarios.after.warehouse.width === w, w0.width);
   assert.deepEqual(await wh(page), w0);
   assert.equal(await page.inputValue(T('room-width')), String(w0.width)); // 칸도 복원값으로
+  // D-052: 1mm 단위까지 허용(12.34는 적용 가능), 1mm 미만은 거부
   await page.fill(T('room-width'), '12.34');
+  assert.equal(await page.locator(T('room-apply')).isDisabled(), false);
+  await page.fill(T('room-width'), '12.3456');
   assert.equal(await page.locator(T('room-apply')).isDisabled(), true);
-  assert.equal(await page.locator(T('room-reason')).textContent(), '가로와 세로는 0.1m 단위로 입력하세요.');
+  assert.equal(await page.locator(T('room-reason')).textContent(), '가로와 세로는 0.001m 단위로 입력하세요.');
   await page.fill(T('room-width'), '0.5');
   assert.equal(await page.locator(T('room-reason')).textContent(), '가로와 세로에 1~500m의 숫자를 입력하세요.');
   await page.fill(T('room-width'), '20');
