@@ -298,6 +298,7 @@ function checkFixedColumns(f, withAisle) {
   if (f.perLine !== undefined && ![1, 2].includes(f.perLine)) fail('로케이션 열 고정 설정 오류');
   if (f.start !== undefined && !['config', 'zigzag'].includes(f.start)) fail('로케이션 열 고정 설정 오류');
   if (f.gaps !== undefined && !['pack', 'keep'].includes(f.gaps)) fail('로케이션 열 고정 설정 오류');
+  if (f.maxAisle !== undefined) finite(f.maxAisle, 'maxAisle', 0.3, 50);
   if (f.applied !== undefined && (!f.applied || !['column', 'row'].includes(f.applied.axis) || ![1, 2].includes(f.applied.perLine) || !['all', 'pairs'].includes(f.applied.pairing))) fail('로케이션 열 고정 설정 오류');
   if (withAisle && f.aisle !== undefined) finite(f.aisle, 'aisle', 0, 50);
 }

@@ -7,7 +7,7 @@ import { GEOMETRY_EPS_M as EPS, roundMm } from '../geometry/tolerance.js';
 import { scanLayout } from '../warehouse/constraints.js';
 import { buildProposal, generateRacks } from '../excel/proposal.js';
 import { createIdGenerator } from '../core/ids.js';
-import { axesOf, isAxisAligned, spans, columnProfile, SHAPES, evaluateShape, chooseAisle, recommend, targetsFor, shapeName, BACK_GAP } from './fixed-columns.js';
+import { axesOf, isAxisAligned, spans, columnProfile, SHAPES, evaluateShape, chooseAisle, effectiveAisle, recommend, targetsFor, shapeName, BACK_GAP } from './fixed-columns.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { buildColumnCandidates, columnBase } from './column.js';
 
@@ -222,8 +222,9 @@ export function fixedConfig(analysis, c, project, pick = null) {
     return { ...sh, ev: evaluateShape(profile, { spanE: sp.E[1] - sp.E[0], spanS: sp.S[1] - sp.S[0], wallGap: c.wallGap, aisleTarget: c.aisleTarget, backGap, perLine: sh.perLine, pairing: sh.pairing }) };
   });
   const auto = f.axis === 'auto';
-  const chosen = pick ? pick(shapes) : auto ? recommend(shapes) : shapes.find((s) => s.axis === f.axis && s.perLine === (f.perLine ?? 1) && s.pairing === f.pairing);
-  const { fx, sp } = pr[chosen.axis], aisle = chooseAisle(chosen.ev, c.aisleTarget, f.spacing), start = f.start ?? 'config';
+  const cap = f.spacing === 'max' ? f.maxAisle ?? Infinity : Infinity;
+  const chosen = pick ? pick(shapes) : auto ? recommend(shapes, cap) : shapes.find((s) => s.axis === f.axis && s.perLine === (f.perLine ?? 1) && s.pairing === f.pairing);
+  const { fx, sp } = pr[chosen.axis], aisle = chooseAisle(chosen.ev, c.aisleTarget, f.spacing, cap), start = f.start ?? 'config';
   const flip = (d) => (d === 'north' ? 'south' : 'north');
   const lineFirst = (k) => (start === 'zigzag' ? (k % 2 ? flip(c.firstRackPosition) : c.firstRackPosition) : (c.perColumnSettings[chosen.ev.lines[k].cols[0].column] || {}).first || c.firstRackPosition);
   const targets = targetsFor(chosen.ev, { aisle, backGap, wallGap: c.wallGap, loE: sp.E[0], loS: sp.S[0], hiS: sp.S[1], lineFirst });
@@ -232,7 +233,7 @@ export function fixedConfig(analysis, c, project, pick = null) {
   const nums = {};
   for (const r of analysis.racks) if (r.floor === c.floor && r.dimensions && !r.unresolved) (nums[r.column] ??= new Set()).add(r.rackNumber);
   const missing = Object.keys(nums).sort().flatMap((k) => { const v = nums[k], out = []; for (let i = 1; i <= Math.max(...v); i++) if (!v.has(i)) out.push(k + i); return out; });
-  return { info: { shapes, chosen, aisle, target: c.aisleTarget, spacing: f.spacing, start, auto, backGap, missing, gaps: c.empty ? 'empty' : f.gaps ?? 'pack' }, config: { ...c, fixedLayout: { ...fx, targets, leadOut: {} } }, minGap };
+  return { info: { shapes, chosen, aisle, target: c.aisleTarget, spacing: f.spacing, maxAisle: Number.isFinite(cap) ? cap : undefined, start, auto, backGap, missing, gaps: c.empty ? 'empty' : f.gaps ?? 'pack' }, config: { ...c, fixedLayout: { ...fx, targets, leadOut: {} } }, minGap };
 }
 
 export const OBSTACLE_KINDS = ['wall', 'column', 'blocked', 'door', 'aisle'];
@@ -300,7 +301,7 @@ export function buildFixedCandidates(project, analysis, c, opts) {
     trials = base.info.shapes.filter((s) => s.ev.fits).map((s, i) => {
       const t = buildFixedOne(project, analysis, c, { ...opts, nextId: createIdGenerator({ seed: 'fixed-trial-' + i }) }, (all) => all.find((x) => x.axis === s.axis && x.perLine === s.perLine && x.pairing === s.pairing));
       const k = scanLayout(t.proposal.layout, project).counts;
-      return { axis: s.axis, perLine: s.perLine, pairing: s.pairing, valid: k.validInside, total: k.total, meets: s.ev.meetsTarget, aMax: s.ev.aMax, order: base.info.shapes.indexOf(s) };
+      return { axis: s.axis, perLine: s.perLine, pairing: s.pairing, valid: k.validInside, total: k.total, meets: s.ev.meetsTarget, aMax: effectiveAisle(s.ev, base.info.maxAisle ?? Infinity), order: base.info.shapes.indexOf(s) };
     });
     if (trials.length) {
       const best = [...trials].sort((x, y) => y.valid - x.valid || Number(y.meets) - Number(x.meets) || y.aMax - x.aMax || x.order - y.order)[0];
