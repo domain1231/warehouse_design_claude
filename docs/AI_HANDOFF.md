@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.3 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-20 도면 칸 최소 높이(D-051) · fix/canvas-min-height
+- alpha.1~3에서 낮은 화면의 도면 칸이 작아지던 문제(1920×890: 674→277px) 수정: 기준본 높이를 최소로, 큰 화면에서만 화면에 맞춤.
+- `pnpm check`: unit 158, golden 286(todo 2), e2e 98 PASS.
+
 ### 2026-11-20 통로 최대 폭 상한(D-050) · feature/fixed-max-aisle
 - '통로 최대 폭(m)' 입력(기본 1.5): 고르게 나눌 때 상한, 남는 공간은 끝 벽 쪽. 자동 추천도 상한 적용 폭으로 비교.
 - `pnpm check`: unit 158, golden 286(todo 2), e2e 97 PASS. UI 대조 고정 차이 16건.
