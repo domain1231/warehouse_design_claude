@@ -24,6 +24,7 @@ export function applyRoom(project, { width, height, ceiling }, { nextId, now }) 
     w.width = Number(width);
     w.height = Number(height);
     w.ceiling = ceiling === '' || ceiling == null ? null : Number(ceiling);
+    if (draft.metadata?.sample) draft.metadata.sample = false; // D-053: 창고를 다시 만들면 샘플 해제
   }, { command: COMMAND_DEFAULT, nextId, now, resetCamera: true });
 }
 

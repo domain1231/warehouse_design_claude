@@ -4,7 +4,7 @@ import { esc } from '../cad/scene.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { readWorkbook, sheetMatrix, encodeCol } from '../excel/xlsx.js';
 import { FIELDS, detectHeaderRow, autoMap, analyzeSheet } from '../excel/analyze.js';
-import { readExcelConfig } from '../excel/proposal.js';
+import { readExcelConfig, structuresOutside } from '../excel/proposal.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
 import { fixedText } from '../autolayout/fixed-columns.js';
 import { buildCandidates, reoptimize, candidateSummary } from '../autolayout/candidates.js';
@@ -182,7 +182,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     const racks = (l) => l.objects.filter((o) => o.kind === 'rack').length;
     const cn = cand.result.counts, col = c.autoPlacement.mode === 'column';
     $('[data-pstats]').textContent = `선택 후보: ${cand.name} · 내부 정상 ${cn.validInside}/${cn.total} · 대기 ${cn.waiting} | 대상 ${c.target.toUpperCase()} · 기존 ${racks(p.scenarios[c.target])}랙 / Excel 고유 ${a.racks.length}랙 / 적용 후 ${racks(pr.layout)}랙 · 일치 ${pr.changes.updated} / 오류 ${a.issues.filter((i) => i.type === 'error').length} / 경고 ${ws.length}`;
-    $('[data-changes]').textContent = `${col ? columnSummary(cand.result) : candidateSummary(cand.result)}\n신규 ${pr.changes.added} / 기존 갱신 ${pr.changes.updated} / 규격 후보 ${pr.changes.dimensions} / 누락 ${pr.changes.missing} / 제거 승인 후보 ${pr.changes.deleted}랙 + 구조물 ${pr.changes.structuresDeleted || 0} / 업데이트 모드 신규 제외 ${pr.changes.skippedNew} · 자재 추가 ${pr.changes.itemsAdded} / 제거 ${pr.changes.itemsRemoved} / 값 변경 ${pr.changes.itemsChanged}`;
+    $('[data-changes]').textContent = `${structuresOutside(pr.layout) ? `⚠ 유지한 구조물 ${structuresOutside(pr.layout)}개가 새 창고 범위 밖에 있습니다 · 구조물 유지를 끄거나 적용할 편집 배치(${c.target.toUpperCase()})를 확인하세요\n` : ''}${col ? columnSummary(cand.result) : candidateSummary(cand.result)}\n신규 ${pr.changes.added} / 기존 갱신 ${pr.changes.updated} / 규격 후보 ${pr.changes.dimensions} / 누락 ${pr.changes.missing} / 제거 승인 후보 ${pr.changes.deleted}랙 + 구조물 ${pr.changes.structuresDeleted || 0} / 업데이트 모드 신규 제외 ${pr.changes.skippedNew} · 자재 추가 ${pr.changes.itemsAdded} / 제거 ${pr.changes.itemsRemoved} / 값 변경 ${pr.changes.itemsChanged}`;
     $('[data-spatial]').innerHTML = ws.map((w) => `<div class="issue-warning">${esc(w.text)}</div>`).join('') || '<p class="info">설정 기준 공간 경고 없음</p>';
     $('[data-comparison]').innerHTML = col ? columnComparison() : `<table class="excel-table"><thead><tr>${COMPARE_HEAD.map((t) => `<th>${t}</th>`).join('')}</tr></thead><tbody>${candidates.map((v, i) => {
       const s = v.result.counts;
