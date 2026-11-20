@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pairUnits, planFixed, gapsFor, linesOf, evaluateShape, recommend, targetsFor } from '../../src/autolayout/fixed-columns.js';
+import { pairUnits, linesOf, evaluateShape, recommend, targetsFor } from '../../src/autolayout/fixed-columns.js';
 
 const T = [1.2, 0.6, 0.5, 0.51, 0.51, 0.51, 0.51, 0.51, 0.51, 0.51, 0.5, 0.51, 1.11, 1.11];
 const profile = T.map((thickness, i) => ({ column: 'C' + i, count: 1, thickness, length: i === 3 ? 7.23 : 6 }));
@@ -15,24 +15,17 @@ test('pairUnits: 첫 열 단독, 둘씩 묶음, 남으면 마지막 단독', () 
   assert.deepEqual(pairUnits(13).at(-1), [11, 12]);
 });
 
-test('planFixed: 통로 최대 폭·목표 충족·길이', () => {
-  const p = planFixed(profile, opt);
-  assert.equal(p.all.aMax, 0.703);
-  assert.equal(p.all.meetsTarget, false);
-  assert.equal(p.pairs.aMax, 1.22);
-  assert.equal(p.pairs.meetsTarget, true);
-  assert.equal(p.lengthOK, true);
-  const q = planFixed(profile, { ...opt, spanS: 7 });
+test('evaluateShape(한 줄 1열): 통로 최대 폭·목표 충족·길이', () => {
+  const ev = evaluateShape(profile, { ...opt, perLine: 1, pairing: 'all' });
+  assert.equal(ev.aMax, 0.703);
+  assert.equal(ev.meetsTarget, false);
+  const pr = evaluateShape(profile, { ...opt, perLine: 1, pairing: 'pairs' });
+  assert.equal(pr.aMax, 1.22);
+  assert.equal(pr.meetsTarget, true);
+  assert.equal(ev.lengthOK, true);
+  const q = evaluateShape(profile, { ...opt, spanS: 7, perLine: 1, pairing: 'all' });
   assert.equal(q.lengthOK, false);
   assert.ok(q.tooLong.includes('C3'));
-});
-
-test('gapsFor', () => {
-  const p = planFixed(profile, opt);
-  const g = gapsFor(p, 'pairs', 'max');
-  assert.equal(g.gaps[2], 0.1);
-  assert.equal(g.gaps[1], 1.22);
-  assert.equal(gapsFor(p, 'all', 'target').aisle, 1.2);
 });
 
 const sh = { spanE: 18.44, spanS: 8.5, wallGap: 0.1, aisleTarget: 1.2, backGap: 0.1, perLine: 1, pairing: 'all' };
