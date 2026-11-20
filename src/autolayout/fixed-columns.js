@@ -94,11 +94,14 @@ export function evaluateShape(profile, { spanE, spanS, wallGap, aisleTarget, bac
   return { perLine, pairing, lines, units, availE, availS, sumT, lengthOK, tooLong, fits, aMax, meetsTarget, shortE, shortS, longestLine: Math.max(...lines.map((l) => l.sumL)) };
 }
 
-export const chooseAisle = (ev, target, spacing) => (spacing === 'target' || !ev.fits || !Number.isFinite(ev.aMax) ? target : ev.aMax);
+/** 적용 통로 폭. 'max'는 남는 폭을 고르게 나누되 통로 최대 폭(cap, D-050)을 넘지 않는다(남는 공간은 끝 벽 쪽 여유). */
+export const chooseAisle = (ev, target, spacing, cap = Infinity) => (spacing === 'target' || !ev.fits || !Number.isFinite(ev.aMax) ? target : Math.min(ev.aMax, cap));
+/** 추천 비교용 통로 폭: 상한을 넘는 폭은 같은 값으로 본다. */
+export const effectiveAisle = (ev, cap = Infinity) => Math.min(ev.aMax, cap);
 
-/** 자동 추천: 목표 충족 형태 중 최대 통로 → 없으면 들어가는 형태 중 최대 통로 → 없으면 첫 형태. 동점은 SHAPES 순서. */
-export function recommend(shapes) {
-  const best = (list) => list.reduce((b, s) => (b === null || s.ev.aMax > b.ev.aMax + 1e-9 ? s : b), null);
+/** 자동 추천: 목표 충족 형태 중 최대 통로(상한 적용) → 없으면 들어가는 형태 중 최대 통로 → 없으면 첫 형태. 동점은 SHAPES 순서. */
+export function recommend(shapes, cap = Infinity) {
+  const best = (list) => list.reduce((b, s) => (b === null || effectiveAisle(s.ev, cap) > effectiveAisle(b.ev, cap) + 1e-9 ? s : b), null);
   return best(shapes.filter((s) => s.ev.meetsTarget)) ?? best(shapes.filter((s) => s.ev.fits)) ?? shapes[0];
 }
 
@@ -141,6 +144,8 @@ export function fixedText(info) {
     lines.push(`${mark}${shapeName(s)}: ${t}${tr ? ` · 구조물 반영 실제 배치 ${tr.valid}/${tr.total}` : ''}`);
   }
   const ev = chosen.ev;
+  const capped = spacing === 'max' && ev0 && chosen.ev.fits && Number.isFinite(chosen.ev.aMax) && info.maxAisle !== undefined && chosen.ev.aMax > info.maxAisle + 1e-9;
+  if (capped) lines.push(`통로 최대 폭 ${m(info.maxAisle)}m 적용: 계산상 ${m(chosen.ev.aMax)}m까지 넓힐 수 있지만 상한을 넘는 남는 공간은 끝 벽 쪽 여유로 둡니다.`);
   lines.push(`적용: ${shapeName(chosen)}${auto ? ' (자동 추천)' : ''} · 통로 ${m(aisle)}m${spacing === 'max' && ev.fits && Number.isFinite(ev.aMax) ? ' (남는 폭을 고르게 나눔)' : ''} · 시작 ${start === 'zigzag' ? '지그재그' : '설정대로'}${ev.fits ? '' : ' · 창고 밖으로 나가는 랙이 있습니다'}`);
   if (info.trials) lines.push('자동 추천: 구조물이 있어 들어가는 형태를 모두 실제로 배치해 보고 창고 안 정상 랙이 가장 많은 형태를 골랐습니다.');
   if (info.obstacleCount) {

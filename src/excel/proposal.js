@@ -51,6 +51,13 @@ export function readExcelConfig(raw) {
 // D-041: 로케이션 열 고정은 v2.4.1 호환을 위해 저장 모드 'order' + 확장 필드 fixedColumns로 표현한다.
 function fixedColumnsOf(raw) {
   const f = { pairing: raw.fixedPairing ?? 'all', spacing: raw.fixedSpacing ?? 'max', axis: raw.fixedAxis ?? 'auto', perLine: Number(raw.fixedPerLine ?? 1), start: raw.fixedStart ?? 'config', gaps: raw.fixedGaps ?? 'pack' };
+  // D-050 통로 최대 폭(남는 폭을 고르게 나눌 때만). 비우면 상한 없음.
+  const cap = raw.fixedMaxAisle === undefined || String(raw.fixedMaxAisle).trim() === '' ? null : Number(raw.fixedMaxAisle);
+  if (cap !== null) {
+    if (!Number.isFinite(cap) || cap < 0.3 || cap > 50) throw new Error('통로 최대 폭은 0.3~50m 사이로 입력하세요.');
+    if (cap + 1e-9 < Number(raw.aisleTarget)) throw new Error('통로 최대 폭은 통로 목표 폭 이상이어야 합니다.');
+    f.maxAisle = cap;
+  }
   if (!['all', 'pairs'].includes(f.pairing) || !['max', 'target'].includes(f.spacing) || !['column', 'row', 'auto'].includes(f.axis) || ![1, 2].includes(f.perLine) || !['config', 'zigzag'].includes(f.start) || !['pack', 'keep'].includes(f.gaps)) throw new Error('로케이션 열 고정 설정 오류');
   return f;
 }

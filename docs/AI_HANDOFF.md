@@ -5,12 +5,16 @@
 - 앱 2.5.0-alpha.2 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-20 통로 최대 폭 상한(D-050) · feature/fixed-max-aisle
+- '통로 최대 폭(m)' 입력(기본 1.5): 고르게 나눌 때 상한, 남는 공간은 끝 벽 쪽. 자동 추천도 상한 적용 폭으로 비교.
+- `pnpm check`: unit 158, golden 286(todo 2), e2e 97 PASS. UI 대조 고정 차이 16건.
+
 ### 2026-11-20 최적화·디버그 2차 · chore/optimize-debug-2
 - 점검: `pnpm check` 통과, 로케이션 열 고정 설정 576개 조합(북쪽 0/90°, 진행·시작 방향, 축·한 줄 열 수·통로 방식·간격·시작·누락 번호) 화면 순회 → 페이지 오류 0, NaN/undefined 표시 0. 일반 UI 순회 오류 0.
 - 정리: 쓰지 않는 1단계 계산 코드(planFixed·gapsFor·planText 등)와 MM_INPUT_MESSAGE 제거, 검사는 evaluateShape로 대체.
 - 성능: `unionArea` 최근 결과 기억(16개). 이전 '라벨 전환 500랙 느림'은 서로 다른 방식을 비교한 측정 오류로 정정(docs/perf).
 - 안내 추가: 들어가는 형태가 없으면 창고 크기·통로 목표·랙 회전을 확인하라는 문장.
-- 발견(사용자 판단 대기): '남는 폭을 고르게'는 넓은 창고에서 통로가 지나치게 넓어짐(예: 10m 창고에 열 2개 → 통로 8.8m). 통로 최대 폭 상한 설정 제안.
+- 발견: '남는 폭을 고르게'는 넓은 창고에서 통로가 지나치게 넓어짐 → D-050으로 해결.
 - Squash 병합 전환은 효과 없음 확인(병합 커밋은 이미 GitHub 서명 Verified, Squash도 커밋한 쪽은 GitHub) → 추천에서 제외.
 - `pnpm check`: unit 154, golden 286(todo 2), e2e 97 PASS.
 
