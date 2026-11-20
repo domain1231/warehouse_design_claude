@@ -24,9 +24,9 @@ export async function readBackgroundFile(f) {
  */
 export function createRoomPanel({ room, ref }, { getProject, isHistory, applyRoom, setBackground, useReference, startCalibration, toast }) {
   room.innerHTML = `<div class="fields">
-    <label>가로 X (m)<input id="roomWidth" data-testid="room-width" type="number" min="1" max="500" step="0.1"></label>
-    <label>세로 Y (m)<input id="roomHeight" data-testid="room-height" type="number" min="1" max="500" step="0.1"></label>
-    <label>천장 높이 (m)<input id="ceiling" data-testid="room-ceiling" type="number" min="0.1" step="0.1" placeholder="선택"></label>
+    <label>가로 X (m)<input id="roomWidth" data-testid="room-width" type="number" min="1" max="500" step="0.001"></label>
+    <label>세로 Y (m)<input id="roomHeight" data-testid="room-height" type="number" min="1" max="500" step="0.001"></label>
+    <label>천장 높이 (m)<input id="ceiling" data-testid="room-ceiling" type="number" min="0.1" step="0.001" placeholder="선택"></label>
     <label>계산 면적 (㎡)<input id="roomArea" data-testid="room-area" readonly></label></div>
     <button type="button" id="applyRoom" class="fullbtn" aria-describedby="roomApplyReason" data-testid="room-apply">치수 적용</button>
     <p id="roomApplyReason" class="muted" data-testid="room-reason" role="status" aria-live="polite"></p>

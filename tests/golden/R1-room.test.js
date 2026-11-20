@@ -26,6 +26,13 @@ for (const c of roomCases) {
     if (c.background) p.settings.background = c.background;
     p = validateProject(p);
     const exp = expected.find((x) => x.name === c.name);
+    // D-052 의도적 차이: 기준본은 0.1m 단위만 받지만 재구축은 1mm(0.001m) 단위를 받는다. 기준본은 이 값을 거부했다.
+    if (c.name === '0.1m 단위 아님(12.34)') {
+      assert.equal(exp.reason, '가로와 세로는 0.1m 단위로 입력하세요.', '기준본 기록');
+      assert.equal(roomApplyReason(c.room), '', '재구축은 12.34 허용');
+      assert.equal(roomApplyReason({ width: '12.3456', height: '8' }), '가로와 세로는 0.001m 단위로 입력하세요.');
+      return;
+    }
     if (c.room) {
       const reason = roomApplyReason(c.room, { locked: c.scenario === 'before' && !!c.locked, history: false, busy: false });
       assert.equal(reason, exp.reason, '적용 불가 사유');
