@@ -191,6 +191,8 @@ export function addPolygonAisle(points, aisleType, { nextId }) {
 export const deleteObjects = (ids) => (draft, layout) => {
   const set = new Set(ids);
   layout.objects = layout.objects.filter((o) => !set.has(o.id));
+  // D-053: 편집 중인 배치를 모두 지우면 더 이상 샘플 프로젝트가 아니다(Excel 적용 대상이 현재 배치로 잡히게).
+  if (!layout.objects.length && draft.metadata?.sample) draft.metadata.sample = false;
 };
 
 /** 복제: 새 ID·새 코드로 0.5m 오른쪽 아래에. 새 ID 목록을 함께 돌려준다. */

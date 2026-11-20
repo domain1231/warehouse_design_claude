@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.4 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-20 샘플 표시 해제·창고 밖 구조물 경고(D-053) · fix/sample-flag-structures
+- 창고 재생성·전체 삭제 시 샘플 해제(Excel 대상이 현재 배치로). Excel 미리보기에 창고 밖 유지 구조물 경고(`structuresOutside`).
+- 미결: D-052(창고 가로·세로 0.1m → 0.001m 단위) 사용자 승인 대기.
+- `pnpm check`: unit 161, golden 286(todo 2), e2e 98 PASS.
+
 ### 2026-11-20 도면 칸 최소 높이(D-051) · fix/canvas-min-height
 - alpha.1~3에서 낮은 화면의 도면 칸이 작아지던 문제(1920×890: 674→277px) 수정: 기준본 높이를 최소로, 큰 화면에서만 화면에 맞춤.
 - `pnpm check`: unit 158, golden 286(todo 2), e2e 98 PASS.

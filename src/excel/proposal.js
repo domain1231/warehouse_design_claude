@@ -255,3 +255,9 @@ export function buildProposal(project, analysis, c, { nextId, filename = '', she
   p.layout.autoPlacementRules = { mode: c.autoPlacement.mode, wallGap: c.wallGap, rackGap: c.rackGap, columnGap: c.columnGap, aisleTarget: c.aisleTarget };
   return p;
 }
+
+/** D-053: 배치안에서 창고 범위를 벗어난(일부라도) 구조물 수. 미리보기 경고용(배치안 자체는 기준본과 같게 둔다). */
+export function structuresOutside(layout) {
+  const W = layout.warehouse.width, H = layout.warehouse.height, E = 1e-6;
+  return layout.objects.filter((o) => o.kind !== 'rack' && polygon(o).some(([x, y]) => x < -E || y < -E || x > W + E || y > H + E)).length;
+}
