@@ -1,4 +1,4 @@
-// UX 개선 e2e: 다중 삭제 확인, 스크롤 없음, JSON 오류 토스트, 빈 X 입력, 벽 도구 안내, Ctrl+S 토스트.
+// UX 개선 e2e: 다중 삭제 확인, 도면 최소 높이·큰 화면 스크롤 없음, JSON 오류 토스트, 빈 X 입력, 벽 도구 안내, Ctrl+S 토스트.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -84,15 +84,29 @@ test('다중 선택 삭제는 확인 대화상자를 거치고 단일 삭제는 
   await o2.ctx.close();
 });
 
-test('하단 패널이 닫힌 1600x1000에서 세로 스크롤이 없다', async () => {
-  const ctx = await browser.newContext({ offline: true, viewport: { width: 1600, height: 1000 } });
+// D-051: 도면 칸은 어떤 화면에서도 기준본 높이(약 674px) 이상. 화면이 충분히 크면 스크롤 없이 화면을 채운다.
+async function measure(width, height) {
+  const ctx = await browser.newContext({ offline: true, viewport: { width, height } });
   const page = await ctx.newPage();
   await page.goto(fileUrl);
   await page.waitForFunction(() => window.__warehouseView && document.querySelector('[data-testid=plan] g[data-id]'));
   await waitPlanStable(page);
-  const m = await page.evaluate(() => ({ sh: document.documentElement.scrollHeight, ih: innerHeight }));
-  assert.ok(m.sh <= m.ih + 1, `scrollHeight ${m.sh} innerHeight ${m.ih}`);
+  const m = await page.evaluate(() => ({ sh: document.documentElement.scrollHeight, ih: innerHeight, canvas: document.getElementById('canvasWrap').getBoundingClientRect().height }));
   await ctx.close();
+  return m;
+}
+
+test('도면 칸 최소 높이: 낮은 화면에서도 줄지 않는다(D-051)', async () => {
+  for (const [w, h] of [[1920, 890], [1600, 1000], [1920, 1080]]) {
+    const m = await measure(w, h);
+    assert.ok(m.canvas >= 660, `${w}x${h} canvas ${m.canvas}`);
+  }
+});
+
+test('큰 화면(1920x1400)에서는 하단 패널이 닫힌 채 세로 스크롤 없이 화면을 채운다(D-040·D-051)', async () => {
+  const m = await measure(1920, 1400);
+  assert.ok(m.sh <= m.ih + 1, `scrollHeight ${m.sh} innerHeight ${m.ih}`);
+  assert.ok(m.canvas > 700, `canvas ${m.canvas}`);
 });
 
 test('잘못된 JSON 가져오기 토스트는 위치만 알리고 파일 내용을 노출하지 않는다', async () => {

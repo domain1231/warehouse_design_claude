@@ -631,7 +631,9 @@ async function start() {
     const wb = work.getBoundingClientRect(), foot = document.querySelector('body > footer');
     const tail = foot ? Math.max(0, foot.getBoundingClientRect().bottom - wb.bottom) : 0;
     const fit = !pn.bottomOpen && innerWidth > 1100;
-    work.style.height = (fit ? Math.max(mainMin, Math.floor(innerHeight - wb.top - scrollY - tail)) : Math.max(room, mainMin + fullDock + 10)) + 'px';
+    // D-051: 화면에 맞추더라도 도면 칸은 기준본 높이(약 674px) 아래로 줄이지 않는다. 화면이 더 크면 그만큼 키운다.
+    const floor = mainMin + fullDock + 10; // 기준본에서 도면 칸이 갖는 높이
+    work.style.height = (fit ? Math.max(floor, Math.floor(innerHeight - wb.top - scrollY - tail)) : Math.max(room, floor)) + 'px';
     work.style.gridTemplateRows = pn.bottomOpen ? `minmax(${mainMin}px,1fr) 10px auto` : `minmax(${mainMin}px,1fr)`;
   }
   let workFrame = 0;
