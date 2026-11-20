@@ -1,6 +1,6 @@
 // 로케이션 코드 형식(D-049). 의존성 없음: project.js·excel/analyze.js가 함께 쓴다.
 // 층F-열-랙-선반-위치. 열은 숫자로 시작해도 됨(예: 2A). 랙 번호는 로마 숫자(I~MMMM, 표준 표기)도 같은 번호로 읽는다.
-export const LOCATION_RE = /^(\d+)F-(\d*[A-Z]+)-(\d+|[IVXLCDM]+)-(\d+)-(\d+)$/;
+const LOCATION_RE = /^(\d+)F-(\d*[A-Z]+)-(\d+|[IVXLCDM]+)-(\d+)-(\d+)$/;
 const ROMAN = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
 const TABLE = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
 function toRoman(n) { let out = ''; for (const [v, s] of TABLE) while (n >= v) { out += s; n -= v; } return out; }
