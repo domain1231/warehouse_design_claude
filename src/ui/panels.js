@@ -44,6 +44,7 @@ export function createPanels(roots, { onFocus, onView }) {
       k.footprint.textContent = fmt(m.footprint, 1);
       k.load.innerHTML = units;
       k.warnings.textContent = String(m.warnings.length);
+      if (k.summary) k.summary.textContent = `${m.racks}랙 · 점유율 ${fmt(m.footprint, 1)}% · 공간 경고 ${m.warnings.length}건`;
       roots.metrics.innerHTML = `${[['랙 면적 합계', fmt(m.rackArea) + '㎡'], ['보관 불가 / 문 안전 구역', fmt(m.unavailable) + '㎡'], ['통로 / 작업 구역', fmt(m.aisles) + '㎡'], ['중복 제외 잔여 면적', fmt(m.remaining) + '㎡']].map(([t, v]) => `<div class="metricline"><span>${t}</span><strong>${v}</strong></div>`).join('')}<p class="note">각 구역 지표는 서로 겹칠 수 있습니다. 잔여 면적만 전체 합집합을 차감합니다.</p>`;
       $('warningCount').textContent = m.warnings.length + '건';
       roots.warnings.innerHTML = m.warnings.length
