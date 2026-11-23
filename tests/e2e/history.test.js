@@ -72,6 +72,7 @@ test('날짜 조회: 상태 문구·그날 배치 표시, 모드 current, 읽기
 
   // 편집 시도: 삭제·드래그·필드 수정은 막히고 프로젝트는 그대로
   const before = JSON.stringify(await P(page));
+  await page.locator('#canvasWrap').evaluate((n) => n.scrollIntoView({ block: 'start' })); // D-056: 하단 패널을 열면 도면 아래로 패널이 내려가 페이지가 길어진다
   const b = await rackBox(page, rack.id);
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await page.keyboard.press('Delete');
@@ -89,7 +90,9 @@ test('날짜 조회: 상태 문구·그날 배치 표시, 모드 current, 읽기
   await T(page, 'history-live').click();
   assert.match(await T(page, 'history-status').textContent(), /^현재 편집 · 이력 2개 날짜/);
   assert.equal(await T(page, 'canvas-hint').textContent(), '원점: 좌상단 · X → / Y ↓ · 단위 m');
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await page.locator('#canvasWrap').evaluate((n) => n.scrollIntoView({ block: 'start' }));
+  const b2 = await rackBox(page, rack.id);
+  await page.mouse.click(b2.x + b2.width / 2, b2.y + b2.height / 2);
   const count = (await P(page)).scenarios.after.objects.length;
   await page.keyboard.press('Delete');
   await page.waitForFunction((n) => window.__warehouseSession.state.project.scenarios.after.objects.length === n - 1, count);

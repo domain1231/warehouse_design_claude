@@ -633,8 +633,11 @@ async function start() {
     const fit = !pn.bottomOpen && innerWidth > 1100;
     // D-051: 화면에 맞추더라도 도면 칸은 기준본 높이(약 674px) 아래로 줄이지 않는다. 화면이 더 크면 그만큼 키운다.
     const floor = mainMin + fullDock + 10; // 기준본에서 도면 칸이 갖는 높이
-    work.style.height = (fit ? Math.max(floor, Math.floor(innerHeight - wb.top - scrollY - tail)) : Math.max(room, floor)) + 'px';
-    work.style.gridTemplateRows = pn.bottomOpen ? `minmax(${mainMin}px,1fr) 10px auto` : `minmax(${mainMin}px,1fr)`;
+    // D-056: 하단 패널을 열어도 도면 칸은 닫았을 때의 최소 높이(floor − 도구 줄, 약 674px)를 지킨다. 하단 패널은 그 아래로 내려가고 페이지가 스크롤된다.
+    // (기준본은 하단을 열면 도면 칸이 약 280px까지 줄었다.)
+    const openRow = floor, openHeight = openRow + 10 + fullDock;
+    work.style.height = (fit ? Math.max(floor, Math.floor(innerHeight - wb.top - scrollY - tail)) : pn.bottomOpen ? Math.max(room, openHeight) : Math.max(room, floor)) + 'px';
+    work.style.gridTemplateRows = pn.bottomOpen ? `minmax(${openRow}px,1fr) 10px auto` : `minmax(${mainMin}px,1fr)`;
   }
   let workFrame = 0;
   const resizeWork = () => { cancelAnimationFrame(workFrame); workFrame = requestAnimationFrame(sizeWork); };

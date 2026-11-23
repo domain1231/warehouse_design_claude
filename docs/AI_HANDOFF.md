@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.6 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-23 하단 패널 열림 도면 최소 높이(D-056) · fix/canvas-min-bottom-open
+- 하단 패널을 열어도 도면 칸 268 → 약 757px(1920×1080), 하단 패널은 도면 아래 원래 높이. 사용자 승인.
+- e2e `canvas-bottom-open.test.js` 추가, `history.test.js` 스크롤 보정.
+- alpha.6 Draft 본문 수정은 이 세션 권한으로 불가(Release 편집 403). 사용자가 직접 고치거나 alpha.7로 대체.
+
 ### 2026-11-23 최적화·디버그 3 · chore/optimize-debug-3
 - 점검: 신규 기능(D-054·D-055) 크롤(규칙 편집·BEFORE 잠금·BEFORE/AFTER 전환·실행취소·접기×화면 4종·접은 채 Excel·버튼 48개 일반 크롤) 페이지 오류 0. 미사용 export 없음(테스트 전용만). 성능 `docs/perf/2026-11-23-alpha6.md`.
 - 수정: 자동 배치 기준 입력이 거부되면(빈 값·범위·단위·BEFORE 잠금) 입력란을 저장된 값으로 되돌린다(전에는 잘못된 값이 남음). e2e 단언 추가.
