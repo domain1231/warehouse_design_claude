@@ -820,9 +820,9 @@ async function start() {
   ui.importInput.addEventListener('change', async () => {
     const f = ui.importInput.files[0];
     if (!f) return;
-    ui.importInput.value = '';
     ui.importInput.disabled = true;
-    try { await storageDialogs.importFile(f); } finally { ui.importInput.disabled = false; }
+    // 파일을 다 읽은 뒤에 선택을 비운다(같은 파일 다시 선택 가능). 읽기 전에 비우지 않는다.
+    try { await storageDialogs.importFile(f); } finally { ui.importInput.value = ''; ui.importInput.disabled = false; }
   });
   ui.versionsBtn.addEventListener('click', () => storageDialogs.openBackups());
   ui.storageBtn.addEventListener('click', () => storageDialogs.openStorage());
