@@ -953,6 +953,7 @@ async function start() {
   ui.gridStep.addEventListener('change', () => command('표시 격자', (d) => { d.settings.grid = Number(ui.gridStep.value); }));
   ui.gridOn.addEventListener('change', () => command('그리드 표시', (d) => { d.settings.gridOn = ui.gridOn.checked; }));
   // D-054: Excel 자동 배치 기준(autoPlacementRules)을 배치 후에 수정. 랙은 옮기지 않고 검사 기준만 바꾼다.
+  const restoreRule = (el) => { const r = layout()?.autoPlacementRules; el.value = r && Number.isFinite(r[el.dataset.rule]) ? String(r[el.dataset.rule]) : ''; };
   for (const el of ui.ruleInputs) el.addEventListener('change', () => command('자동 배치 기준', (d) => {
     const v = el.value.trim() === '' ? NaN : Number(el.value);
     if (!Number.isFinite(v) || v < 0 || v > 50 || Math.abs(v * 1000 - Math.round(v * 1000)) > 1e-6) throw new Error('자동 배치 기준은 0~50m, 0.001m 단위로 입력하세요.');
@@ -960,7 +961,7 @@ async function start() {
     if (!r) throw new Error('Excel 자동 배치 후에 수정할 수 있습니다.');
     r[el.dataset.rule] = v;
     if (el.dataset.rule === 'wallGap') l.wallGap = v;
-  }));
+  }).then((r) => { if (!r?.ok) restoreRule(el); }));
   ui.minGap.addEventListener('change', () => command('랙 사이 최소 여유', (d) => {
     const v = ui.minGap.value.trim() === '' ? NaN : Number(ui.minGap.value);
     if (!Number.isFinite(v) || v < 0 || v > 20) throw new Error('최소 간격 값이 올바르지 않습니다.');

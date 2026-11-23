@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.6 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-23 최적화·디버그 3 · chore/optimize-debug-3
+- 점검: 신규 기능(D-054·D-055) 크롤(규칙 편집·BEFORE 잠금·BEFORE/AFTER 전환·실행취소·접기×화면 4종·접은 채 Excel·버튼 48개 일반 크롤) 페이지 오류 0. 미사용 export 없음(테스트 전용만). 성능 `docs/perf/2026-11-23-alpha6.md`.
+- 수정: 자동 배치 기준 입력이 거부되면(빈 값·범위·단위·BEFORE 잠금) 입력란을 저장된 값으로 되돌린다(전에는 잘못된 값이 남음). e2e 단언 추가.
+- 정정: D-055 '도면 작업 영역 약 165px 커짐' → 위로 올라와 스크롤이 줄어듦(세로 1400px 이상에서만 도면 칸 확대). DECISIONS·릴리스 본문(md) 정정.
+- 확인: 하단 패널을 열면 도면 칸 268px(1920×1080)은 v2.4.1과 같음(기준본 동작).
+
 ### 2026-11-23 지표 영역 접기(D-055) · feature/collapse-panels
 - 상단 지표 영역 접기(한 줄 요약에 랙 수·점유율·경고 수 유지)·오른쪽 공간 지표 접기. `panels.topCollapsed`·`metricsCollapsed` 저장.
 - e2e `tests/e2e/collapse.test.js` 추가. UI 차이 20 → 22(승인된 extra). alpha.6 버전 PR #66은 이 기능을 넣기 위해 닫음(사용자 지시).
