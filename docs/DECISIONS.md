@@ -359,3 +359,11 @@
 - 결정: 하단 패널을 열어도 도면 칸 행의 최소 높이를 닫았을 때의 높이 계산값(`floor`)으로 둔다. 작업 영역 높이 = max(화면 남은 높이, floor + 10 + 하단 전체 높이). 하단 패널은 도면 아래에 원래 높이(약 479px)로 놓이고 페이지가 세로로 스크롤된다.
 - 결과(1920×1080·1920×890·1366×768): 하단 열림 도면 칸 268 → 약 757px, 하단 패널 479px 그대로. 하단을 닫으면 D-051 높이(약 674px) 그대로.
 - 화면 요소·문구 변화 없음(배치 높이만). e2e `tests/e2e/canvas-bottom-open.test.js`. 하단 패널이 아래로 내려가 페이지가 길어지므로 `tests/e2e/history.test.js`는 도면을 보이게 스크롤한 뒤 클릭하도록 고쳤다.
+
+## D-057 기준 기록이 없는 배치에서도 자동 배치 기준 편집 (2026-11-23, 사용자 승인 · D-054 보완)
+- 문제(사용자 보고): 랙을 선택해도 '정밀 배치'의 열 사이 간격·랙 사이 간격·벽 최소 이격·통로 목표 폭이 비활성. 원인: D-054는 배치에 `autoPlacementRules`가 있을 때만 켜지는데, 예전 Excel 적용으로 만든 배치·그 JSON(운영 JSON 2개 확인: BEFORE·AFTER 모두 기록 없음)은 Excel 입력값이 프로젝트(`locationLayout`)에만 있다. 입력란은 배치 전체 기준이며 랙 선택과 무관하다.
+- 결정:
+  - Excel 불러오기 이력(`importHistory`)이 있으면 배치에 기록이 없어도 입력란을 켜고 Excel 입력값(시나리오별 `scenarioMeta[k].locationLayout` → 프로젝트 `locationLayout`)을 '미적용'으로 표시한다(안내 `#ruleState`). 벽 이격 표시는 기존 검사와 같은 값(`layout.wallGap ?? locationLayout.wallGap`).
+  - 처음 고치면 현재 배치에만 `autoPlacementRules = { mode: 'order', 나머지 Excel 입력값, 고친 값 }`을 만든다. 이때부터 랙·열 간격 검사가 켜진다(Excel 자동 배치 재적용과 같은 결과). BEFORE/AFTER 독립, BEFORE 잠금·과거 조회 규칙 그대로.
+  - Excel 불러오기 이력이 없는 배치(샘플·직접 작성)는 비활성 유지. 모든 프로젝트에 기본 Excel 입력값이 있으므로 이력으로 구분한다.
+- 순수 함수 `src/warehouse/placement-rules.js`(단위 검사 `tests/unit/placement-rules.test.js`), e2e `tests/e2e/placement-rules.test.js`에 예전 데이터 구조 사례 추가. 화면 요소 변화 없음(숨김 안내 문구만, UI 차이 목록 변화 없음).
