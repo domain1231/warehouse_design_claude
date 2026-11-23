@@ -86,3 +86,42 @@ test('자동 배치 기준: 배치 전 비활성 → Excel 적용 후 값 표시
   assert.deepEqual(problems, []);
   await ctx.close();
 });
+
+test('D-057: 기준 기록이 없는 배치(예전 데이터)는 Excel 입력값을 미적용으로 표시하고, 고치면 그 배치에만 적용', async () => {
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 } });
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(e.message));
+  await page.goto(fileUrl);
+  await page.waitForFunction(() => window.__warehouseView);
+  // 예전 데이터와 같은 구조: 배치에는 기록 없음, 프로젝트에만 Excel 입력값(가상 값)
+  await page.evaluate(() => window.__warehouseSession.apply('가상 예전 데이터', (P) => {
+    P.locationLayout = { ...(P.locationLayout || {}), columnGap: 0.6, rackGap: 0.2, wallGap: 0.1, aisleTarget: 1.2 };
+    for (const k of ['before', 'after']) { delete P.scenarios[k].autoPlacementRules; delete P.scenarios[k].wallGap; P.scenarioMeta[k].locationLayout = { ...P.locationLayout }; }
+    P.importHistory.push({ date: '2026-11-01', keys: [] });
+    P.scenarioMeta.before.locked = false;
+    return { ok: true, project: P };
+  }));
+  await page.locator('[data-testid=scenario-after]').click();
+  const wall = page.locator('[data-testid=rule-wallGap]'), rack = page.locator('[data-testid=rule-rackGap]');
+  await page.waitForFunction(() => !document.querySelector('[data-testid=rule-wallGap]').disabled);
+  assert.equal(await page.locator('[data-testid=rule-state]').isVisible(), true, '미적용 안내');
+  assert.deepEqual(await Promise.all(['columnGap', 'rackGap', 'wallGap', 'aisleTarget'].map((k) => page.locator(`[data-testid=rule-${k}]`).inputValue())), ['0.6', '0.2', '0.1', '1.2']);
+  const beforeJson = await page.evaluate(() => JSON.stringify(window.__warehouseSession.state.project.scenarios.before));
+
+  await rack.fill('0.25');
+  await rack.dispatchEvent('change');
+  await page.waitForFunction(() => window.__warehouseSession.state.project.scenarios.after.autoPlacementRules?.rackGap === 0.25);
+  const r = await page.evaluate(() => window.__warehouseSession.state.project.scenarios.after.autoPlacementRules);
+  assert.deepEqual(r, { mode: 'order', columnGap: 0.6, rackGap: 0.25, wallGap: 0.1, aisleTarget: 1.2 });
+  assert.equal(await page.locator('[data-testid=rule-state]').isVisible(), false, '적용 후 안내 숨김');
+  assert.equal(await page.evaluate(() => JSON.stringify(window.__warehouseSession.state.project.scenarios.before)), beforeJson, 'BEFORE 불변');
+  // BEFORE로 전환하면 BEFORE는 여전히 미적용
+  await page.locator('[data-testid=scenario-before]').click();
+  await page.waitForFunction(() => window.__warehouseSession.state.project.settings.scenario === 'before');
+  assert.equal(await page.locator('[data-testid=rule-state]').isVisible(), true);
+  assert.equal(await rack.inputValue(), '0.2');
+  assert.equal(await wall.isDisabled(), false);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
