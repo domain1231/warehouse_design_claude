@@ -114,13 +114,19 @@ export function createStorageDialogs({ session, store, backups, storage, validat
 
   /** JSON 불러오기(기준본 30 readFile + 75 readFile jsonIn). */
   async function importFile(f) {
+    let stage = '읽기';
     try {
       if (f.size > 12e6) throw new Error('12MB 이하 파일만 지원합니다.');
-      const data = validate(parseJsonText(await f.text()));
+      const text = await readFileText(f);
+      stage = '해석';
+      const parsed = parseJsonText(text);
+      stage = '검증';
+      const data = validate(parsed);
       const label = 'JSON ' + f.name;
+      stage = '교체';
       if (await confirmReplace(label)) await install(data, label);
     } catch (e) {
-      toast('파일 처리 실패: ' + e.message);
+      toast(importErrorText(stage, e));
     }
   }
 
@@ -271,4 +277,34 @@ export function createStorageDialogs({ session, store, backups, storage, validat
 
   const hasProtectedRaw = () => { try { return storage.getItem(store.keys.protected) !== null; } catch { return false; } };
   return { observe, riskText, hasProtectedRaw, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
+}
+
+/**
+ * 파일 내용을 문자열로 읽는다. 브라우저가 읽기를 중단(AbortError)하거나 읽지 못하면(NotReadableError) FileReader로 한 번 더 시도한다.
+ * (클라우드 동기화 폴더의 온라인 전용 파일, 네트워크 드라이브, 내려받는 중이거나 다른 프로그램이 쓰는 중인 파일에서 생길 수 있다.)
+ */
+export async function readFileText(f) {
+  try {
+    return await f.text();
+  } catch (e) {
+    if (e?.name !== 'AbortError' && e?.name !== 'NotReadableError') throw e;
+    return await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(r.error || e);
+      r.onabort = () => reject(r.error || e);
+      r.readAsText(f);
+    });
+  }
+}
+
+/** JSON 불러오기 실패 문구. 브라우저 오류는 어느 단계에서 실패했는지와 오류 종류를 함께 보여준다. */
+export function importErrorText(stage, e) {
+  // 일반 오류는 기준본과 같은 문구('파일 처리 실패: ' + 메시지). 브라우저 오류(DOMException 등)만 단계·종류를 덧붙인다.
+  const plain = !e?.name || e.name === 'Error';
+  const base = plain ? `파일 처리 실패: ${e?.message || e}` : `파일 처리 실패: ${e.message} (${stage} 단계 · ${e.name})`;
+  if (stage === '읽기' && (e?.name === 'AbortError' || e?.name === 'NotReadableError')) {
+    return base + ' — 브라우저가 파일을 끝까지 읽지 못했습니다. 파일을 바탕화면 같은 로컬 폴더로 복사한 뒤 다시 선택하세요(클라우드 동기화 폴더·네트워크 드라이브·내려받는 중인 파일에서 생길 수 있음).';
+  }
+  return base;
 }
