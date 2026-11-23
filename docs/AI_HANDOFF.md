@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.5 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-23 지표 영역 접기(D-055) · feature/collapse-panels
+- 상단 지표 영역 접기(한 줄 요약에 랙 수·점유율·경고 수 유지)·오른쪽 공간 지표 접기. `panels.topCollapsed`·`metricsCollapsed` 저장.
+- e2e `tests/e2e/collapse.test.js` 추가. UI 차이 20 → 22(승인된 extra). alpha.6 버전 PR #66은 이 기능을 넣기 위해 닫음(사용자 지시).
+
 ### 2026-11-23 자동 배치 기준 배치 후 수정(D-054) · feature/rule-edit
 - 왼쪽 정밀 배치 설정에 열·랙 간격·벽 이격·통로 목표 입력란 4개(사용자 승인). 랙 위치 불변, 검사 기준만 변경. Excel 대화상자 가로·세로 step 0.001.
 - e2e `tests/e2e/placement-rules.test.js` 추가. UI 차이 16 → 20(승인된 extra).
