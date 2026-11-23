@@ -73,6 +73,7 @@ test('자동 배치 기준: 배치 전 비활성 → Excel 적용 후 값 표시
   await rack.dispatchEvent('change');
   await page.waitForTimeout(150);
   assert.equal((await state(page)).rules.rackGap, s0.rules.rackGap, '0.001m 단위가 아니면 거부');
+  assert.equal(Number(await rack.inputValue()), s0.rules.rackGap, '거부되면 입력란도 기존 값으로 복귀');
   await rack.fill('51');
   await rack.dispatchEvent('change');
   await page.waitForTimeout(150);
