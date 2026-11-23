@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.5 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-23 자동 배치 기준 배치 후 수정(D-054) · feature/rule-edit
+- 왼쪽 정밀 배치 설정에 열·랙 간격·벽 이격·통로 목표 입력란 4개(사용자 승인). 랙 위치 불변, 검사 기준만 변경. Excel 대화상자 가로·세로 step 0.001.
+- e2e `tests/e2e/placement-rules.test.js` 추가. UI 차이 16 → 20(승인된 extra).
+
 ### 2026-11-20 창고 치수 1mm 단위(D-052) · fix/room-mm-input
 - 창고 가로·세로·천장 높이 입력 0.1m → 0.001m. golden R1 12.34 사례를 의도적 차이로 기록.
 - `pnpm check`: unit 162, golden 286(todo 2), e2e 98 PASS.
