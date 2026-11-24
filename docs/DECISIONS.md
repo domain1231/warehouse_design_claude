@@ -426,3 +426,11 @@
 - 비교 SVG/PNG 내보내기는 기준본 그대로(좌우 비교).
 - C2 목적 지표 표 칸 너비 고정(18/32/32/18%).
 - UI parity 간극 22 → 23(`#rCompareMode` 새 선택지 문구). 승인된 추가 요소로 `docs/UI_PARITY_AUDIT.md` §6에 기록.
+
+## D-064 Track C · C4: 비교 대화상자 랙 변화 목록 (2026-11-24, 사용자 요청 · 로드맵 6.4)
+- 사용자 지시: "#82 병합"(로드맵 순서 진행 연속).
+- 비교 대화상자 아래쪽 XY 좌표 표를 랙 변화 목록으로 교체: 랙 / 로케이션 수(BE → AF) / BEFORE R / AFTER R / Δ%p(Δ 지도와 같은 색 견본) / 배치 변경(이동·회전·규격·신규·제거). 제거된 랙도 한 줄씩 표시.
+- 정렬: Δ 큰 순(기본) / 악화 큰 순 / 랙 코드 순. 필터: 전체 / 개선 / 악화 / 변화 없음 / 기타(미확인·신규·제거). 대화상자를 다시 열면 기본값으로 돌아간다. 구분 기준은 D-063 구간과 같다.
+- 계산은 `src/metrics/delta.js` `rackChangeList`·`changeListCsvRows`(DOM 없음).
+- CSV: 기준본 '랙 변경 CSV'(좌표, `diffRows`)는 그대로 두고 '랙 변화 목록 CSV'(`warehouse_rack_delta.csv`, 현재 필터·정렬 그대로) 버튼을 추가. `diffRows`·`rackDiff`·`compareRows`는 불변(골든 S2).
+- UI parity 간극 23 → 24(비교 대화상자 새 버튼). `docs/UI_PARITY_AUDIT.md` §6에 기록.
