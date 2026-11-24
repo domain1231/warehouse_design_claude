@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C5 통로 기준 검증(D-065) · feature/aisle-target-c5
+- 기준 = max(통로 최소 폭, 통로 종류 기준(왼쪽에서 사용자 수정)). 주통로 기준 < 1.0m 설정 경고(고정 하한, 화면 목록만, 골든 불변). 최소 통로 폭 칸 경고 색. 1.2/1.0은 참고 권장값.
+- `AISLE_STANDARDS`·`aisleStandard`·`aisleSettingIssues`(src/warehouse/aisles.js), spaceMetrics `aisleBelowStandard`.
+- 검사: pnpm check PASS(PR 본문 수치). Windows Edge NOT RUN.
+- 다음: C6 벽 이격(D-054로 대부분 완료 — 남은 범위 확인) / C7 Excel Summary 동기화 확인.
+
 ### 2026-11-24 Track C · C4 랙 변화 목록(D-064) · feature/rack-change-list-c4
 - 좌표 표 → ΔR 정렬 목록(필터 개선/악화/변화 없음/기타, 정렬 Δ·악화·코드), '랙 변화 목록 CSV' 추가. 기준본 '랙 변경 CSV' 유지.
 - `rackChangeList`·`changeListCsvRows`(src/metrics/delta.js). UI parity 간극 23 → 24.

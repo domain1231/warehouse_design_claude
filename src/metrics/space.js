@@ -5,7 +5,8 @@
 //   평균 용적률(F4)   = R의 산술평균. 접두사를 만들 수 없는 로케이션(예: 'Buffer Rack')은 Excel처럼 랙 1개로 세지만 평균에서는 뺀다.
 // 면적·통로 계열(M5~M7)은 총면적 기준을 고를 수 있다: ① Excel 입력 순 바닥면적(기본) ② 도면 전체(가로×세로).
 import { unionArea } from '../warehouse/metrics.js';
-import { aisleReviewRows } from '../warehouse/aisles.js';
+import { aisleReviewRows, aisleStandard, aisleSettingIssues } from '../warehouse/aisles.js';
+import { GEOMETRY_EPS_M as EPS } from '../geometry/tolerance.js';
 import { heightUtilization } from '../warehouse/appearance.js';
 
 export const LOW_LOCATION_RATIO = 0.8; // M4 기준(Summary C열 '용적률 80% 미만')
@@ -80,7 +81,7 @@ const rowsOf = (o) => (o.excel?.shelves ?? []).flatMap((s) => s.items ?? []).map
  * @param layout 시나리오 배치, @param opts { referenceArea(㎡, Excel 총면적 ①), lowRack(M9 기준) }
  * 총면적 기준: referenceArea가 있으면 ①, 없으면 ② 도면 전체. 결과의 areaBasis로 어느 쪽인지 알린다.
  */
-export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_RATIO } = {}) {
+export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_RATIO, aisleRules = null } = {}) {
   const w = layout.warehouse, drawingArea = w.width * w.height;
   const racks = layout.objects.filter((o) => o.kind === 'rack');
   const linked = racks.filter((o) => o.excel);
@@ -105,6 +106,10 @@ export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_
   const rackHeightMm = (o) => { const r = rowsOf(o)[0]; return r && num(r.rackHeight) > 0 ? num(r.rackHeight) : o.height * 1000; };
   const aisles = aisleReviewRows(layout).filter((r) => Number.isFinite(r.width));
   const minAisle = aisles.reduce((a, r) => (!a || r.width < a.width ? r : a), null);
+  const byId = new Map(layout.objects.map((o) => [o.id, o]));
+  const stdOf = (r) => aisleStandard(byId.get(r.id), aisleRules);
+  const minStd = minAisle ? stdOf(minAisle) : null;
+  const aisleBelowStandard = aisles.filter((r) => r.status !== '경고 사용 안 함' && byId.get(r.id).warningsEnabled !== false && r.width < stdOf(r).standard - EPS).length;
   return {
     drawingArea, totalArea, areaBasis: basis,
     racks: racks.length, linkedRacks: linked.length, unlinkedRacks: racks.length - linked.length,
@@ -118,7 +123,8 @@ export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_
     emptyRacks: perRack.filter((x) => x.empty).length, unknownRacks: racks.length - linked.length, // M8
     lowRacks: perRack.filter((x) => x.r !== null && !x.empty && x.r < lowRack).length, lowRackThreshold: lowRack, // M9
     idleRacks: ceilingMm === null ? null : racks.filter((o) => ceilingMm - rackHeightMm(o) - IDLE_MARGIN_MM > IDLE_MARGIN_MM).length, // M10
-    minAisle: minAisle ? { code: minAisle.code, width: minAisle.width, target: minAisle.target, min: minAisle.min } : null, // M11
+    minAisle: minAisle ? { code: minAisle.code, width: minAisle.width, target: minAisle.target, min: minAisle.min, standard: minStd.standard, standardLabel: minStd.label } : null, // M11
+    aisleBelowStandard, aisleSettingIssues: aisleSettingIssues(layout, aisleRules).length, // C5
     perRack,
   };
 }
@@ -138,7 +144,7 @@ export function shelfWeightedVolume(layout, policy = 'weightedMax') {
 }
 
 /** 시나리오 지표(BEFORE·AFTER 각각 자기 Excel 총면적 기준). */
-export const scenarioSpace = (project, key, layout = project.scenarios[key]) => spaceMetrics(layout, { referenceArea: referenceAreaOf(project, key) });
+export const scenarioSpace = (project, key, layout = project.scenarios[key]) => spaceMetrics(layout, { referenceArea: referenceAreaOf(project, key), aisleRules: project.aisleRules });
 
 /** BEFORE→AFTER 증감(AFTER − BEFORE). 한쪽 배치가 비면 { empty: 'BEFORE'|'AFTER' }. */
 export function scenarioDelta(project, current = null) {
@@ -174,6 +180,6 @@ export function purposeCompare(project) {
     row('M9', '저활용 랙', `${b.lowRacks}`, `${a.lowRacks}`, cnt(b.lowRacks, a.lowRacks), `랙 용적률 R < ${b.lowRackThreshold * 100}%인 랙 (빈 랙 제외)`),
     row('M6', '통로 비중', pctText(b.aisleShare.excel), pctText(a.aisleShare.excel), dl(signedPp(b.aisleShare.excel, a.aisleShare.excel)), `① Excel 방식 = 1 − 면적 사용률 (총면적: Excel 입력값, 없으면 도면 전체). 도면 통로 기준 BEFORE ${pctText(b.aisleShare.drawing)} / AFTER ${pctText(a.aisleShare.drawing)}`),
     row('M7', '공간 구성', cs(b), cs(a), dl('랙 ' + signedPp(b.composition.rack.share, a.composition.rack.share)), '랙 > 보관 불가 > 통로 > 잔여 순으로 겹침을 한 번만 셈. 도면 전체 기준, 합계 100%'),
-    row('M11', '최소 통로 폭', aw(b), aw(a), dl(b.minAisle && a.minAisle ? signed(Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000, (x) => x.toFixed(3), 'm') : '—'), '통로 단면 기준 최소 폭' + (a.minAisle?.target || b.minAisle?.target ? ` · 목표 ${a.minAisle?.target ?? b.minAisle.target}m` : '')),
+    row('M11', '최소 통로 폭', aw(b), aw(a), dl(b.minAisle && a.minAisle ? signed(Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000, (x) => x.toFixed(3), 'm') : '—'), '통로 단면 기준 최소 폭' + (a.minAisle?.target || b.minAisle?.target ? ` · 목표 ${a.minAisle?.target ?? b.minAisle.target}m` : '') + (a.minAisle?.standard || b.minAisle?.standard ? ` · 기준 ${(a.minAisle ?? b.minAisle).standard}m(${(a.minAisle ?? b.minAisle).standardLabel})` : '')),
   ];
 }
