@@ -54,11 +54,15 @@ for (const c of proposalCases) {
         if (r.ok) p = validateProject(r.project);
         const { scenarios, scenarioMeta, locationLayout, layoutBackups, layoutRevisions, importHistory, excelSnapshots, layoutSnapshots, editing, settings, metadata, autoPlacement } = JSON.parse(JSON.stringify(p));
         // D-061: 재구축은 Excel 총면적(referenceArea)을 sourceInfo에 추가로 저장한다(기준본에 없음, 의도적 차이).
-        for (const m of Object.values(scenarioMeta || {})) {
-          const ra = m?.sourceInfo?.referenceArea;
-          if (ra !== undefined) assert.ok(Number.isFinite(ra) && ra > 0, `referenceArea must be finite > 0: ${ra}`);
-          if (m?.sourceInfo) delete m.sourceInfo.referenceArea;
-        }
+        const stripRef = (v) => {
+          if (!v || typeof v !== 'object') return;
+          if (v.sourceInfo && v.sourceInfo.referenceArea !== undefined) {
+            assert.ok(Number.isFinite(v.sourceInfo.referenceArea) && v.sourceInfo.referenceArea > 0, `referenceArea must be finite > 0: ${v.sourceInfo.referenceArea}`);
+            delete v.sourceInfo.referenceArea;
+          }
+          for (const x of Object.values(v)) stripRef(x);
+        };
+        stripRef({ scenarioMeta, layoutBackups, layoutRevisions, importHistory });
         out.push({ applied: r.ok, project: { scenarios, scenarioMeta, locationLayout, layoutBackups, layoutRevisions, importHistory, excelSnapshots, layoutSnapshots, selection: [editing.selectedRackIds, editing.selectionScenario], scenario: settings.scenario, sample: metadata.sample, autoSettings: autoPlacement.settings, autoHistory: autoPlacement.history.map((h) => ({ ...h, fingerprint: h.fingerprint === scanLayout(h.layout, p).fingerprint })) } });
         continue;
       }
