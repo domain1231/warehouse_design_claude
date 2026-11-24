@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C4 랙 변화 목록(D-064) · feature/rack-change-list-c4
+- 좌표 표 → ΔR 정렬 목록(필터 개선/악화/변화 없음/기타, 정렬 Δ·악화·코드), '랙 변화 목록 CSV' 추가. 기준본 '랙 변경 CSV' 유지.
+- `rackChangeList`·`changeListCsvRows`(src/metrics/delta.js). UI parity 간극 23 → 24.
+- 검사: pnpm check PASS(PR 본문 수치). Windows Edge NOT RUN.
+- 다음: C5 통로 기준 검증 / C6 벽 이격 설정(D-054로 일부 완료, 남은 범위 확인) / C7 Excel Summary 동기화 확인.
+
 ### 2026-11-24 Track C · C3 Δ 지도 모드(D-063) · feature/delta-map-c3
 - 비교 대화상자 기본 보기 = Δ 용적률 지도(랙별 ΔR 구간 색, 라벨 Δ%p, 변경은 노랑 점선만). 기존 모드는 보조.
 - `rackDeltaMap`·`DELTA_BINS`(src/metrics/delta.js). UI parity 간극 22 → 23.

@@ -1,0 +1,67 @@
+// C4: 랙 변화 목록(필터·정렬·CSV).
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { chromium } from 'playwright';
+
+const root = path.resolve(import.meta.dirname, '../..');
+const meta = JSON.parse(fs.readFileSync(path.join(root, 'dist/build-metadata.json'), 'utf8'));
+const fileUrl = pathToFileURL(path.join(root, 'dist', meta.file)).href;
+let browser;
+before(async () => { browser = await chromium.launch({ headless: true, executablePath: process.env.WAREHOUSE_BROWSER_PATH || undefined }); });
+after(async () => { await browser?.close(); });
+const click = (page, id) => page.locator(`[data-testid=${id}]`).click();
+
+test('랙 변화 목록: 정렬·필터·CSV·재오픈 초기화', async () => {
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1920, height: 1080 } });
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(e.message));
+  page.on('dialog', (d) => d.accept());
+  await page.goto(fileUrl);
+  await page.waitForFunction(() => window.__warehouseView && document.querySelector('[data-testid=plan] g[data-id]'));
+  await click(page, 'scenario-clone');
+  await page.locator('[data-testid=clone-choice]').selectOption('replace');
+  await click(page, 'clone-apply');
+  await page.waitForFunction(() => window.__warehouseSession.state.project.layoutBackups.length === 1);
+  await page.locator('[data-testid=clone-dialog]').waitFor({ state: 'hidden' });
+  await page.evaluate(() => window.__warehouseSession.apply('가상 높이', (P) => {
+    const row = (id, r) => ({ location: id + '-1-1-1', shelfHeight: 1000, materialHeight: r * 1000, rackWidth: 1000, rackDepth: 1000, rackHeight: 2000 });
+    const link = (l) => { for (const o of l.objects) if (o.kind === 'rack') o.excel = { key: o.id, building: 'T', shelves: [{ level: 1, items: [row(o.id, 0.4)] }] }; };
+    link(P.scenarios.before);
+    link(P.scenarios.after);
+    const racks = P.scenarios.after.objects.filter((o) => o.kind === 'rack');
+    racks[0].excel.shelves[0].items[0].materialHeight = 950;
+    racks[1].excel.shelves[0].items[0].materialHeight = 100;
+    return { ok: true, project: P };
+  }));
+  await click(page, 'scenario-compare');
+  const R = page.locator('[data-testid=compare-rows]');
+  assert.match(await R.locator('th').allTextContents().then((t) => t.join('|')), /배치 변경/);
+  const rows = R.locator('tr[data-group]');
+  const deltas = async () => (await rows.evaluateAll((t) => t.map((r) => r.children[4].textContent.replace('−', '-')))).map(Number);
+  const d = await deltas();
+  assert.equal(d[0], Math.max(...d.filter((x) => !Number.isNaN(x))));
+  const total = await rows.count();
+  await page.locator('[data-testid=change-filter]').selectOption('worse');
+  const groups = await rows.evaluateAll((t) => t.map((r) => r.dataset.group));
+  assert.ok(groups.length >= 1 && groups.every((g) => g === 'worse'));
+  assert.equal((await R.locator('[data-change-count]').textContent()), `${groups.length} / ${total}랙`);
+  await page.locator('[data-testid=change-filter]').selectOption('all');
+  await page.locator('[data-testid=change-sort]').selectOption('delta-asc');
+  const a = await deltas();
+  assert.equal(a[0], Math.min(...a.filter((x) => !Number.isNaN(x))));
+  assert.ok(a[0] < 0);
+  const [dl] = await Promise.all([page.waitForEvent('download'), click(page, 'compare-change-csv')]);
+  assert.equal(dl.suggestedFilename(), 'warehouse_rack_delta.csv');
+  assert.ok(fs.readFileSync(await dl.path(), 'utf8').replace(/^﻿/, '').startsWith('"랙"'));
+  await page.locator('[data-testid=change-filter]').selectOption('worse');
+  await click(page, 'compare-close');
+  await click(page, 'scenario-compare');
+  assert.equal(await page.locator('[data-testid=change-filter]').inputValue(), 'all');
+  assert.equal(await page.locator('[data-testid=change-sort]').inputValue(), 'delta-desc');
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});

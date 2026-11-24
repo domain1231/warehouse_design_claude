@@ -60,7 +60,7 @@ test('비교: 지표표·변경 목록·CSV 다운로드, 랙 이동 후 변경 
   await cloneReplace(page);
   await click(page, 'scenario-compare');
   assert.match(await page.locator('[data-testid=compare-metrics]').textContent(), /전체 랙 수/);
-  assert.match(await page.locator('[data-testid=compare-rows]').textContent(), /변경 유형 \(복수\)/);
+  assert.match(await page.locator('[data-testid=compare-rows]').textContent(), /배치 변경/);
   const [dl] = await Promise.all([page.waitForEvent('download'), click(page, 'compare-csv')]);
   assert.equal(dl.suggestedFilename(), 'warehouse_rack_changes.csv');
   const text = fs.readFileSync(await dl.path(), 'utf8');
@@ -71,7 +71,7 @@ test('비교: 지표표·변경 목록·CSV 다운로드, 랙 이동 후 변경 
     await window.__warehouseSession.edit('이동', (p) => { p.scenarios.after.objects.find((o) => o.id === rid).x += 1; });
   }, id);
   await click(page, 'scenario-compare');
-  assert.match(await page.locator('[data-testid=compare-rows]').textContent(), /이동/);
+  assert.match(await page.locator('[data-testid=compare-rows] tr', { hasText: '이동' }).first().textContent(), /이동/);
   await page.locator('[data-testid=compare-mode]').selectOption('overlay');
   assert.deepEqual(page.problems, []);
   await ctx.close();

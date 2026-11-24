@@ -17,16 +17,39 @@ const binOf = (d) => (d >= 40 ? 'up40' : d >= 20 ? 'up20' : d >= 1 ? 'up1' : d >
 
 export function rackDeltaMap(project) {
   const { before, after } = project.scenarios, d = rackDiff(before, after);
-  const rOf = (key, l) => new Map(scenarioSpace(project, key, l).perRack.map((x) => [x.id, x.r]));
-  const rb = rOf('before', before), ra = rOf('after', after);
+  const per = (key, l) => new Map(scenarioSpace(project, key, l).perRack.map((x) => [x.id, x]));
+  const pb = per('before', before), pa = per('after', after);
+  const rb = new Map([...pb].map(([k, x]) => [k, x.r])), ra = new Map([...pa].map(([k, x]) => [k, x.r]));
   const racks = [];
-  const row = (o, rB, rA, delta, bin, types) => racks.push({ id: o.id, code: o.code, rB, rA, delta, bin, types });
+  const row = (o, rB, rA, delta, bin, types, locB, locA) => racks.push({ id: o.id, code: o.code, rB, rA, delta, bin, types, locB, locA });
   for (const m of d.matched) {
     const rB = rb.get(m.before.id) ?? null, rA = ra.get(m.after.id) ?? null;
     const delta = rB === null || rA === null ? null : Math.round((rA - rB) * 1000) / 10;
-    row(m.after, rB, rA, delta, delta === null ? 'unknown' : binOf(delta), m.types.filter((t) => t !== 'unchanged'));
+    row(m.after, rB, rA, delta, delta === null ? 'unknown' : binOf(delta), m.types.filter((t) => t !== 'unchanged'), pb.get(m.before.id)?.rows.length ?? 0, pa.get(m.after.id)?.rows.length ?? 0);
   }
-  for (const o of d.added) row(o, null, ra.get(o.id) ?? null, null, 'new', []);
+  for (const o of d.added) row(o, null, ra.get(o.id) ?? null, null, 'new', [], null, pa.get(o.id)?.rows.length ?? 0);
   const counts = Object.fromEntries(DELTA_BINS.map((b) => [b.id, racks.filter((r) => r.bin === b.id).length]));
   return { racks, removed: d.removed.map((o) => ({ id: o.id, code: o.code })), counts, ready: before.objects.some((o) => o.kind === 'rack') };
+}
+
+export const CHANGE_TYPE_NAMES = { moved: '이동', rotated: '회전', resized: '규격', added: '신규', removed: '제거' };
+const GROUP = { up40: 'better', up20: 'better', up1: 'better', worse: 'worse', same: 'same' };
+const GROUP_NAMES = { better: '개선', worse: '악화', same: '변화 없음', other: '기타' };
+
+/** C4: 랙 변화 목록(AFTER 랙 전부 + 제거된 BEFORE 랙). filter: all|better|worse|same|other, sort: delta-desc|delta-asc|code. */
+export function rackChangeList(project, { filter = 'all', sort = 'delta-desc' } = {}) {
+  const m = rackDeltaMap(project), { before } = project.scenarios;
+  const rows = m.racks.map((r) => ({ ...r, group: GROUP[r.bin] ?? 'other', types: r.bin === 'new' ? ['added'] : r.types }));
+  const per = new Map(scenarioSpace(project, 'before', before).perRack.map((x) => [x.id, x]));
+  for (const o of m.removed) rows.push({ id: o.id, code: o.code, group: 'other', locB: per.get(o.id)?.rows.length ?? 0, locA: null, rB: per.get(o.id)?.r ?? null, rA: null, delta: null, bin: 'removed', types: ['removed'] });
+  const byCode = (a, b) => String(a.code).localeCompare(String(b.code), undefined, { numeric: true });
+  const dir = sort === 'delta-asc' ? 1 : -1;
+  const cmp = sort === 'code' ? byCode : (a, b) => (a.delta === null) - (b.delta === null) || (a.delta === null ? 0 : dir * (a.delta - b.delta)) || byCode(a, b);
+  return rows.filter((r) => filter === 'all' || r.group === filter).sort(cmp);
+}
+
+const pct1 = (v) => (v === null ? '' : (v * 100).toFixed(1));
+export function changeListCsvRows(rows) {
+  return [['랙', '로케이션 수 BEFORE', '로케이션 수 AFTER', 'BEFORE R %', 'AFTER R %', 'Δ %p', '구분', '배치 변경'],
+    ...rows.map((r) => [r.code, r.locB ?? '', r.locA ?? '', pct1(r.rB), pct1(r.rA), r.delta === null ? '' : (r.delta < 0 ? '−' : r.delta > 0 ? '+' : '') + Math.abs(r.delta).toFixed(1), GROUP_NAMES[r.group], r.types.length ? r.types.map((t) => CHANGE_TYPE_NAMES[t]).join('·') : '—'])];
 }

@@ -196,3 +196,7 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-legend[hidden] { display: none; }
 .r-legend .seg { display: inline-block; width: 10px; height: 10px; margin-right: 4px; border-radius: 2px; }
 .r-comp-bar .seg { height: 100%; display: block; }
+.r-change-tools { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.r-change-tools select { width: auto; flex: 0 0 auto; min-width: 160px; }
+.r-change-tools [data-change-count] { white-space: nowrap; }
+.r-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border: 1px solid; border-radius: 2px; vertical-align: middle; }
