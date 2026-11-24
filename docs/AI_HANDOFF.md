@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.12 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 방향키 화면 이동 — 중심 고정 상태에서 동작 안 함 수정 · fix/keyboard-pan-center-lock
+- 원인: 새 도면 기본 viewport가 centerLocked=true인데 키 이동이 고정 상태면 건너뜀(E2E는 고정을 먼저 풀어 놓쳐서 통과). 수정: 마우스 끌기와 같이 고정을 풀고 이동. 회귀 E2E 추가(수정 전 실패 확인).
+
+### 2026-11-24 방향키 화면 이동 방향 수정 · fix/keyboard-pan-direction
+- 사용자 지적(↑ 누르면 도면이 아래로): 도면 내용이 누른 방향으로 움직이게 변경(선택 객체 미세 이동과 같은 방향감). D-071 보완 기록, 중심 고정은 마우스 끌기처럼 풀고 이동(문서 정정).
+
 ### 2026-11-24 영역 선택 '모든 객체'(D-072) · feature/marquee-all
 - #mSelectRule에 intersect-all·contain-all 추가(기본 랙만). 혼합 선택: 이동·삭제 전체, 회전·복제·그룹 편집 랙만, 삭제 확인문 종류별 개수.
 - UI parity 간극 24 → 25. 로컬: unit 234, golden 298, build·verify, e2e marquee-all 외 9파일 PASS.
