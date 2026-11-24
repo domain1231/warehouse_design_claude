@@ -150,3 +150,30 @@ export function scenarioDelta(project, current = null) {
   const d = (x, y) => (x === null || y === null ? null : x - y);
   return { racks: ma.racks - mb.racks, avgVolume: d(ma.avgVolume, mb.avgVolume), areaUse: d(ma.areaUse, mb.areaUse), aisleShare: d(ma.aisleShare.excel, mb.aisleShare.excel) };
 }
+
+// ── C2: 비교 대화상자 '목적 지표' 표(표시 문자열) ──
+const pctText = (v) => (v === null || v === undefined ? '미확인' : (v * 100).toFixed(1) + '%');
+const MINUS = '−';
+const signed = (n, f = (x) => String(x), unit = '') => (n > 0 ? '+' : n < 0 ? MINUS : '±') + f(Math.abs(n)) + unit;
+const signedPp = (b, a) => (b === null || a === null ? '—' : signed(Math.round((a - b) * 1000) / 10, (x) => x.toFixed(1), '%p'));
+
+export function purposeCompare(project) {
+  const ready = project.scenarios.before.objects.some((o) => o.kind === 'rack');
+  const b = scenarioSpace(project, 'before'), a = scenarioSpace(project, 'after');
+  const dl = (s) => (ready ? s : '기준 없음');
+  const cnt = (x, y) => dl(signed(y - x));
+  const loc = (m) => (m.locations ? `${m.lowLocations} / ${m.locations}` : '미확인');
+  const emp = (m) => `${m.emptyRacks}` + (m.unknownRacks > 0 ? ` (미확인 ${m.unknownRacks})` : '');
+  const cs = (m) => { const c = m.composition, p = (k) => pctText(c[k].share); return `랙 ${p('rack')} · 보관 불가 ${p('unavailable')} · 통로 ${p('aisle')} · 잔여 ${p('remaining')}`; };
+  const aw = (m) => (m.minAisle ? `${m.minAisle.width.toFixed(3)}m` + (m.minAisle.code ? ` (${m.minAisle.code})` : "") : '통로 없음');
+  const row = (id, label, before, after, delta, tip) => ({ id, label, before, after, delta, tip });
+  return [
+    row('M3', '평균 용적률', pctText(b.avgVolume), pctText(a.avgVolume), dl(signedPp(b.avgVolume, a.avgVolume)), '로케이션 용적률 Q = 자재높이 ÷ 단 높이 → 랙 용적률 R = 같은 랙 Q 평균 → 평균 용적률 = R의 평균 (Excel Summary F4)'),
+    row('M4', '80% 미만 로케이션', loc(b), loc(a), dl(signed(a.lowLocations - b.lowLocations)), '로케이션 용적률 Q < 80%인 로케이션 수 (Excel Summary C열)'),
+    row('M8', '빈 랙', emp(b), emp(a), cnt(b.emptyRacks, a.emptyRacks), '연결 로케이션의 자재높이가 모두 0인 랙. Excel 미연결 랙은 미확인으로 따로 셈'),
+    row('M9', '저활용 랙', `${b.lowRacks}`, `${a.lowRacks}`, cnt(b.lowRacks, a.lowRacks), `랙 용적률 R < ${b.lowRackThreshold * 100}%인 랙 (빈 랙 제외)`),
+    row('M6', '통로 비중', pctText(b.aisleShare.excel), pctText(a.aisleShare.excel), dl(signedPp(b.aisleShare.excel, a.aisleShare.excel)), `① Excel 방식 = 1 − 면적 사용률 (총면적: Excel 입력값, 없으면 도면 전체). 도면 통로 기준 BEFORE ${pctText(b.aisleShare.drawing)} / AFTER ${pctText(a.aisleShare.drawing)}`),
+    row('M7', '공간 구성', cs(b), cs(a), dl('랙 ' + signedPp(b.composition.rack.share, a.composition.rack.share)), '랙 > 보관 불가 > 통로 > 잔여 순으로 겹침을 한 번만 셈. 도면 전체 기준, 합계 100%'),
+    row('M11', '최소 통로 폭', aw(b), aw(a), dl(b.minAisle && a.minAisle ? signed(Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000, (x) => x.toFixed(3), 'm') : '—'), '통로 단면 기준 최소 폭' + (a.minAisle?.target || b.minAisle?.target ? ` · 목표 ${a.minAisle?.target ?? b.minAisle.target}m` : '')),
+  ];
+}

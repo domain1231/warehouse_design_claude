@@ -2,8 +2,9 @@
 import { buildScene, esc } from '../cad/scene.js';
 import { polygon } from '../geometry/polygons.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
+import { purposeCompare, scenarioSpace } from '../metrics/space.js';
 import { legend } from '../warehouse/racklist.js';
-import { rackDiff, diffRows, compareRows, DIFF_CSV_HEADER } from '../warehouse/scenarios.js';
+import { rackDiff, diffRows, compareRows, layoutChangeSummary, DIFF_CSV_HEADER } from '../warehouse/scenarios.js';
 
 const racksOf = (l) => l.objects.filter((o) => o.kind === 'rack');
 const outline = (o, color, dash = '', w = 2) => `<polygon points="${polygon(o).map((q) => q.join(',')).join(' ')}" fill="none" stroke="${color}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke" style="stroke-width:${w}px"/>`;
@@ -67,7 +68,22 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   };
 
   // ── 비교 ──
-  const md = dlg('compare-dialog scenario-dialog', 'compare-dialog', '<button type="button" class="close" data-close data-testid="compare-close">닫기 ×</button><h2>Before / After 배치 비교</h2><div class="r-compare-tools"><select id="rCompareMode" data-mode data-testid="compare-mode" aria-label="배치 비교 모드"><option value="sides">BEFORE/AFTER 좌우 차이</option><option value="before">BEFORE 단독</option><option value="after">AFTER 단독</option><option value="overlay">반투명 중첩 차이</option></select><button type="button" id="rCompareSave" data-save data-testid="compare-json">비교 중 JSON 저장</button><button type="button" id="rDiffCsv" data-csv data-testid="compare-csv">랙 변경 CSV</button></div><div id="rCompareSources" data-sources></div><svg id="rOverlayPlan" class="group-preview" data-overlay hidden role="img" aria-label="중첩"></svg><p class="muted">현재 편집 중인 두 배치를 비교합니다. 날짜 조회 화면과 별개입니다. 수량은 동일 단위별로 계산합니다.</p><div class="compare-plans" data-plans><div data-box="before"><h3>BEFORE · 현재안</h3><svg id="beforePlan" class="mini-plan" data-before role="img" aria-label="BEFORE"></svg></div><div data-box="after"><h3>AFTER · 개선안</h3><svg id="afterPlan" class="mini-plan" data-after role="img" aria-label="AFTER"></svg></div></div><div id="compareTable" class="records-table" data-metrics data-testid="compare-metrics"></div><div id="rCompareRows" class="r-scroll records-table" data-testid="compare-rows" data-rows></div><button type="button" id="mCompareSvg" data-compare-svg data-testid="compare-svg">전후 비교 SVG</button> <button type="button" id="mComparePng" data-compare-png data-testid="compare-png">전후 비교 PNG</button> <button type="button" id="compareCsv" data-compare-csv data-testid="export-compare-csv" style="margin-top:14px">비교 요약 CSV</button>', 'compareDialog');
+  const md = dlg('compare-dialog scenario-dialog', 'compare-dialog', '<button type="button" class="close" data-close data-testid="compare-close">닫기 ×</button><h2>Before / After 배치 비교</h2><div class="r-compare-tools"><select id="rCompareMode" data-mode data-testid="compare-mode" aria-label="배치 비교 모드"><option value="sides">BEFORE/AFTER 좌우 차이</option><option value="before">BEFORE 단독</option><option value="after">AFTER 단독</option><option value="overlay">반투명 중첩 차이</option></select><button type="button" id="rCompareSave" data-save data-testid="compare-json">비교 중 JSON 저장</button><button type="button" id="rDiffCsv" data-csv data-testid="compare-csv">랙 변경 CSV</button></div><div id="rCompareSources" data-sources></div><div id="rComparePurpose" data-purpose data-testid="compare-purpose"></div><svg id="rOverlayPlan" class="group-preview" data-overlay hidden role="img" aria-label="중첩"></svg><p class="muted">현재 편집 중인 두 배치를 비교합니다. 날짜 조회 화면과 별개입니다. 수량은 동일 단위별로 계산합니다.</p><div class="compare-plans" data-plans><div data-box="before"><h3>BEFORE · 현재안</h3><svg id="beforePlan" class="mini-plan" data-before role="img" aria-label="BEFORE"></svg></div><div data-box="after"><h3>AFTER · 개선안</h3><svg id="afterPlan" class="mini-plan" data-after role="img" aria-label="AFTER"></svg></div></div><div id="compareTable" class="records-table" data-metrics data-testid="compare-metrics"></div><div id="rCompareRows" class="r-scroll records-table" data-testid="compare-rows" data-rows></div><button type="button" id="mCompareSvg" data-compare-svg data-testid="compare-svg">전후 비교 SVG</button> <button type="button" id="mComparePng" data-compare-png data-testid="compare-png">전후 비교 PNG</button> <button type="button" id="compareCsv" data-compare-csv data-testid="export-compare-csv" style="margin-top:14px">비교 요약 CSV</button>', 'compareDialog');
+  const DROP = ['신규 랙', '제거 랙', '이동 랙', '회전 랙', '설계 규격 변경 랙', '데이터 기준일'];
+  const detailRows = (p) => compareRows(p).filter((r, i) => !i || (!DROP.includes(r[0]) && !(String(r[0]).startsWith('최대 보관 수량') && r[1] === '미확인' && r[2] === '미확인')));
+  const SEG = [['rack', 'seg-rack', '랙'], ['unavailable', 'seg-blocked', '보관 불가'], ['aisle', 'seg-aisle', '통로'], ['remaining', 'seg-remain', '잔여']];
+  const compBar = (p, k) => {
+    const l = p.scenarios[k];
+    if (!l.objects.length) return `<div class="r-comp-row"><span>${k.toUpperCase()}</span><div class="r-comp-bar">배치 없음</div></div>`;
+    const c = scenarioSpace(p, k).composition;
+    return `<div class="r-comp-row"><span>${k.toUpperCase()}</span><div class="r-comp-bar">${SEG.map(([n, cls, t]) => `<i class="seg ${cls}" style="width:${(c[n].share * 100).toFixed(2)}%" title="${t} ${(c[n].share * 100).toFixed(1)}% · ${c[n].area.toFixed(2)}㎡"></i>`).join('')}</div></div>`;
+  };
+  const purposeHtml = (p, d) => {
+    const sum = layoutChangeSummary(d);
+    return '<table class="r-purpose"><tr>' + ['목적 지표', 'BEFORE', 'AFTER', '차이'].map((h) => `<th>${h}</th>`).join('') + '</tr>' + purposeCompare(p).map((r) => `<tr data-metric="${r.id}" title="${esc(r.tip)}"><td>${esc(r.label)}</td><td>${esc(r.before)}</td><td>${esc(r.after)}</td><td>${esc(r.delta)}</td></tr>`).join('') + '</table>'
+      + `<div class="r-comp" data-testid="compare-composition">${compBar(p, 'before')}${compBar(p, 'after')}<div class="r-legend">${SEG.map(([, cls, t]) => `<span><i class="seg ${cls}"></i>${t === '잔여' ? '보관 가능 잔여' : t}</span>`).join('')}</div></div>`
+      + (sum ? `<p class="r-changes" data-testid="compare-changes">배치 변경: ${esc(sum)}</p>` : '');
+  };
   const drawCompare = () => {
     const p = getProject(), d = rackDiff(p.scenarios.before, p.scenarios.after), vb = common(p), mode = q(md, '[data-mode]').value;
     const sc = (k) => buildScene(p.scenarios[k], p, { scope: k, tool: 'none', mini: true }).svg;
@@ -83,14 +99,15 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     o.setAttribute('viewBox', vb);
     o.innerHTML = `<g opacity=".25">${sc('before')}</g>${sc('after')}${diffOverlay(d, 'before')}${diffOverlay(d, 'after')}`;
     q(md, '[data-sources]').innerHTML = ['before', 'after'].map((k) => `<p class="muted"><b>${k.toUpperCase()}</b> · ${esc(sourceText(p, k))}</p>`).join('');
-    q(md, '[data-metrics]').innerHTML = table(compareRows(p));
+    q(md, '[data-purpose]').innerHTML = purposeHtml(p, d);
+    q(md, '[data-metrics]').innerHTML = '<h3>세부 지표</h3>' + table(detailRows(p));
     const noBefore = !racksOf(p.scenarios.before).length;
     q(md, '[data-rows]').innerHTML = `<p class="info">${noBefore ? '개선 전 기준 도면이 없어 배치 개선 효과를 비교할 수 없습니다.' : p.scenarios.before.referenceSample ? 'BEFORE는 참고 샘플입니다. 실제 기준 도면으로 확정하지 마세요.' : '공통 원점·동일 배율 비교입니다. 위치·치수 근거와 창고/층의 동일성을 확인하세요.'}</p><p class="muted">녹색: 신규 / 빨강 점선: 제거 / 파랑·화살표: 이동 / R: 회전 / 주황: 설계 규격 · 내부 채움은 기존 재고 색상</p>` + table([['랙', '변경 유형 (복수)', 'BEFORE X/Y/° · 설계 m', 'AFTER X/Y/° · 설계 m', '원본 규격 m'], ...diffRows(d)]);
   };
   q(md, '[data-mode]').addEventListener('change', drawCompare);
   q(md, '[data-save]').addEventListener('click', () => download(jsonName(), JSON.stringify(getProject(), null, 2), 'application/json'));
   q(md, '[data-csv]').addEventListener('click', () => { const p = getProject(); download('warehouse_rack_changes.csv', csvEncode([DIFF_CSV_HEADER, ...diffRows(rackDiff(p.scenarios.before, p.scenarios.after))]), 'text/csv;charset=utf-8'); });
-  q(md, '[data-compare-csv]').addEventListener('click', () => download('warehouse_comparison.csv', csvEncode(compareRows(getProject())), 'text/csv;charset=utf-8'));
+  q(md, '[data-compare-csv]').addEventListener('click', () => download('warehouse_comparison.csv', csvEncode((() => { const p = getProject(), c = compareRows(p); return [c[0], ...purposeCompare(p).map((r) => [r.label, r.before, r.after, r.delta]), ...c.slice(1)]; })()), 'text/csv;charset=utf-8'));
   q(md, '[data-compare-svg]').addEventListener('click', () => download('warehouse_before_after.svg', compareSvg(getProject()), 'image/svg+xml;charset=utf-8'));
   q(md, '[data-compare-png]').addEventListener('click', async () => {
     try { download('warehouse_before_after.png', await pngBlob(compareSvg(getProject()))); } catch (e) { toast('비교 PNG 생성 실패: ' + e.message); }
