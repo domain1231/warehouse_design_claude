@@ -46,12 +46,12 @@ test('백업 저장이 실패하면 편집을 적용하지 않는다', async () 
   assert.equal(s.state.canUndo, false);
 });
 
-test('본 저장이 실패하면 방금 만든 백업을 되돌린다(편집은 메모리에 유지)', async () => {
+test('본 저장이 실패해도 편집은 메모리에 남으므로 편집 직전 백업은 유지한다', async () => {
   const { s, storage, backups } = await make();
   storage.failSet = (k) => (k.includes(':slot-') ? quota() : null);
   await s.edit('객체 삭제', dropTwo);
   assert.equal(s.state.status, 'error');
-  assert.equal((await backups.list()).length, 0);
+  assert.equal((await backups.list()).length, 1);
   assert.equal(s.state.canUndo, true);
 });
 
