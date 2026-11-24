@@ -32,6 +32,8 @@
 - 설치: `pnpm install --frozen-lockfile --ignore-scripts`
 - 브라우저: `pnpm exec playwright install chromium` 또는 `WAREHOUSE_BROWSER_PATH=<chrome 경로>`
 - 전체 검사: `pnpm check` (단위 → 빌드 → 오프라인 검증 → E2E)
+- PR 전 로컬 검사(2026-11-24 사용자 지시, D-066): 단위·골든·빌드·오프라인 검증 + 이번 변경과 관련된 E2E만 실행한다. 전체 E2E는 GitHub CI(ubuntu·windows)에 맡기고, 병합은 CI 전체 통과 후에만 한다. PR 본문에는 로컬에서 돌린 범위와 CI 결과를 구분해 적는다.
+- 외부 자동 코드 리뷰(Codex)는 절차에 포함하지 않는다(2026-11-24 사용자 지시).
 
 ## GitHub
 - 한 작업 = 한 Issue = 한 브랜치(`feature/`, `fix/`, `chore/`, `docs/`) = 한 PR. main 직접 push·force push·자동 merge 금지(최초 등록 커밋만 예외).

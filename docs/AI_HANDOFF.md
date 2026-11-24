@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C6 벽 이격 수정(D-067) · 검사 절차 간소화(D-066) · feature/wallgap-c6
+- #prWallGap 모든 배치에서 활성, `wallGapOf`·`setWallGap`(src/warehouse/placement-rules.js). 직접 그린 배치는 layout.wallGap만 변경.
+- D-066: PR 전 로컬은 단위·골든·빌드·검증 + 관련 E2E, 전체 E2E는 CI. Codex 리뷰 절차 제외.
+- 로컬: unit 199, golden 286, build·verify, e2e(placement-rules·wallgap-edit·ui-parity·collapse) 5 PASS. 전체 E2E는 CI.
+- 다음: C7 Excel Summary 동기화 확인 화면.
+
 ### 2026-11-24 Track C · C5 통로 기준 검증(D-065) · feature/aisle-target-c5
 - 기준 = max(통로 최소 폭, 통로 종류 기준(왼쪽에서 사용자 수정)). 주통로 기준 < 1.0m 설정 경고(고정 하한, 화면 목록만, 골든 불변). 최소 통로 폭 칸 경고 색. 1.2/1.0은 참고 권장값.
 - `AISLE_STANDARDS`·`aisleStandard`·`aisleSettingIssues`(src/warehouse/aisles.js), spaceMetrics `aisleBelowStandard`.

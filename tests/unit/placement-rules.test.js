@@ -1,7 +1,7 @@
 // D-057: 자동 배치 기준 기록이 없는 배치(예전 Excel 적용·JSON 불러오기)의 기준 편집. 가상 자료만 사용.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { effectiveRules, setPlacementRule } from '../../src/warehouse/placement-rules.js';
+import { effectiveRules, setPlacementRule, setWallGap, wallGapOf } from '../../src/warehouse/placement-rules.js';
 
 const legacy = () => ({
   importHistory: [{ date: '2026-11-01', keys: [] }],
@@ -47,4 +47,32 @@ test('기록이 이미 있으면 그대로 고친다', () => {
   p.scenarios.after.autoPlacementRules = { mode: 'aisle', columnGap: 1, rackGap: 0.4, wallGap: 0.2, aisleTarget: 2 };
   setPlacementRule(p, 'after', 'columnGap', 0.8);
   assert.deepEqual(p.scenarios.after.autoPlacementRules, { mode: 'aisle', columnGap: 0.8, rackGap: 0.4, wallGap: 0.2, aisleTarget: 2 });
+});
+
+test('setWallGap: 기준·Excel 이력이 없으면 layout.wallGap만 기록(기준 기록은 만들지 않는다)', () => {
+  const p = legacy();
+  p.importHistory = [];
+  setWallGap(p, 'after', 0.4);
+  assert.equal(p.scenarios.after.wallGap, 0.4);
+  assert.equal(p.scenarios.after.autoPlacementRules, undefined);
+  assert.equal(p.scenarios.before.wallGap, undefined);
+});
+
+test('setWallGap: 기록이 있으면 기준·layout.wallGap 모두 갱신', () => {
+  const p = legacy();
+  p.scenarios.after.autoPlacementRules = { mode: 'aisle', columnGap: 1, rackGap: 0.4, wallGap: 0.2, aisleTarget: 2 };
+  setWallGap(p, 'after', 0.3);
+  assert.equal(p.scenarios.after.autoPlacementRules.wallGap, 0.3);
+  assert.equal(p.scenarios.after.wallGap, 0.3);
+  const q = legacy();
+  setWallGap(q, 'after', 0.05);
+  assert.equal(q.scenarios.after.autoPlacementRules.wallGap, 0.05);
+});
+
+test('wallGapOf: 배치 값 → 프로젝트 값 → 0', () => {
+  const p = legacy();
+  assert.equal(wallGapOf(p, p.scenarios.after), 0.1);
+  p.scenarios.after.wallGap = 0.3;
+  assert.equal(wallGapOf(p, p.scenarios.after), 0.3);
+  assert.equal(wallGapOf({}, {}), 0);
 });

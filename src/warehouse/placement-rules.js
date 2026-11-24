@@ -21,6 +21,16 @@ export function effectiveRules(project, layout, key) {
   return { applied: false, values: { columnGap: safe(ll.columnGap), rackGap: safe(ll.rackGap), wallGap: safe(layout.wallGap ?? ll.wallGap), aisleTarget: safe(ll.aisleTarget) } };
 }
 
+/** 외벽 이격 검사 기준(constraints.js와 같은 값). */
+export const wallGapOf = (project, layout) => layout.wallGap ?? project.locationLayout?.wallGap ?? 0;
+
+/** 벽 최소 이격만 고친다. 자동 배치 기준이 없는 배치는 layout.wallGap만 기록(열·랙 간격 검사는 켜지 않는다). */
+export function setWallGap(project, key, value) {
+  const l = project.scenarios[key];
+  if (l.autoPlacementRules || effectiveRules(project, l, key)) setPlacementRule(project, key, 'wallGap', value);
+  else l.wallGap = value;
+}
+
 /** 초안 프로젝트의 key 시나리오에 기준 하나를 기록한다. 기록이 없으면 Excel 입력값으로 먼저 만든다. */
 export function setPlacementRule(project, key, rule, value) {
   if (!RULE_KEYS.includes(rule)) throw new Error('알 수 없는 기준');

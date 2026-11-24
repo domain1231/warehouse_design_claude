@@ -9,6 +9,7 @@ import { GEOMETRY_EPS_M as EPS } from '../geometry/tolerance.js';
 import { bounds } from '../geometry/polygons.js';
 import { overlaps, gap } from '../geometry/collision.js';
 import { aisleClearance } from '../geometry/clearance.js';
+import { wallGapOf } from './placement-rules.js';
 import { formatNumber as fmt } from '../core/format.js';
 
 /** 수량 적재율(%) = 현재 수량 / 최대 수량. 정보가 없으면 null. 높이 활용률과 섞지 않는다. */
@@ -85,7 +86,7 @@ export function baseWarnings(layout, project, allPairs = false) {
 /** 시험 전용 기준 구현(전수 쌍 검사). 실행 경로에서는 쓰지 않는다. */
 export const baseWarningsReference = (layout, project) => baseWarnings(layout, project, true);
 
-const wallClearanceOf = (layout, project) => layout.wallGap ?? project.locationLayout?.wallGap ?? 0;
+const wallClearanceOf = (layout, project) => wallGapOf(project, layout);
 
 /** 공간 경고 목록 [{key, text, ids, spatial}]. spatial=false는 검토 경고(공간 판정에 영향 없음). */
 export function warnings(layout, project) {
