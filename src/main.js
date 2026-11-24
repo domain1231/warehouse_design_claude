@@ -12,6 +12,7 @@ import { rackLabelParts, labelStatusText } from './cad/labels.js';
 import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js';
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
 import { pixelsPerMeter } from './cad/camera.js';
+import { heldVector, panDelta } from './cad/keypan.js';
 import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, mmInputMessage, isMmInput, setPositionLock, setLimit, setAspectLock, setAisleField, setReviewMark, LIMIT_COMMAND, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { setObjectColor, setColorMode, applyThresholdColors, resetColors } from './warehouse/appearance.js';
 import { renderInspector } from './ui/inspector.js';
@@ -1303,16 +1304,56 @@ async function start() {
   });
   ui.plan.addEventListener('pointerup', (e) => finish(e, false));
   ui.plan.addEventListener('pointercancel', (e) => finish(e, true));
+  // 방향키 화면 이동: 눌린 키 Set을 프레임마다 읽어 화면 픽셀 속도로 이동하고, 멈출 때 한 번만 저장한다.
+  const held = new Set();
+  let panRaf = 0, panLast = 0, panShift = false;
+  const keyPanStop = () => {
+    held.clear();
+    if (!panRaf) return;
+    cancelAnimationFrame(panRaf);
+    panRaf = 0;
+    commitView(view);
+  };
+  function keyPanStart() {
+    if (panRaf || !view) return;
+    panLast = performance.now();
+    const step = (now) => {
+      const dt = Math.min(0.1, (now - panLast) / 1000);
+      panLast = now;
+      const { dx, dy } = panDelta(held, panShift, dt);
+      if (!held.size || selected.size || view.centerLocked) { panRaf = 0; commitView(view); return; }
+      if (dx || dy) {
+        const mpp = viewBox(view, W(), size()).w / size().w;
+        view = panFrom(view, -dx * mpp, -dy * mpp);
+        applyCamera();
+      }
+      panRaf = requestAnimationFrame(step);
+    };
+    panRaf = requestAnimationFrame(step);
+  }
+  document.addEventListener('keyup', (e) => { panShift = e.shiftKey; held.delete(e.key); if (!held.size) keyPanStop(); });
+  window.addEventListener('blur', keyPanStop);
+  document.addEventListener('visibilitychange', () => document.hidden && keyPanStop());
   document.addEventListener('keydown', (e) => {
+    panShift = e.shiftKey;
     cancelWheel();
     if (e.key.toLowerCase() === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveByKey(); return; } // 기준본: 입력칸·대화상자 여부와 무관
     if (document.querySelector('dialog[open]') || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable || !project()) return;
     const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
     const dir = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
     if (dir && !mod && !e.altKey) {
-      if (!selected.size || tool !== 'select') return;
+      if (!selected.size) {
+        if (tool !== 'select' && tool !== 'pan') return;
+        e.preventDefault();
+        held.add(e.key);
+        keyPanStart();
+        return;
+      }
+      if (tool !== 'select') return;
       e.preventDefault();
-      nudge(dir[0], dir[1], e.shiftKey);
+      held.add(e.key);
+      const [vx, vy] = heldVector(held);
+      nudge(vx || dir[0], vy || dir[1], e.shiftKey);
     } else if (e.key === 'Escape') {
       e.preventDefault();
       abortGesture();
