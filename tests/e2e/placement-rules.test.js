@@ -28,9 +28,9 @@ test('자동 배치 기준: 배치 전 비활성 → Excel 적용 후 값 표시
   await page.waitForFunction(() => window.__warehouseView);
   await page.locator('[data-testid=scenario-after]').click().catch(() => {});
   const wall = page.locator('[data-testid=rule-wallGap]');
-  // 샘플/수동 배치에는 자동 배치 기준이 없으면 비활성
-  const hasRules = await page.evaluate(() => { const p = window.__warehouseSession.state.project; return !!p.scenarios[p.settings.scenario].autoPlacementRules; });
-  assert.equal(await wall.isDisabled(), !hasRules);
+  // 샘플/수동 배치: 벽 이격만 활성(C6), 나머지 기준은 비활성
+  assert.equal(await wall.isDisabled(), false);
+  for (const k of ['columnGap', 'rackGap', 'aisleTarget']) assert.equal(await page.locator(`[data-testid=rule-${k}]`).isDisabled(), true);
 
   await page.locator('[data-testid=excel-open]').click();
   await page.locator('[data-testid=excel-file]').setInputFiles(path.join(root, 'fixtures/excel/synthetic-basic.xlsx'));
