@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C1 1단계 지표 모듈(D-060) · feature/space-metrics-c1
+- `src/metrics/space.js`(M1~M11 순수 함수) + 골든 테스트 `tests/unit/space-golden.test.js`(가상 데이터셋, GT 8건 PASS).
+- 로컬: 업무 Excel 706호 Summary 완전 일치, 운영 JSON BEFORE 평균 용적률 = F4. 다른 호실 Summary 차이는 Excel 표 범위 문제로 판단(C7에서 표시).
+- 다음: C1 2단계(화면 연결·Excel 총면적 저장·모드 표시) → C2.
+
 ### 2026-11-24 추가 공간 지표(D-059) · feature/kpi-more
 - 상단 8칸(+잔여 비중·최소 통로 폭), 오른쪽 공간 지표 +5줄(잔여 비중·통로:랙 면적비·최소 통로 폭·BEFORE→AFTER 증감·평균 용적률). '평균 용적률' 용어 채택(업무 Excel 열 이름).
 - 사용자 운영 JSON 로컬 확인: 잔여 25.0%·면적비 0.99·최소 통로 0.8m(통로 008)·평균 용적률 60.0%(56/59랙)·AFTER 비어 있음.
