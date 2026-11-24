@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 랙 선택 성능 — 공간 지표 메모 · perf/select-memo
+- panels.js 단일 슬롯 메모(배치 객체 동일성 + 값 의존성). 500랙 선택 중앙값 약 52ms(수정 전 55~65, Track C 전 45), 라벨 전환 약 200ms.
+- 검사: unit 209, golden 286, build·verify, e2e 11파일 17 PASS(새 space-memo: 선택 3회 재계산 0, 삭제·실행취소·다시실행 후 값 갱신).
+
 ### 2026-11-24 최적화·디버그 4 · chore/optimize-debug-4
 - 성능: 500랙 랙 선택 106 → 55~65ms(alpha.9 45), 라벨 전환 301 → 207~237ms. 원인 면적 합집합 LRU 캐시 thrash, `AREA_CACHE_MAX` 16 → 64. `docs/perf/2026-11-24-trackc.md`.
 - 실데이터 스모크(운영 JSON 11/02 + 업무 Excel, 로컬·미커밋): 페이지 오류 0, NaN/undefined 표시 0, 저장·재열기 유지. 발견 1건 수정 — AFTER가 빈 배치일 때 비교표가 통로 비중 100% 등으로 표시 → '배치 없음', Δ 범례 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.'
