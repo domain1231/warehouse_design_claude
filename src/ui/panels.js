@@ -3,6 +3,7 @@
 import { esc } from '../cad/scene.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { metrics } from '../warehouse/metrics.js';
+import { spaceKpis } from '../warehouse/space-kpi.js';
 import { rackRows, legend } from '../warehouse/racklist.js';
 import { loadState } from '../cad/scene.js';
 
@@ -47,9 +48,27 @@ export function createPanels(roots, { onFocus, onView }) {
       k.aisleArea.textContent = fmt(m.aisles) + '㎡';
       k.blockedShare.textContent = share(m.unavailable);
       k.blockedArea.textContent = fmt(m.unavailable) + '㎡';
+      // D-059: 추가 공간 지표(상단 2칸 + 오른쪽 공간 지표 5줄)
+      const x = spaceKpis(layout, project, m);
+      const pct = (v) => (v === null ? '—' : v.toFixed(1));
+      const signed = (v, d = 1) => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(d);
+      k.remainShare.textContent = pct(x.remainingShare);
+      k.remainArea.textContent = fmt(m.remaining) + '㎡';
+      const aisleText = x.minAisle ? fmt(x.minAisle.width, 3) : '—';
+      const aisleSub = x.minAisle ? `${x.minAisle.code} · ${x.minAisle.belowTarget ? '⚠ 목표 ' + fmt(x.minAisle.target, 3) + 'm 미달' : '목표 ' + fmt(x.minAisle.target, 3) + 'm'}` : '통로 객체 없음';
+      k.minAisle.textContent = aisleText;
+      k.minAisleSub.textContent = aisleSub;
+      const deltaText = !x.delta ? '—' : x.delta.empty ? `${x.delta.empty} 배치 비어 있음` : `랙 ${x.delta.racks > 0 ? '+' : x.delta.racks < 0 ? '−' : '±'}${Math.abs(x.delta.racks)} · 점유율 ${signed(x.delta.footprint)}%p · 통로 ${signed(x.delta.aisleShare)}%p`;
+      const extra = [
+        ['보관 가능 잔여 비중', pct(x.remainingShare) + '%'],
+        ['통로 : 랙 면적비', x.aisleRackRatio === null ? '—' : x.aisleRackRatio.toFixed(2)],
+        ['최소 통로 폭', x.minAisle ? `${aisleText}m <small class="muted">${esc(aisleSub)}</small>` : '통로 객체 없음'],
+        ['BEFORE→AFTER 증감', deltaText],
+        ['평균 용적률', x.avgVolume === null ? `미확인 <small class="muted">0/${x.rackTotal}랙</small>` : `${x.avgVolume.toFixed(1)}% <small class="muted">${x.volumeKnown}/${x.rackTotal}랙 확인</small>`],
+      ];
       k.warnings.textContent = String(m.warnings.length);
       if (k.summary) k.summary.textContent = `${m.racks}랙 · 점유율 ${fmt(m.footprint, 1)}% · 공간 경고 ${m.warnings.length}건`;
-      roots.metrics.innerHTML = `${[['랙 면적 합계', fmt(m.rackArea) + '㎡'], ['보관 불가 / 문 안전 구역', fmt(m.unavailable) + '㎡'], ['통로 / 작업 구역', fmt(m.aisles) + '㎡'], ['중복 제외 잔여 면적', fmt(m.remaining) + '㎡']].map(([t, v]) => `<div class="metricline"><span>${t}</span><strong>${v}</strong></div>`).join('')}<p class="note">각 구역 지표는 서로 겹칠 수 있습니다. 잔여 면적만 전체 합집합을 차감합니다.</p>`;
+      roots.metrics.innerHTML = `${[['랙 면적 합계', fmt(m.rackArea) + '㎡'], ['보관 불가 / 문 안전 구역', fmt(m.unavailable) + '㎡'], ['통로 / 작업 구역', fmt(m.aisles) + '㎡'], ['중복 제외 잔여 면적', fmt(m.remaining) + '㎡'], ...extra].map(([t, v]) => `<div class="metricline"><span>${t}</span><strong>${v}</strong></div>`).join('')}<p class="note">각 구역 지표는 서로 겹칠 수 있습니다. 잔여 면적만 전체 합집합을 차감합니다. 평균 용적률은 Excel 자재 높이 ÷ 선반 높이(높이 활용률)의 랙 평균이며 현재고가 아닙니다.</p>`;
       $('warningCount').textContent = m.warnings.length + '건';
       roots.warnings.innerHTML = m.warnings.length
         ? m.warnings.map((w, i) => `<li data-warning="${i}" style="cursor:pointer;padding:4px 0">${esc(w.text)}</li>`).join('')
