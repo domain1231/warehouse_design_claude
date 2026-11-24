@@ -110,10 +110,14 @@ export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_
   const usedArea = racks.reduce((a, o) => a + o.width * o.depth, 0); // 도면의 모든 랙 바닥면적 합(설계 규격)
   const linkedUsedArea = linked.reduce((a, o) => a + o.width * o.depth, 0); // Excel 연결 랙만(Excel D4와 같은 범위)
   const areaUse = totalArea > 0 ? usedArea / totalArea : null;
-  // M7: 우선순위 랙 > 보관 불가 > 통로 > 잔여로 겹침을 지워 합계 100%(도면 전체 기준).
+  // M7(C8 5분해, D-074): 우선순위 랙(적치) > 랙(빈 랙) > 보관 불가 > 통로 > 잔여로 겹침을 지워 합계 100%(도면 전체 기준).
+  //   빈 랙 = M8 해당 랙(연결 로케이션 없음 또는 자재높이 모두 0). Excel 미연결 랙(미확인)은 '랙'에 넣는다.
   const U = (kinds) => unionArea(layout.objects.filter((o) => kinds.includes(o.kind)), w.width, w.height);
+  const emptyIds = new Set(perRack.filter((x) => x.empty).map((x) => x.id));
+  const uS = unionArea(racks.filter((o) => !emptyIds.has(o.id)), w.width, w.height);
   const uR = U(['rack']), uRU = U(['rack', ...UNAVAILABLE]), uRUA = U(['rack', ...UNAVAILABLE, ...AISLE]);
-  const parts = { rack: uR, unavailable: uRU - uR, aisle: uRUA - uRU, remaining: drawingArea - uRUA };
+  const parts = { rack: uS, emptyRack: uR - uS, unavailable: uRU - uR, aisle: uRUA - uRU, remaining: drawingArea - uRUA };
+  const shelf = shelfFreeVolume(linked);
   const ceilingMm = w.ceiling > 0 ? w.ceiling * 1000 : null;
   const rackHeightMm = (o) => { const r = rowsOf(o)[0]; return r && num(r.rackHeight) > 0 ? num(r.rackHeight) : o.height * 1000; };
   const aisles = aisleReviewRows(layout).filter((r) => Number.isFinite(r.width));
@@ -131,7 +135,9 @@ export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_
     usedArea, areaUse, // M5(도면의 모든 랙)
     linkedUsedArea, areaUseLinked: totalArea > 0 ? linkedUsedArea / totalArea : null, // M5(Excel 연결 랙만 — Excel D4와 비교할 때)
     aisleShare: { excel: areaUse === null ? null : 1 - areaUse, drawing: drawingArea > 0 ? U(AISLE) / drawingArea : null }, // M6 ①·②
-    composition: Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, { area: v, share: drawingArea > 0 ? v / drawingArea : null }])), // M7
+    composition: Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, { area: v, share: drawingArea > 0 ? v / drawingArea : null }])), // M7(5분해)
+    storable: { area: parts.emptyRack + parts.remaining, share: drawingArea > 0 ? (parts.emptyRack + parts.remaining) / drawingArea : null }, // M12 보관 가능 합계(빈 랙 + 잔여 바닥)
+    shelfFree: shelf, // M13 선반 여유 용적
     emptyRacks: perRack.filter((x) => x.empty).length, unknownRacks: racks.length - linked.length, // M8
     lowRacks: perRack.filter((x) => x.r !== null && !x.empty && x.r < lowRack).length, lowRackThreshold: lowRack, // M9
     idleRacks: ceilingMm === null ? null : racks.filter((o) => ceilingMm - rackHeightMm(o) - IDLE_MARGIN_MM > IDLE_MARGIN_MM).length, // M10
@@ -139,6 +145,25 @@ export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_
     aisleBelowStandard, aisleSettingIssues: aisleSettingIssues(layout, aisleRules).length, // C5
     perRack,
   };
+}
+
+/**
+ * M13 선반 여유 용적(C8): 선반마다 (단 높이 − 그 선반 최대 자재높이) × 랙 가로 × 랙 세로(설계 규격). 빈 선반은 단 높이 전체.
+ * 자재높이가 단 높이를 넘으면 그 선반 여유는 0. 가로 방향 여유는 데이터가 없어 넣지 않는다. 연결 랙만 계산.
+ * @returns { free(m³), total(m³), share(free ÷ total) } — 선반 용적이 0이면 share null
+ */
+export function shelfFreeVolume(linkedRacks) {
+  let free = 0, total = 0;
+  for (const o of linkedRacks) {
+    const foot = o.width * o.depth;
+    for (const s of o.excel?.shelves ?? []) {
+      const items = s.items ?? [];
+      const h = Math.max(0, ...items.map((i) => num(i.shelfHeight))), mat = Math.max(0, ...items.map((i) => num(i.materialHeight)));
+      total += (h / 1000) * foot;
+      free += (Math.max(0, h - mat) / 1000) * foot;
+    }
+  }
+  return { free, total, share: total > 0 ? free / total : null };
 }
 
 // ── C1 2단계: 화면 연결용 보조 함수 ──
@@ -184,7 +209,10 @@ export function purposeCompare(project) {
   const cnt = (x, y) => dl(signed(y - x));
   const loc = (m) => (m.locations ? `${m.lowLocations} / ${m.locations}` : '미확인');
   const emp = (m) => `${m.emptyRacks}` + (m.unknownRacks > 0 ? ` (미확인 ${m.unknownRacks})` : '');
-  const cs = (m) => { const c = m.composition, p = (k) => pctText(c[k].share); return `랙 ${p('rack')} · 보관 불가 ${p('unavailable')} · 통로 ${p('aisle')} · 잔여 ${p('remaining')}`; };
+  const cs = (m) => { const c = m.composition, p = (k) => pctText(c[k].share); return `랙 ${p('rack')} · 빈 랙 ${p('emptyRack')} · 보관 불가 ${p('unavailable')} · 통로 ${p('aisle')} · 잔여 ${p('remaining')}`; };
+  const rackAll = (m) => (m.composition.rack.share === null ? null : m.composition.rack.share + m.composition.emptyRack.share);
+  const st = (m) => `${pctText(m.storable.share)} (${m.storable.area.toFixed(2)}㎡)`;
+  const sf = (m) => (m.shelfFree.share === null ? '미확인' : `${m.shelfFree.free.toFixed(2)}m³ (${pctText(m.shelfFree.share)})`);
   const aw = (m) => (m.minAisle ? `${m.minAisle.width.toFixed(3)}m` + (m.minAisle.code ? ` (${m.minAisle.code})` : "") : '통로 없음');
   const row = (id, label, before, after, delta, tip) => ({ id, label, before: ready ? before : NONE, after: afterOk ? after : NONE, delta, tip });
   return [
@@ -193,7 +221,9 @@ export function purposeCompare(project) {
     row('M8', '빈 랙', emp(b), emp(a), cnt(b.emptyRacks, a.emptyRacks), '연결 로케이션의 자재높이가 모두 0인 랙(평균 용적률·80% 미만에서 뺌). Excel 미연결 랙은 미확인으로 따로 셈'),
     row('M9', '저활용 랙', `${b.lowRacks}`, `${a.lowRacks}`, cnt(b.lowRacks, a.lowRacks), `랙 용적률 R < ${b.lowRackThreshold * 100}%인 랙 (빈 랙 제외)`),
     row('M6', '통로 비중', pctText(b.aisleShare.excel), pctText(a.aisleShare.excel), dl(signedPp(b.aisleShare.excel, a.aisleShare.excel)), `① Excel 방식 = 1 − 면적 사용률 (총면적: Excel 입력값, 없으면 도면 전체). 도면 통로 기준 BEFORE ${pctText(b.aisleShare.drawing)} / AFTER ${pctText(a.aisleShare.drawing)}`),
-    row('M7', '공간 구성', cs(b), cs(a), dl('랙 ' + signedPp(b.composition.rack.share, a.composition.rack.share)), '랙 > 보관 불가 > 통로 > 잔여 순으로 겹침을 한 번만 셈. 도면 전체 기준, 합계 100%'),
+    row('M7', '공간 구성', cs(b), cs(a), dl('랙 ' + signedPp(rackAll(b), rackAll(a))), '랙(적치) > 빈 랙 > 보관 불가 > 통로 > 잔여 순으로 겹침을 한 번만 셈. 도면 전체 기준, 합계 100%. 차이의 랙은 빈 랙 포함'),
+    row('M12', '보관 가능 합계', st(b), st(a), dl(signedPp(b.storable.share, a.storable.share)), '빈 랙 바닥면적 + 보관 가능 잔여(바닥). 도면 전체 기준'),
+    row('M13', '선반 여유 용적', sf(b), sf(a), dl(b.shelfFree.share === null || a.shelfFree.share === null ? '—' : signed(Math.round((a.shelfFree.free - b.shelfFree.free) * 100) / 100, (x) => x.toFixed(2), 'm³')), '선반마다 (단 높이 − 그 선반 최대 자재높이) × 랙 가로 × 랙 세로, 빈 선반은 단 높이 전체. 괄호는 전체 선반 용적 대비. 가로 방향 여유는 데이터가 없어 넣지 않음'),
     row('M11', '최소 통로 폭', aw(b), aw(a), dl(b.minAisle && a.minAisle ? signed(Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000, (x) => x.toFixed(3), 'm') : '—'), '통로 단면 기준 최소 폭' + (a.minAisle?.target || b.minAisle?.target ? ` · 목표 ${a.minAisle?.target ?? b.minAisle.target}m` : '') + (a.minAisle?.standard || b.minAisle?.standard ? ` · 기준 ${(a.minAisle ?? b.minAisle).standard}m(${(a.minAisle ?? b.minAisle).standardLabel})` : '')),
   ];
 }

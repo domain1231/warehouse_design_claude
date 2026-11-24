@@ -72,7 +72,7 @@ test('M1 Excel 규칙: 분모 0·빈칸·문자는 0, 형식 밖 로케이션은
 const rackObj = (id, x, y, rows, extra = {}) => ({ id, kind: 'rack', code: id, x, y, width: 1, depth: 1, rotation: 0, height: 2, excel: rows ? { key: id, shelves: [{ level: 1, items: rows }] } : undefined, ...extra });
 const box = (id, kind, x, y, width, depth) => ({ id, kind, x, y, width, depth, rotation: 0 });
 
-test('GT-M7 공간 구성 4분해 합계 100.00% ± 0.01, 겹침은 랙 > 보관 불가 > 통로 순서로 한 번만', () => {
+test('GT-M7 공간 구성 5분해(빈 랙 없음) 합계 100.00% ± 0.01, 겹침은 랙 > 보관 불가 > 통로 순서로 한 번만', () => {
   const layout = {
     warehouse: { width: 10, height: 5, ceiling: 2.7 },
     objects: [
@@ -83,7 +83,8 @@ test('GT-M7 공간 구성 4분해 합계 100.00% ± 0.01, 겹침은 랙 > 보관
     ],
   };
   const m = spaceMetrics(layout);
-  const c = m.composition, sum = c.rack.share + c.unavailable.share + c.aisle.share + c.remaining.share;
+  const c = m.composition, sum = c.rack.share + c.emptyRack.share + c.unavailable.share + c.aisle.share + c.remaining.share;
+  assert.equal(c.emptyRack.area, 0, 'Excel 미연결 랙은 빈 랙이 아니라 랙(미확인)');
   assert.ok(Math.abs(sum - 1) < 1e-4, `합계 ${sum}`);
   assert.ok(Math.abs(c.rack.area - 1.5) < 1e-9, '랙 2개 겹침 제외 1.5㎡');
   assert.ok(Math.abs(c.unavailable.area - (0.65 + 1)) < 1e-9, '기둥 1㎡ 중 랙과 겹친 0.7×0.5㎡ 제외 + 보관 금지 창고 안쪽 1㎡');

@@ -31,7 +31,7 @@ test('비교 목적 지표: 표 순서·툴팁, 구성 막대 합 100%, 배치 �
 
   await click(page, 'scenario-compare');
   const P = page.locator('[data-testid=compare-purpose]');
-  assert.deepEqual(await P.locator('tr[data-metric] td:first-child').allTextContents(), ['평균 용적률', '80% 미만 로케이션', '빈 랙', '저활용 랙', '통로 비중', '공간 구성', '최소 통로 폭']);
+  assert.deepEqual(await P.locator('tr[data-metric] td:first-child').allTextContents(), ['평균 용적률', '80% 미만 로케이션', '빈 랙', '저활용 랙', '통로 비중', '공간 구성', '보관 가능 합계', '선반 여유 용적', '최소 통로 폭']);
   for (const t of await P.locator('tr[data-metric]').evaluateAll((l) => l.map((x) => x.title))) assert.ok(t);
   const bars = P.locator('[data-testid=compare-composition] .r-comp-row');
   assert.equal(await bars.count(), 2);
