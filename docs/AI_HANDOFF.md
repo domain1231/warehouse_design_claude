@@ -8,6 +8,9 @@
 ### 2026-11-24 랙 선택 성능 — 공간 지표 메모 · perf/select-memo
 - panels.js 단일 슬롯 메모(배치 객체 동일성 + 값 의존성). 500랙 선택 중앙값 약 52ms(수정 전 55~65, Track C 전 45), 라벨 전환 약 200ms.
 - 검사: unit 209, golden 286, build·verify, e2e 11파일 17 PASS(새 space-memo: 선택 3회 재계산 0, 삭제·실행취소·다시실행 후 값 갱신).
+### 2026-11-24 C7 보완 — Summary 시트 80% 미만 대조(D-069) · feature/summary-low80
+- `readLowLocations`(src/excel/analyze.js), 대조 상자 행 '80% 미만 로케이션 (Summary 시트)'. 가상 fixture에 Summary 시트 추가.
+- 로컬: unit 211, golden 286, build·verify, e2e 4파일 11 PASS. 전체 E2E는 CI.
 
 ### 2026-11-24 최적화·디버그 4 · chore/optimize-debug-4
 - 성능: 500랙 랙 선택 106 → 55~65ms(alpha.9 45), 라벨 전환 301 → 207~237ms. 원인 면적 합집합 LRU 캐시 thrash, `AREA_CACHE_MAX` 16 → 64. `docs/perf/2026-11-24-trackc.md`.

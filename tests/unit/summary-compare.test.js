@@ -69,3 +69,29 @@ test('Q 수식이 단 높이가 아닌 열로 나누면 q-divisor 원인이 맨 
   const ok = summaryCompare({ ...s, qDivisor: { column: 'O', header: 'Rack 단 높이 (mm)', rows: 5 } }, rows, { ceilingMm: 4000 });
   assert.equal(ok.causes.some((c) => c.id === 'q-divisor'), false);
 });
+
+test('80% 미만 로케이션(Summary 시트) 행: 숫자일 때만 비교한다', () => {
+  const app = excelRowMetrics(rows, { totalArea: 20, ceilingMm: 4000 }).lowLocations;
+  const same = summaryCompare(summaryOf(rows, { lowLocations: app }), rows, { ceilingMm: 4000 });
+  const c = same.rows.find((x) => x.id === 'C');
+  assert.equal(c.label, '80% 미만 로케이션 (Summary 시트)');
+  assert.equal(c.same, true);
+  assert.equal(same.differs, 0);
+  const diff = summaryCompare(summaryOf(rows, { lowLocations: app + 2 }), rows, { ceilingMm: 4000 });
+  assert.equal(diff.rows.find((x) => x.id === 'C').same, false);
+  assert.equal(diff.differs, 1);
+  assert.ok(diff.causes.some((x) => x.id === 'unknown'));
+  assert.equal(summaryCompare(summaryOf(rows, { lowLocations: null }), rows, { ceilingMm: 4000 }).rows.some((x) => x.id === 'C'), false);
+});
+
+test('readLowLocations: Summary 시트에서 BE→AS-IS·AF→TO-BE, 없으면 null', async () => {
+  const { readLowLocations } = await import('../../src/excel/analyze.js');
+  const cells = new Map([['B4', "용적률 80% 미만 \nQ'ty"], ['B5', '구분'], ['C5', 'AS-IS'], ['D5', 'TO-BE'], ['B6', '202호'], ['C6', 130], ['B7', '205호'], ['C7', 195], ['D7', 40]]);
+  const book = { sheetNames: ['205호BE', ' summary '], sheets: { ' summary ': { cells } } };
+  assert.deepEqual(readLowLocations(book, '205호BE'), { value: 195, source: 'Summary!C7' });
+  assert.deepEqual(readLowLocations(book, '205호AF'), { value: 40, source: 'Summary!D7' });
+  assert.deepEqual(readLowLocations(book, '202호AF'), { value: null, source: 'Summary!D6' });
+  assert.equal(readLowLocations(book, '999호BE'), null);
+  assert.equal(readLowLocations(book, 'Sheet1'), null);
+  assert.equal(readLowLocations({ sheetNames: ['205호BE'], sheets: {} }, '205호BE'), null);
+});

@@ -35,6 +35,8 @@ test('Summary 대조: 다른 값은 경고·원인·CSV, 머리글 없는 시트
   assert.equal(await verdict('G4'), '⚠ 다름');
   assert.equal(await verdict('D4'), '✓');
   assert.equal(await verdict('E4'), '✓');
+  assert.equal(await verdict('C'), '✓');
+  assert.match(await box.locator('tr[data-id=C] td').first().textContent(), /80% 미만 로케이션 \(Summary 시트\)/);
   const causes = await page.locator('[data-testid=excel-summary-causes]').textContent();
   for (const t of ['형식 밖', '자재높이', '직접 입력값', '이 아닌']) assert.ok(causes.includes(t), t);
   assert.match(await box.textContent(), /적용하면 화면 지표는 앱 계산값을 씁니다/);
@@ -57,7 +59,7 @@ test('Summary 대조: 다른 값은 경고·원인·CSV, 머리글 없는 시트
   await page.locator('[data-testid=excel-apply]').click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.importHistory.length === 1 && window.__warehouseSession.state.status === 'saved');
   const s = await page.evaluate(() => window.__warehouseSession.state.project.scenarioMeta.after.sourceInfo.excelSummary);
-  assert.deepEqual({ ...s }, { totalArea: 40, areaUse: 0.15, aisleShare: 0.85, avgVolume: 0.5, rackCount: 3, idleRacks: 0, lowLocations: null });
+  assert.deepEqual({ ...s }, { totalArea: 40, areaUse: 0.15, aisleShare: 0.85, avgVolume: 0.5, rackCount: 3, idleRacks: 0, lowLocations: 6 });
   assert.deepEqual(problems, []);
   await ctx.close();
 });

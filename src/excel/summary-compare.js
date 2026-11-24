@@ -28,7 +28,7 @@ export function summaryCompare(summary, rows, { ceilingMm = null, shelfHeader = 
     ['E4', '통로 비중 (E4)', summary.aisleShare, m.aisleShareExcel, true],
     ['G4', "Rack Q'ty (G4)", summary.rackCount, m.rackCount, false],
     ['H4', "유휴 공간 Rack Q'ty (H4)", summary.idleRacks, m.idleRacks, false],
-    ['C', '용적률 80% 미만 로케이션', summary.lowLocations ?? null, m.lowLocations, false],
+    ['C', '80% 미만 로케이션 (Summary 시트)', summary.lowLocations ?? null, m.lowLocations, false],
   ];
   const out = [];
   for (const [id, label, excel, app, ratio] of defs) {

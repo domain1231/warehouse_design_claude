@@ -1,6 +1,7 @@
 // 가상 자료(SYNTHETIC) 생성기: fixtures/excel/synthetic-summary.xlsx — C7 Excel Summary 대조 시험용. 실제 업무 Excel이 아니다.
 // 시트 '가상호BE': 3행 머리글·4행 Summary 값(F4·G4는 행 계산과 일부러 다름, G4는 수식 없는 직접 입력), 8행 머리글, 9~16행 데이터.
 // 표 범위는 A8:T15라 16행은 표 밖. 'Buffer Rack'(형식 밖 로케이션)과 자재높이 > 단 높이 행을 포함한다.
+// 시트 'Summary': B4 "용적률 80% 미만 \nQ'ty", 5행 구분/AS-IS/TO-BE, 6~7행 '가상2호'(9)·'가상호'(AS-IS 6 = 앱 계산과 같음, TO-BE 빈칸).
 // 사용: node tools/make-synthetic-summary.cjs
 const fs = require('node:fs'), path = require('node:path'), zlib = require('node:zlib');
 
@@ -30,13 +31,21 @@ const rows = [
     return row(r, c);
   }),
 ];
+const sum = [
+  row(4, [str('B4', "용적률 80% 미만 \nQ'ty")]),
+  row(5, [str('B5', '구분'), str('C5', 'AS-IS'), str('D5', 'TO-BE')]),
+  row(6, [str('B6', '가상2호'), num('C6', 9, 'COUNTIF(표1[용적률(%)],"<80%")')]),
+  row(7, [str('B7', '가상호'), num('C7', 6, 'COUNTIF(표1[용적률(%)],"<80%")')]),
+];
+const sheet2 = `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="B4:D7"/><sheetData>${sum.join('')}</sheetData></worksheet>`;
 const sheet = `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><dimension ref="A1:T16"/><sheetData>${rows.join('')}</sheetData><tableParts count="1"><tablePart r:id="rId1"/></tableParts></worksheet>`;
 const files = {
-  '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/tables/table1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"/></Types>',
+  '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/tables/table1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml"/></Types>',
   '_rels/.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
-  'xl/workbook.xml': '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="가상호BE" sheetId="1" r:id="rId1"/></sheets></workbook>',
-  'xl/_rels/workbook.xml.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+  'xl/workbook.xml': '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="가상호BE" sheetId="1" r:id="rId1"/><sheet name="Summary" sheetId="2" r:id="rId2"/></sheets></workbook>',
+  'xl/_rels/workbook.xml.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/></Relationships>',
   'xl/worksheets/sheet1.xml': sheet,
+  'xl/worksheets/sheet2.xml': sheet2,
   'xl/worksheets/_rels/sheet1.xml.rels': '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/table" Target="../tables/table1.xml"/></Relationships>',
   'xl/tables/table1.xml': `<?xml version="1.0" encoding="UTF-8"?><table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="1" name="Table1" displayName="Table1" ref="A8:T15"><tableColumns count="20">${HEADER.map((h, i) => `<tableColumn id="${i + 1}" name="${esc(h)}"/>`).join('')}</tableColumns></table>`,
 };
