@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Phase 11-3 성능·메모리 · perf/phase11-measure
+- v2.4.1 대비(2회 중 좋은 값, Linux Chrome): 500랙 선택 524→44ms, 끌기 183→46, 확대 324→34, 저장 506→339, heap 11.8→7.3MB / 1000랙 선택 1367→95, 저장 1353→768. 56랙 편집 1회 저장만 82→~98ms(+15ms, 쓰기 후 읽기 검증 고정 비용 추정).
+- 실행취소 메모리(500랙): 재구축 7.3→20.5MB(200편집) 후 정체(600편집 18MB, 상한 60개·차분 저장) / v2.4.1 11.9→112MB.
+- 문서 docs/perf/2026-11-24-phase11.md. 페이지 오류 0.
+- 다음: 11-4 저장·자동 배치 독립 검토.
+
 ### 2026-11-24 Phase 11-2 기능 동등성 판정 · test/phase11-parity
 - docs/FEATURE_PARITY_MATRIX.md: F-001~F-041 VERIFIED(41/41), F-042 모바일 DEFERRED. 행마다 검사 파일 명시, 상태값 정리.
 - 보충 검사: original-spec(F-017), storage2 진단(F-031), smoke 버전 분리(F-036), offline-walk 외부 요청 0·오류 0(F-038), probe-budget 탐색 한도(F-040). src 변경·버그 없음.
