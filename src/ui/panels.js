@@ -4,6 +4,7 @@ import { esc } from '../cad/scene.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { metrics } from '../warehouse/metrics.js';
 import { scenarioSpace, scenarioDelta, shelfWeightedVolume } from '../metrics/space.js';
+import { aisleSettingIssues } from '../warehouse/aisles.js';
 import { rackRows, legend } from '../warehouse/racklist.js';
 import { loadState } from '../cad/scene.js';
 
@@ -36,6 +37,7 @@ export function createPanels(roots, { onFocus, onView }) {
     /** @param {{ layout, project, selected: Set<string>, warnings: object[] }} s */
     render({ layout, project, selected, warnings }) {
       const m = metrics(layout, project, { warnings });
+      m.warnings = [...m.warnings, ...aisleSettingIssues(layout, project.aisleRules)]; // C5: 설정 경고(비공간·비차단)
       lastWarnings = m.warnings;
         // 기준본 renderStats: 상단 KPI(kArea·kRacks·kFootprint·kWarnings)와 오른쪽 공간 지표(spaceMetrics).
       // D-058: '수량 기준 적재율 · 단위별'(kLoad) 대신 통로 비중·보관 불가 구역 비중(겹침 제외·창고 안쪽 면적 ÷ 전체 면적).
@@ -61,9 +63,15 @@ export function createPanels(roots, { onFocus, onView }) {
       k.remainArea.textContent = fmt(comp.remaining.area) + '㎡ · 도면 기준';
       const minA = x.minAisle, below = minA && minA.width < minA.target - 1e-9;
       const aisleText = minA ? fmt(minA.width, 3) : '—';
-      const aisleSub = minA ? `${minA.code} · ${below ? '⚠ 목표 ' + fmt(minA.target, 3) + 'm 미달' : '목표 ' + fmt(minA.target, 3) + 'm'}` : '통로 객체 없음';
+      const aisleWarn = x.aisleBelowStandard > 0 || x.aisleSettingIssues > 0;
+      const aisleSub = x.aisleBelowStandard > 0 ? `⚠ 기준 미달 ${x.aisleBelowStandard}개 · ${minA.code} 기준 ${fmt(minA.standard, 3)}m(${minA.standardLabel})`
+        : x.aisleSettingIssues > 0 ? `⚠ 주통로 기준 설정 확인 ${x.aisleSettingIssues}개`
+        : minA ? `${minA.code} · ${below ? '⚠ 목표 ' + fmt(minA.target, 3) + 'm 미달' : '목표 ' + fmt(minA.target, 3) + 'm'}` : '통로 객체 없음';
       k.minAisle.textContent = aisleText;
       k.minAisleSub.textContent = aisleSub;
+      const aisleStat = k.minAisle.closest('.stat');
+      aisleStat.classList.toggle('warn', aisleWarn);
+      aisleStat.title = '통로 단면 최소 폭. 기준 = max(통로 최소 확보 폭, 통로 종류 기준(왼쪽 통로 종류 기준에서 변경)). 참고 권장: 주통로 1.2m · 접근 통로 1.0m. 주통로 기준이 1.0m 미만이면 설정 경고';
       const dl = scenarioDelta(project, { key, m: x });
       const deltaText = !dl ? '—' : dl.empty ? `${dl.empty} 배치 비어 있음` : `랙 ${dl.racks > 0 ? '+' : dl.racks < 0 ? '−' : '±'}${Math.abs(dl.racks)} · 평균 용적률 ${signed(dl.avgVolume)}%p · 면적 사용률 ${signed(dl.areaUse)}%p`;
       const shelf = shelfWeightedVolume(layout, project.settings.heightPolicy ?? 'weightedMax');
