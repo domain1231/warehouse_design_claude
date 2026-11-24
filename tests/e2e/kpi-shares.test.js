@@ -13,7 +13,7 @@ let browser;
 before(async () => { browser = await chromium.launch({ headless: true, executablePath: process.env.WAREHOUSE_BROWSER_PATH || undefined }); });
 after(async () => { await browser?.close(); });
 
-test('상단 지표 6칸: 통로 비중·보관 불가 구역 비중 = 공간 지표 면적 ÷ 전체 면적, 적재율 칸 없음', async () => {
+test('상단 지표(D-058·D-059): 통로 비중·보관 불가 구역 비중 = 공간 지표 면적 ÷ 전체 면적, 적재율 칸 없음', async () => {
   const ctx = await browser.newContext({ offline: true, viewport: { width: 1920, height: 1080 } });
   const page = await ctx.newPage();
   const problems = [];
@@ -21,7 +21,7 @@ test('상단 지표 6칸: 통로 비중·보관 불가 구역 비중 = 공간 �
   await page.goto(fileUrl);
   await page.waitForFunction(() => window.__warehouseView);
   const labels = await page.$$eval('#topStats .stat small', (n) => n.map((e) => e.textContent));
-  assert.deepEqual(labels, ['전체 창고 면적', '현재 랙 수', '랙 면적 점유율', '통로 비중', '보관 불가 구역 비중', '공간 경고']);
+  assert.deepEqual(labels, ['전체 창고 면적', '현재 랙 수', '랙 면적 점유율', '통로 비중', '보관 불가 구역 비중', '보관 가능 잔여 비중', '최소 통로 폭', '공간 경고']);
   assert.equal(await page.locator('[data-testid=k-load]').count(), 0);
   const v = await page.evaluate(() => {
     const t = (id) => document.getElementById(id).textContent;
@@ -34,7 +34,7 @@ test('상단 지표 6칸: 통로 비중·보관 불가 구역 비중 = 공간 �
   assert.equal(v.aisle, ((num(v.aisleArea) / v.area) * 100).toFixed(1));
   assert.equal(v.blocked, ((num(v.blockedArea) / v.area) * 100).toFixed(1));
   const cols = await page.$eval('#topStats', (n) => getComputedStyle(n).gridTemplateColumns.split(' ').length);
-  assert.equal(cols, 6);
+  assert.equal(cols, 8); // D-059: 8칸
   assert.deepEqual(problems, []);
   await ctx.close();
 });
