@@ -44,7 +44,7 @@ export function autoMap(matrix, headerRow1) {
  * @param {{ matrix: any[][], headerRow1: number, mapping: Record<string, number>, cell: (addr: string) => any, resolutions?: Record<string, number[]>, formula?: (addr: string) => boolean, formulaText?: (addr: string) => string, tableRef?: string|null }} input
  * @returns {{ rows, racks, issues, duplicates, dataRows, referenceArea, area, dimensionConflicts }}
  */
-export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => undefined, resolutions = {}, formula = () => false, formulaText = () => '', tableRef = null }) {
+export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => undefined, resolutions = {}, formula = () => false, formulaText = () => '', tableRef = null, lowLocations = null }) {
   const issues = [], rows = [], seen = new Set(), racks = new Map();
   const add = (type, row, text) => issues.push({ type, row, text });
   for (const k of REQUIRED_FIELDS) if (map[k] === undefined || map[k] < 0) add('error', headerRow1, '필수 열 미지정: ' + FIELDS.find(([key]) => key === k)[1]);
@@ -163,6 +163,7 @@ export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => un
   const result = { rows, racks: [...racks.values()].filter((r) => !r.invalid), issues, duplicates, dataRows, referenceArea, area, dimensionConflicts };
   const excelSummary = readSummary(cell, formula, tableRef);
   if (excelSummary) excelSummary.qDivisor = qDivisorOf(matrix, headerRow1, formulaText);
+  if (excelSummary && lowLocations) Object.assign(excelSummary, { lowLocations: lowLocations.value, lowLocationsSource: lowLocations.source });
   if (excelSummary) { // 머리글이 맞을 때만(없으면 키 없음)
     result.excelSummary = excelSummary;
     // Excel 표는 거부된 행(형식 밖 로케이션·중복)도 센다. 대조용으로 모든 데이터 행을 숫자 변환만 해서 따로 보관한다.
@@ -204,4 +205,29 @@ export function readSummary(cell, formula, tableRef) {
   const cols = ['C', 'D', 'E', 'F', 'G', 'H'];
   const formulas = Object.fromEntries(cols.slice(1).map((c) => [c + '4', !!formula(c + '4')]));
   return { totalArea: sumNum(cell('C4')), areaUse: sumNum(cell('D4')), aisleShare: sumNum(cell('E4')), avgVolume: sumNum(cell('F4')), rackCount: sumNum(cell('G4')), idleRacks: sumNum(cell('H4')), lowLocations: null, formulas, tableRef: tableRef || null, qDivisor: null };
+}
+
+// C7: 별도 'Summary' 시트의 "80% 미만 Q'ty" 블록에서 방 시트('<방>BE'/'<방>AF')의 값을 읽는다. BE→AS-IS, AF→TO-BE. 못 찾으면 null.
+export function readLowLocations(book, sheetName) {
+  const m = /^(.*?)\s*(BE|AF)$/i.exec(String(sheetName ?? '').trim());
+  const sn = m && (book?.sheetNames ?? []).find((n) => n.trim().toLowerCase() === 'summary');
+  if (!sn) return null;
+  const cells = book.sheets[sn].cells, room = m[1].trim(), want = m[2].toUpperCase() === 'BE' ? 'as-is' : 'to-be';
+  const at = (c, r) => cells.get(encodeColLetter(c) + r);
+  const key = (v) => String(v ?? '').normalize('NFKC').replace(/\s+/g, '').toLowerCase();
+  const pos = (a) => { const x = /^([A-Z]+)(\d+)$/.exec(a); return [x[1].split('').reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1, Number(x[2])]; };
+  const head = [...cells].find(([, v]) => key(v).includes('80%미만'));
+  if (!head) return null;
+  const [hc, hr] = pos(head[0]);
+  for (let r = hr + 1; r <= hr + 4; r++) {
+    let gc = -1, vc = -1; // 가장 왼쪽 '구분'과 그 오른쪽에서 처음 나오는 AS-IS/TO-BE(옆 블록은 쓰지 않는다)
+    for (let c = Math.max(0, hc - 3); c <= hc + 8; c++) { const k = key(at(c, r)); if (gc < 0 && k === '구분') gc = c; else if (gc >= 0 && vc < 0 && k === want) vc = c; }
+    if (gc < 0 || vc < 0) continue;
+    for (let rr = r + 1; rr <= r + 60; rr++) {
+      if (key(at(gc, rr)) !== key(room)) continue;
+      const n = excelNumber(at(vc, rr));
+      return { value: typeof n === 'number' && Number.isFinite(n) ? n : null, source: `Summary!${encodeColLetter(vc)}${rr}` };
+    }
+  }
+  return null;
 }

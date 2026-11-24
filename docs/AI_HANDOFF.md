@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 C7 보완 — Summary 시트 80% 미만 대조(D-069) · feature/summary-low80
+- `readLowLocations`(src/excel/analyze.js), 대조 상자 행 '80% 미만 로케이션 (Summary 시트)'. 가상 fixture에 Summary 시트 추가.
+- 로컬: unit 211, golden 286, build·verify, e2e 4파일 11 PASS. 전체 E2E는 CI.
+
 ### 2026-11-24 최적화·디버그 4 · chore/optimize-debug-4
 - 성능: 500랙 랙 선택 106 → 55~65ms(alpha.9 45), 라벨 전환 301 → 207~237ms. 원인 면적 합집합 LRU 캐시 thrash, `AREA_CACHE_MAX` 16 → 64. `docs/perf/2026-11-24-trackc.md`.
 - 실데이터 스모크(운영 JSON 11/02 + 업무 Excel, 로컬·미커밋): 페이지 오류 0, NaN/undefined 표시 0, 저장·재열기 유지. 발견 1건 수정 — AFTER가 빈 배치일 때 비교표가 통로 비중 100% 등으로 표시 → '배치 없음', Δ 범례 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.'
