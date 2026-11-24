@@ -8,6 +8,10 @@
 ### 2026-11-24 영역 선택 '모든 객체'(D-072) · feature/marquee-all
 - #mSelectRule에 intersect-all·contain-all 추가(기본 랙만). 혼합 선택: 이동·삭제 전체, 회전·복제·그룹 편집 랙만, 삭제 확인문 종류별 개수.
 - UI parity 간극 24 → 25. 로컬: unit 234, golden 298, build·verify, e2e marquee-all 외 9파일 PASS.
+### 2026-11-24 방향키 화면 이동·대각선(D-071) · feature/keyboard-pan
+- 선택 없음: 방향키 화면 이동(Shift 3배, 대각선, 누르는 동안 연속), 멈출 때 viewport 1회 저장. 선택 있음: 기존 미세 이동 + 두 키 동시 대각선 한 명령.
+- `src/cad/keypan.js`(heldVector·panDelta·isArrow). 실제 키보드·터치패드 NOT RUN.
+- 로컬: unit 236, golden 298, build·verify, e2e keyboard-pan·edit·ui-parity·plan·left-tools 20 PASS.
 
 ### 2026-11-24 Excel 업데이트·병합 사용자 수정값 보존(D-070) · feature/update-keep-user-fields
 - 사용자 승인. 일치한 기존 랙을 바탕으로 Excel 유래 값(연결·선반·자재·원본 규격·정책상 설계 규격·위치)만 덮어씀. 블록·종류·사용자 속성·메모·용량·수량·단위 보존. 'new' 방식·위치 정책·규격 정책 불변. provenance는 위치 출처를 따라감(유지=기존, 재배치=자동 배치).
