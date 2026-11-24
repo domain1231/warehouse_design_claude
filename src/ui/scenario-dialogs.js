@@ -2,10 +2,10 @@
 import { buildScene, esc } from '../cad/scene.js';
 import { polygon } from '../geometry/polygons.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
-import { purposeCompare, scenarioSpace } from '../metrics/space.js';
+import { purposeCompare, scenarioSpace, compareBasis, compareBasisText } from '../metrics/space.js';
 import { rackDeltaMap, rackChangeList, changeListCsvRows, CHANGE_TYPE_NAMES, DELTA_BINS } from '../metrics/delta.js';
 import { legend } from '../warehouse/racklist.js';
-import { rackDiff, diffRows, compareRows, layoutChangeSummary, DIFF_CSV_HEADER } from '../warehouse/scenarios.js';
+import { rackDiff, diffRows, compareRows, layoutChangeSummary, setReferenceArea, DIFF_CSV_HEADER } from '../warehouse/scenarios.js';
 
 const racksOf = (l) => l.objects.filter((o) => o.kind === 'rack');
 const outline = (o, color, dash = '', w = 2) => `<polygon points="${polygon(o).map((q) => q.join(',')).join(' ')}" fill="none" stroke="${color}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke" style="stroke-width:${w}px"/>`;
@@ -131,7 +131,10 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     if (mode === 'delta') { q(md, '[data-plans]').hidden = true; drawDelta(p, d, vb, sc); }
     q(md, '[data-delta]').toggleAttribute('hidden', mode !== 'delta');
     q(md, '[data-delta-legend]').hidden = mode !== 'delta';
-    q(md, '[data-sources]').innerHTML = ['before', 'after'].map((k) => `<p class="muted"><b>${k.toUpperCase()}</b> · ${esc(sourceText(p, k))}</p>`).join('');
+    // C9(D-075): 두 시나리오의 총면적 기준을 맞춘다. 한쪽에만 Excel 총면적이 있으면 다른 쪽에 적용하는 버튼.
+    const cb = compareBasis(p), to = cb.from === 'before' ? 'after' : 'before', toLocked = to === 'before' && p.scenarioMeta.before.locked;
+    q(md, '[data-sources]').innerHTML = ['before', 'after'].map((k) => `<p class="muted"><b>${k.toUpperCase()}</b> · ${esc(sourceText(p, k))}</p>`).join('')
+      + `<p class="r-basis" data-testid="compare-basis">${esc(compareBasisText(cb))}${cb.from ? ` <button type="button" data-basis-apply data-testid="compare-basis-apply"${toLocked ? ' disabled title="BEFORE 잠금을 해제한 후 적용하세요."' : ''}>${cb.from.toUpperCase()} Excel 총면적 ${Math.round(cb.fromArea * 100) / 100}㎡를 ${to.toUpperCase()}에도 적용</button>` : ''}</p>`;
     q(md, '[data-purpose]').innerHTML = purposeHtml(p, d);
     q(md, '[data-metrics]').innerHTML = '<h3>세부 지표</h3>' + table(detailRows(p));
     const noBefore = !racksOf(p.scenarios.before).length;
@@ -139,6 +142,13 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     drawChangeTable();
   };
   q(md, '[data-mode]').addEventListener('change', drawCompare);
+  q(md, '[data-sources]').addEventListener('click', async (e) => {
+    if (!e.target.closest('[data-basis-apply]')) return;
+    const cb = compareBasis(getProject());
+    if (!cb.from) return;
+    const r = await apply('비교 총면적 기준 적용', (p) => setReferenceArea(p, cb.from === 'before' ? 'after' : 'before', cb.fromArea));
+    if (r?.ok) drawCompare(); else failed(r);
+  });
   q(md, '[data-rows]').addEventListener('change', (e) => {
     const f = e.target.closest('[data-change-filter]'), o = e.target.closest('[data-change-sort]');
     if (f) chg.filter = f.value; else if (o) chg.sort = o.value; else return;

@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.12 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C C9 BE/AF 면적 기준 통일(D-075) · feature/c9-area-basis (C8 위에 쌓음)
+- `compareBasis`·`compareBasisText`·`compareSpace`(space.js), `setReferenceArea`(scenarios.js), 검증기 `scenarioMeta[k].referenceArea`. purposeCompare·scenarioDelta가 비교 기준 사용.
+- 로컬: unit 249, golden 298, build·verify, e2e compare-basis(신규)·compare-purpose·compare-delta·compare-change-list·ui-parity·excel-summary-compare·scenarios PASS.
+- Track C C8~C10 완료. 다음: #101→#102→#103 순서 병합 후 alpha.13 여부 결정, Phase 11-5(사용자 확인)·Phase 12.
+
 ### 2026-11-24 Track C C8 공간 구성 5분해 + M12·M13(D-074) · feature/c8-composition-storage (C10 위에 쌓음)
 - M7 5분해(composition.emptyRack), M12 storable, M13 shelfFree(`shelfFreeVolume`). 비교표 9행, 막대 빈 랙 빗금(`.seg-empty`).
 - 로컬: unit 246, golden 298, build·verify, e2e compare-purpose·compare-delta·compare-change-list·ui-parity PASS. 706호 6.8%→12.9% 예시 파일 없음(NOT RUN).

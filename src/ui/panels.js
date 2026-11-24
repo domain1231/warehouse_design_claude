@@ -59,7 +59,7 @@ export function createPanels(roots, { onFocus, onView }) {
       k.racks.textContent = String(m.racks);
       // D-061(Track C C1 2단계): 공간 지표는 src/metrics/space.js 하나에서 계산한다. 면적 사용률·통로 비중은 ① Excel 방식(총면적 = Excel 입력값, 없으면 도면 전체).
       const key = project.settings.scenario, sc = project.scenarios, meta = project.scenarioMeta, rules = project.aisleRules;
-      const x = memo('space', [layout, meta?.[key]?.sourceInfo?.referenceArea, rules], () => scenarioSpace(project, key, layout));
+      const x = memo('space', [layout, meta?.[key]?.sourceInfo?.referenceArea, meta?.[key]?.referenceArea, rules], () => scenarioSpace(project, key, layout));
       const pct = (v, d = 1) => (v === null || v === undefined ? '—' : (v * 100).toFixed(d));
       const signed = (v, d = 1) => (v === null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v * 100).toFixed(d));
       const basisText = x.areaBasis === 'excel' ? `÷ ${fmt(x.totalArea)}㎡(Excel 총면적)` : `÷ ${fmt(x.totalArea)}㎡(도면 전체 · Excel 총면적 없음)`;
@@ -86,7 +86,7 @@ export function createPanels(roots, { onFocus, onView }) {
       const aisleStat = k.minAisle.closest('.stat');
       aisleStat.classList.toggle('warn', aisleWarn);
       aisleStat.title = '통로 단면 최소 폭. 기준 = max(통로 최소 확보 폭, 통로 종류 기준(왼쪽 통로 종류 기준에서 변경)). 참고 권장: 주통로 1.2m · 접근 통로 1.0m. 주통로 기준이 1.0m 미만이면 설정 경고';
-      const dl = memo('delta', [sc.before, sc.after, key, x, meta?.before?.sourceInfo?.referenceArea, meta?.after?.sourceInfo?.referenceArea, rules], () => scenarioDelta(project, { key, m: x }));
+      const dl = memo('delta', [sc.before, sc.after, key, x, meta?.before?.sourceInfo?.referenceArea, meta?.after?.sourceInfo?.referenceArea, meta?.before?.referenceArea, meta?.after?.referenceArea, rules], () => scenarioDelta(project, { key, m: x }));
       const deltaText = !dl ? '—' : dl.empty ? `${dl.empty} 배치 비어 있음` : `랙 ${dl.racks > 0 ? '+' : dl.racks < 0 ? '−' : '±'}${Math.abs(dl.racks)} · 평균 용적률 ${signed(dl.avgVolume)}%p · 면적 사용률 ${signed(dl.areaUse)}%p`;
       const policy = project.settings.heightPolicy ?? 'weightedMax';
       const shelf = memo('shelf', [layout, policy], () => shelfWeightedVolume(layout, policy));

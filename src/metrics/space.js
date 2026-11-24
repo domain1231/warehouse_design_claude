@@ -168,11 +168,36 @@ export function shelfFreeVolume(linkedRacks) {
 
 // ── C1 2단계: 화면 연결용 보조 함수 ──
 
-/** Excel 총면적(①). Excel 적용 시 sourceInfo.referenceArea로 저장된다(D-061). 없으면 null → ② 도면 전체. */
+/**
+ * Excel 총면적(①). Excel 적용 시 sourceInfo.referenceArea로 저장된다(D-061). 없으면 비교 화면에서 다른 쪽 값을 적용한
+ * scenarioMeta[key].referenceArea(C9, D-075)를 쓴다. 둘 다 없으면 null → ② 도면 전체.
+ */
 export const referenceAreaOf = (project, key) => {
-  const v = project?.scenarioMeta?.[key]?.sourceInfo?.referenceArea;
-  return Number.isFinite(v) && v > 0 ? v : null;
+  const m = project?.scenarioMeta?.[key];
+  for (const v of [m?.sourceInfo?.referenceArea, m?.referenceArea]) if (Number.isFinite(v) && v > 0) return v;
+  return null;
 };
+
+/**
+ * C9(D-075): BE/AF 비교는 같은 총면적 기준을 쓴다. 양쪽 모두 Excel 총면적이 있으면 ①(각자 값), 하나라도 없으면 양쪽 모두 ② 도면 전체.
+ * @returns { basis: 'excel'|'drawing', areas: {before, after}(spaceMetrics에 넘길 값), missing: ['BEFORE'|'AFTER'], from: 'before'|'after'|null(한쪽에만 있을 때 그쪽), fromArea }
+ */
+export function compareBasis(project) {
+  const rb = referenceAreaOf(project, 'before'), ra = referenceAreaOf(project, 'after');
+  if (rb && ra) return { basis: 'excel', areas: { before: rb, after: ra }, missing: [], from: null, fromArea: null };
+  const missing = [...(rb ? [] : ['BEFORE']), ...(ra ? [] : ['AFTER'])];
+  return { basis: 'drawing', areas: { before: null, after: null }, missing, from: rb ? 'before' : ra ? 'after' : null, fromArea: rb ?? ra ?? null };
+}
+
+const areaText = (v) => (Math.round(v * 100) / 100).toString();
+/** 비교 헤더 문구. */
+export function compareBasisText(cb) {
+  if (cb.basis === 'excel') return `면적 기준: Excel 총면적 (BEFORE ${areaText(cb.areas.before)}㎡ · AFTER ${areaText(cb.areas.after)}㎡)`;
+  return `면적 기준: 도면 전체 (${cb.missing.length === 2 ? '양쪽 모두 Excel 면적 없음' : `${cb.missing[0]}에 Excel 면적 없음`})`;
+}
+
+/** 비교용 시나리오 지표(compareBasis로 총면적 기준을 맞춤). */
+export const compareSpace = (project, key, layout = project.scenarios[key], cb = compareBasis(project)) => spaceMetrics(layout, { referenceArea: cb.areas[key], aisleRules: project.aisleRules });
 
 /** 보조 모드 '선반 가중' 평균 용적률(기존 앱 방식: 랙별 높이 활용률 평균, 높이 정책 설정 그대로). */
 export function shelfWeightedVolume(layout, policy = 'weightedMax') {
@@ -188,8 +213,11 @@ export function scenarioDelta(project, current = null) {
   const b = project.scenarios?.before, a = project.scenarios?.after;
   if (!b || !a) return null;
   if (!b.objects.length || !a.objects.length) return { empty: !b.objects.length ? 'BEFORE' : 'AFTER' };
-  const mb = current?.key === 'before' ? current.m : scenarioSpace(project, 'before');
-  const ma = current?.key === 'after' ? current.m : scenarioSpace(project, 'after');
+  // C9: 증감은 비교 기준(compareBasis)으로 계산한다. 현재 화면 지표는 기준이 같을 때만 재사용한다.
+  const cb = compareBasis(project);
+  const reuse = (k) => current?.key === k && cb.areas[k] === (current.m.areaBasis === 'excel' ? current.m.totalArea : null);
+  const mb = reuse('before') ? current.m : compareSpace(project, 'before', undefined, cb);
+  const ma = reuse('after') ? current.m : compareSpace(project, 'after', undefined, cb);
   const d = (x, y) => (x === null || y === null ? null : x - y);
   return { racks: ma.racks - mb.racks, avgVolume: d(ma.avgVolume, mb.avgVolume), areaUse: d(ma.areaUse, mb.areaUse), aisleShare: d(ma.aisleShare.excel, mb.aisleShare.excel) };
 }
@@ -204,7 +232,8 @@ export function purposeCompare(project) {
   const hasRack = (k) => project.scenarios[k].objects.some((o) => o.kind === 'rack');
   const ready = hasRack('before'), afterOk = hasRack('after');
   const NONE = '배치 없음';
-  const b = scenarioSpace(project, 'before'), a = scenarioSpace(project, 'after');
+  const cb = compareBasis(project);
+  const b = compareSpace(project, 'before', undefined, cb), a = compareSpace(project, 'after', undefined, cb);
   const dl = (s) => (!ready ? '기준 없음' : !afterOk ? '—' : s);
   const cnt = (x, y) => dl(signed(y - x));
   const loc = (m) => (m.locations ? `${m.lowLocations} / ${m.locations}` : '미확인');
@@ -220,7 +249,7 @@ export function purposeCompare(project) {
     row('M4', '80% 미만 로케이션', loc(b), loc(a), dl(signed(a.lowLocations - b.lowLocations)), '로케이션 용적률 Q < 80%인 로케이션 수 / 적치 로케이션 수 (Excel Summary C열). 품목코드가 없는 빈 로케이션은 뺌'),
     row('M8', '빈 랙', emp(b), emp(a), cnt(b.emptyRacks, a.emptyRacks), '연결 로케이션의 자재높이가 모두 0인 랙(평균 용적률·80% 미만에서 뺌). Excel 미연결 랙은 미확인으로 따로 셈'),
     row('M9', '저활용 랙', `${b.lowRacks}`, `${a.lowRacks}`, cnt(b.lowRacks, a.lowRacks), `랙 용적률 R < ${b.lowRackThreshold * 100}%인 랙 (빈 랙 제외)`),
-    row('M6', '통로 비중', pctText(b.aisleShare.excel), pctText(a.aisleShare.excel), dl(signedPp(b.aisleShare.excel, a.aisleShare.excel)), `① Excel 방식 = 1 − 면적 사용률 (총면적: Excel 입력값, 없으면 도면 전체). 도면 통로 기준 BEFORE ${pctText(b.aisleShare.drawing)} / AFTER ${pctText(a.aisleShare.drawing)}`),
+    row('M6', '통로 비중', pctText(b.aisleShare.excel), pctText(a.aisleShare.excel), dl(signedPp(b.aisleShare.excel, a.aisleShare.excel)), `① Excel 방식 = 1 − 면적 사용률. ${compareBasisText(cb)} — 한쪽이라도 Excel 면적이 없으면 양쪽 모두 도면 전체로 맞춤. 도면 통로 기준 BEFORE ${pctText(b.aisleShare.drawing)} / AFTER ${pctText(a.aisleShare.drawing)}`),
     row('M7', '공간 구성', cs(b), cs(a), dl('랙 ' + signedPp(rackAll(b), rackAll(a))), '랙(적치) > 빈 랙 > 보관 불가 > 통로 > 잔여 순으로 겹침을 한 번만 셈. 도면 전체 기준, 합계 100%. 차이의 랙은 빈 랙 포함'),
     row('M12', '보관 가능 합계', st(b), st(a), dl(signedPp(b.storable.share, a.storable.share)), '빈 랙 바닥면적 + 보관 가능 잔여(바닥). 도면 전체 기준'),
     row('M13', '선반 여유 용적', sf(b), sf(a), dl(b.shelfFree.share === null || a.shelfFree.share === null ? '—' : signed(Math.round((a.shelfFree.free - b.shelfFree.free) * 100) / 100, (x) => x.toFixed(2), 'm³')), '선반마다 (단 높이 − 그 선반 최대 자재높이) × 랙 가로 × 랙 세로, 빈 선반은 단 높이 전체. 괄호는 전체 선반 용적 대비. 가로 방향 여유는 데이터가 없어 넣지 않음'),

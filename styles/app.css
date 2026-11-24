@@ -192,6 +192,8 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .seg-blocked { background: #c0504d; }
 .seg-aisle { background: #8a96a3; }
 .seg-remain { background: #5fae5f; }
+.r-basis { margin: 4px 0; font-size: 12px; }
+.r-basis button { margin-left: 8px; }
 .seg-empty { background: repeating-linear-gradient(45deg, #4a90d9 0 3px, #1c3b5c 3px 6px); }
 .r-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
 .r-legend[hidden] { display: none; }

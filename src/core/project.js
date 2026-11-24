@@ -499,6 +499,7 @@ export function validateProject(p) {
     for (const n of ['originX', 'originY']) finite(l[n], n, -1e3, 1e3);
     for (const n of ['columnGap', 'rackGap', 'wallGap', 'aisleTarget']) finite(l[n], n, 0, 50);
     finite(l.rotation, '회전', -36e3, 36e3);
+    if (m.referenceArea !== undefined) finite(m.referenceArea, '비교 총면적', 0.001, 1e7); // C9(D-075) 재구축 확장 필드(v2.4.1은 무시)
     if (m.sourceInfo !== null) {
       const s = m.sourceInfo;
       if (!s || !['file', 'sheet', 'asOf', 'source', 'importedAt'].every((key) => typeof s[key] === 'string') || !dateOK(s.asOf) || !parsesAsTime(s.importedAt)) fail('배치 Excel 출처 정보 오류');

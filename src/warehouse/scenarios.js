@@ -119,6 +119,18 @@ export function compareRows(project) {
 }
 
 /** C2: 배치 변경 한 줄 요약(rackDiff 결과). 변경이 없으면 ''. */
+/**
+ * C9(D-075): 비교 화면에서 한쪽 Excel 총면적을 다른 쪽에도 적용한다. scenarioMeta[key].referenceArea에 저장(출처 정보는 만들지 않음).
+ * 그쪽에 Excel 총면적(sourceInfo.referenceArea)이 있으면 그 값이 우선한다. BEFORE 잠금이면 거부.
+ */
+export function setReferenceArea(project, key, area) {
+  if (!['before', 'after'].includes(key) || !(Number.isFinite(area) && area > 0)) return { ok: false, project, reason: '총면적 값 오류' };
+  if (key === 'before' && project.scenarioMeta?.before?.locked) return { ok: false, project, reason: 'BEFORE 원본 잠금 상태입니다. 잠금 해제 후 수정하세요.' };
+  const next = structuredClone(project);
+  next.scenarioMeta[key].referenceArea = area;
+  return { ok: true, project: next };
+}
+
 export function layoutChangeSummary(d) {
   const n = (t) => d.matched.filter((r) => r.types.includes(t)).length;
   const [m, r, s, a, x] = [n('moved'), n('rotated'), n('resized'), d.added.length, d.removed.length];
