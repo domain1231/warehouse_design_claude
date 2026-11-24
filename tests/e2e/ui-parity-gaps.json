@@ -20,6 +20,7 @@
  "all missing #toggleInfo",
  "all missing #toggleTools",
  "all missing 선택 객체 # › button › 선택 정보 닫기 ×",
+ "all text #mSelectRule = 일부 겹침 | 완전 포함",
  "all text #rCompareMode = BEFORE/AFTER 좌우 차이 | BEFORE 단독 | AFTER 단독 | 반투명 중첩 차이",
  "all text #vLabelMode = 랙 번호만 | 랙 번호 + 실제 적재율 | 상세 정보 | 최소 표시 · 선택 랙",
  "all text #wMode = 창고 내부 수용 우선 | 로케이션 순서 우선 | 통로 확보 우선 | 열 우선 최대 수용 · 미수용 외부 배치"

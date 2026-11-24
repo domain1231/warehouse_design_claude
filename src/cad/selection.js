@@ -19,16 +19,16 @@ export function clickSelect(selected, id, { toggle = false, add = false } = {}) 
 }
 
 /**
- * 영역 선택: 두 점(월드 m) 사각형과 랙을 비교한다. rule 'intersect'는 겹치면, 'contain'은 꼭짓점이 모두 안에 있으면 포함.
+ * 영역 선택: 두 점(월드 m) 사각형과 랙을 비교한다. rule 'intersect'는 겹치면, 'contain'은 꼭짓점이 모두 안에 있으면 포함. '-all' 접미 규칙은 랙 외 모든 객체도 대상.
  * 폭·깊이가 허용오차 이하인 사각형(클릭)은 아무것도 고르지 않는다. add면 이전 선택에 더한다.
  */
 export function marqueeSelect(objects, a, b, { rule = 'intersect', previous = [], add = false } = {}) {
   const rect = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(a.x - b.x), depth: Math.abs(a.y - b.y), rotation: 0 };
-  const ids = [];
+  const ids = [], all = rule.endsWith('-all'), contain = rule.startsWith('contain');
   if (rect.width > EPS && rect.depth > EPS) {
     for (const o of objects) {
-      if (o.kind !== 'rack') continue;
-      const inside = rule === 'contain'
+      if (!all && o.kind !== 'rack') continue;
+      const inside = contain
         ? polygon(o).every(([x, y]) => x >= rect.x - EPS && x <= rect.x + rect.width + EPS && y >= rect.y - EPS && y <= rect.y + rect.depth + EPS)
         : overlaps(rect, o);
       if (inside) ids.push(o.id);
