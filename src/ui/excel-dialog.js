@@ -6,6 +6,7 @@ import { readWorkbook, sheetMatrix, encodeCol } from '../excel/xlsx.js';
 import { FIELDS, detectHeaderRow, autoMap, analyzeSheet } from '../excel/analyze.js';
 import { readExcelConfig, structuresOutside } from '../excel/proposal.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
+import { summaryCompare, causeCsvTable } from '../excel/summary-compare.js';
 import { fixedText } from '../autolayout/fixed-columns.js';
 import { buildCandidates, reoptimize, candidateSummary } from '../autolayout/candidates.js';
 import { columnReoptimize, columnSafe, stopText, COLUMN_LIMITS } from '../autolayout/column.js';
@@ -29,7 +30,7 @@ const MARKUP = `<div class="ex-sticky"><button type="button" id="exClose" class=
 <details><summary>열별 시작 좌표 · 북/남 · 회전</summary><p class="muted">빈 항목은 일괄 설정을 따릅니다. 각 열의 좌표는 자동 계산 대신 지정한 값을 사용합니다.</p><div class="ex-scroll"><table><thead><tr><th>열</th><th>X</th><th>Y</th><th>첫 랙</th><th>회전</th></tr></thead><tbody id="exColumns"></tbody></table></div></details>
 <details><summary>기록 없는 번호의 랙 후보 생성</summary><label class="check"><input id="exEmpty" name="empty" type="checkbox">1번~최대 등록 번호 사이 누락 랙을 생성</label><div class="fields"><label>후보 폭 (m)<input id="exEmptyW" name="emptyW" value="1.2" type="number" min="0.01" step="0.01"></label><label>후보 깊이 (m)<input id="exEmptyD" name="emptyD" value="0.5" type="number" min="0.01" step="0.01"></label><label>후보 높이 (m)<input id="exEmptyH" name="emptyH" value="2" type="number" min="0.01" step="0.01"></label></div><p class="note">사용자가 선택한 후보이며 실존·빈 랙으로 확정하지 않습니다. 빈 선반·자재는 생성하지 않습니다.</p></details>
 <h3>3 / 적용 · 재불러오기 정책</h3><div class="fields"><label>생성 방식<select id="exMode" name="mode"><option value="new">선택한 배치 전체 교체</option><option value="merge">선택한 배치에 병합</option><option value="update">기존 랙 정보만 업데이트 (신규 미추가)</option></select></label><label>기존 객체 위치<select id="exKeep" name="keep"><option value="">병합/업데이트 시 선택 필요</option><option value="keep">수동 위치·회전 유지</option><option value="reflow">규칙에 따라 재배치</option></select></label><label>가져오기 기준일<input id="exDate" name="date" type="date"></label><label>출처<input id="exSource" name="source" value="사용자 제공 Excel"></label></div><label class="check"><input id="exRecordLayout" name="recordLayout" type="checkbox" checked data-record>기준일의 배치 이력도 저장</label><label class="check"><input id="exAllowWarnings" name="allowWarnings" type="checkbox"> 경고가 발생해도 확인 후 설계안 적용 허용</label><p class="note">사라진 랙은 자동 삭제하지 않고 ‘이번 파일 미등록’으로 표시합니다. 현재고와 과거 수량 이력을 만들거나 덮어쓰지 않습니다.</p></section></div>
-<h3>4 / 적용 전 미리보기</h3><div id="exPreviewStats" class="info" data-pstats data-testid="excel-pstats"></div>
+<h3>4 / 적용 전 미리보기</h3><div id="exPreviewStats" class="info" data-pstats data-testid="excel-pstats"></div><div data-testid="excel-summary-compare" class="ex-sumcmp" data-sumcmp hidden></div>
 <section id="wControls" class="w-box" data-testid="excel-cands"><h3>Excel 자동 배치 · v2.3.6</h3><div class="w-grid"><label>배치 방식<select id="wMode" name="autoMode"><option value="inside">창고 내부 수용 우선</option><option value="order">로케이션 순서 우선</option><option value="fixed">로케이션 열 고정 · 열·번호 순서 유지</option><option value="aisle">통로 확보 우선</option><option value="column">열 우선 최대 수용 · 미수용 외부 배치</option></select></label><label class="check"><input type="checkbox" id="wKeep" name="keepManual" checked>기존 수동 랙 위치 유지 (이전 자료의 미확인 위치 포함)</label><label class="check"><input type="checkbox" id="wRotate" name="allowRotation">자동 90° 회전 허용</label><label class="check"><input type="checkbox" id="wStructures" name="preserveStructures" checked>전체 교체 시 기존 구조물·보호 통로 유지</label><label>재최적화 대상<select id="wScope" data-scope data-testid="excel-scope"><option value="all">전체 랙</option><option value="boundary">경계 초과·대기 랙만</option><option value="collision">충돌·통로 침범 랙만</option><option value="new">신규 랙만</option><option value="selected">아래에서 선택한 랙만</option></select></label></div>
 <details id="clOptions" data-colonly hidden><summary>열 우선 고급 설정</summary><p>엄격한 열·번호 순서 유지. 기본값: 줄바꿈 OFF / 회전 OFF / 수동·잠금 보호 ON. 열 간 이격은 열 간격·통로 목표·전역 최소 간격 중 큰 값을 사용합니다.</p><label class="check"><input id="clWrap" name="allowWrap" type="checkbox">같은 열 내부 줄바꿈 허용</label><p>미수용 외부 배치: 오른쪽만 지원 · 원래 회전 유지 · 좌표 범위 초과 시 적용 불가</p></details>
 <details id="fxOptions" data-fixedonly hidden open><summary>로케이션 열 고정 설정</summary><p>열 순서와 열 안 번호 순서를 바꾸지 않습니다. 창고 치수와 랙 깊이로 열 사이 간격을 계산하고, 들어가지 않으면 랙을 옮기지 않고 부족한 길이를 알립니다. 북쪽 방향 0·90·180·270°에서 사용하며 열별 X·Y 지정은 무시합니다.</p><label>배치 축<select id="fxAxis" name="fixedAxis" data-testid="fixed-axis"><option value="auto" selected>자동 추천 (모든 형태 비교)</option><option value="column">열 배치(세로)</option><option value="row">행 배치(가로)</option></select></label><label>한 줄 열 수<select id="fxPerLine" name="fixedPerLine" data-testid="fixed-perline"><option value="1">1열</option><option value="2">2열 (로케이션 순서대로 이어 놓음)</option></select></label><label>시작 방향<select id="fxStart" name="fixedStart" data-testid="fixed-start"><option value="config">첫 랙 위치 설정대로</option><option value="zigzag">지그재그 (줄마다 반대)</option></select></label><label>통로 방식<select id="fxPairing" name="fixedPairing" data-testid="fixed-pairing"><option value="all">모든 줄 사이 통로</option><option value="pairs">등 맞댐 쌍 (두 열씩 등을 붙임)</option></select></label><label>열 사이 간격<select id="fxSpacing" name="fixedSpacing" data-testid="fixed-spacing"><option value="max">남는 폭을 통로에 고르게 나눔</option><option value="target">통로 목표 폭 그대로</option></select></label><label>통로 최대 폭(m)<input id="fxMaxAisle" name="fixedMaxAisle" type="number" step="0.001" min="0.3" max="50" value="1.5" data-testid="fixed-max-aisle" title="남는 폭을 통로에 고르게 나눌 때 통로가 이 폭을 넘지 않게 합니다. 남는 공간은 끝 벽 쪽 여유로 둡니다."></label><label>누락 번호<select id="fxGaps" name="fixedGaps" data-testid="fixed-gaps"><option value="pack">당겨 붙임 (빈자리 없음)</option><option value="keep">빈자리 비워 둠 (번호 줄 맞춤)</option></select></label><pre data-fixedplan data-testid="fixed-plan"></pre></details>
@@ -54,7 +55,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
   function analyze() {
     if (!state.book) return;
     const sheet = state.book.sheets[state.sheetName];
-    state.analysis = analyzeSheet({ matrix: state.matrix, headerRow1: Number($('[data-header]').value), mapping: state.mapping, cell: (a) => sheet.cells.get(a), resolutions: state.resolutions });
+    state.analysis = analyzeSheet({ matrix: state.matrix, headerRow1: Number($('[data-header]').value), mapping: state.mapping, cell: (a) => sheet.cells.get(a), resolutions: state.resolutions, formula: (a) => sheet.formulas?.has(a), formulaText: (a) => sheet.formulas?.get(a) ?? '', tableRef: sheet.tableRef });
     renderAnalysis();
   }
   function renderMap() {
@@ -110,7 +111,22 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
     }).join('');
     syncDirectionLabels();
   }
+  // C7: Excel Summary와 앱 행 기준 계산 대조(적용을 막지 않는다). 머리글이 없는 시트는 아무것도 그리지 않는다.
+  function renderSummaryCompare() {
+    const box = $('[data-sumcmp]'), a = state.analysis;
+    state.sumCmp = null;
+    box.hidden = !a?.excelSummary;
+    box.innerHTML = '';
+    if (!a?.excelSummary) return;
+    const w = getProject()?.scenarios?.[form().target.value]?.warehouse;
+    const res = state.sumCmp = summaryCompare(a.excelSummary, a.summaryRows ?? [], { ceilingMm: w?.ceiling > 0 ? w.ceiling * 1000 : null, shelfHeader: String(state.matrix[Number($('[data-header]').value) - 1]?.[state.mapping.shelfHeight] ?? '') });
+    if (!res.differs) { box.className = 'ex-sumcmp ok'; box.textContent = `✓ Excel Summary와 앱 계산 일치 (${res.rows.map((r) => r.id).join('·')})`; return; }
+    box.className = 'ex-sumcmp warn';
+    box.innerHTML = `<b>⚠ Excel Summary와 앱 계산이 ${res.differs}개 지표에서 다릅니다</b><table><thead><tr><th>지표</th><th>Excel Summary</th><th>앱 계산(행 기준)</th><th>차이</th><th>판정</th></tr></thead><tbody>${res.rows.map((r) => `<tr data-id="${r.id}"><td>${esc(r.label)}</td><td>${r.excelText}</td><td>${r.appText}</td><td>${r.diffText}</td><td>${r.same ? '✓' : '⚠ 다름'}</td></tr>`).join('')}</tbody></table><div>원인 후보(자동 감지)</div><ul data-testid="excel-summary-causes">${res.causes.map((c) => `<li>${esc(c.text)}${['directInput', 'unknown', 'q-divisor'].includes(c.id) ? '' : ` · ${c.count}행${c.sample ? ' (예: ' + esc(c.sample) + ')' : ''}`}</li>`).join('')}</ul><button type="button" data-testid="excel-summary-csv" data-sumcsv>차이 행 CSV</button><p class="muted">적용하면 화면 지표는 앱 계산값을 씁니다. Summary 값은 출처 정보에 참고로 기록합니다.</p>`;
+    box.querySelector('[data-sumcsv]').addEventListener('click', () => download('excel_summary_diff.csv', csvEncode(causeCsvTable(res)), 'text/csv;charset=utf-8'));
+  }
   function preview() {
+    renderSummaryCompare();
     state.proposal = null;
     state.applyError = '';
     state.note = '';

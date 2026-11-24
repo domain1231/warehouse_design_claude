@@ -60,6 +60,11 @@ for (const c of proposalCases) {
             assert.ok(Number.isFinite(v.sourceInfo.referenceArea) && v.sourceInfo.referenceArea > 0, `referenceArea must be finite > 0: ${v.sourceInfo.referenceArea}`);
             delete v.sourceInfo.referenceArea;
           }
+          // D-068: Excel Summary 값(excelSummary)도 재구축만 보관한다(기준본에 없음, 의도적 차이). 숫자·null만 허용.
+          if (v.sourceInfo && v.sourceInfo.excelSummary !== undefined) {
+            assert.ok(Object.values(v.sourceInfo.excelSummary).every((x) => x === null || Number.isFinite(x)), 'excelSummary must be numbers/null');
+            delete v.sourceInfo.excelSummary;
+          }
           for (const x of Object.values(v)) stripRef(x);
         };
         stripRef({ scenarioMeta, layoutBackups, layoutRevisions, importHistory });

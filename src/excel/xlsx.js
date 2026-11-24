@@ -92,7 +92,7 @@ export function encodeCol(c) {
 }
 
 function parseSheet(xml, shared) {
-  const cells = new Map();
+  const cells = new Map(), formulas = new Map(), sharedF = new Map(); // formulas: 수식이 든 칸 주소 → 수식 글자(C7 Summary 대조용, 공유 수식은 원본 글자)
   let maxR = -1, maxC = -1;
   const dim = /<dimension\b[^>]*ref="([A-Z]+\d+)(?::([A-Z]+\d+))?"/.exec(xml);
   if (dim) {
@@ -126,12 +126,18 @@ function parseSheet(xml, shared) {
       else if (t === 'd') v = raw;
       else v = Number(raw);
       cells.set(`${encodeCol(pos.c)}${pos.r + 1}`, v);
+      const fm = /<f\b([^>]*?)(?:\/>|>([\s\S]*?)<\/f>)/.exec(inner);
+      if (fm) {
+        const si = attr(`<f ${fm[1]}>`, 'si'), ft = fm[2] ? unescapeXml(fm[2]) : '';
+        if (si !== null && ft) sharedF.set(si, ft);
+        formulas.set(`${encodeCol(pos.c)}${pos.r + 1}`, ft || (si !== null ? sharedF.get(si) : '') || '');
+      }
       if (pos.r > maxR) maxR = pos.r;
       if (pos.c > maxC) maxC = pos.c;
     }
   }
   if (maxR >= SHEET_ROWS) maxR = SHEET_ROWS - 1;
-  return { cells, ref: { e: { r: Math.max(0, maxR), c: Math.max(0, maxC) } } };
+  return { cells, formulas, ref: { e: { r: Math.max(0, maxR), c: Math.max(0, maxC) } } };
 }
 
 /** CSV 문자열 → 셀(모두 문자열, raw). 빈 칸은 값 없음. 따옴표·줄바꿈 포함 칸 지원. */
@@ -187,6 +193,14 @@ export async function readWorkbook(name, buffer) {
   const target = new Map([...rels.matchAll(/<Relationship\b[^>]*>/g)].map((m) => [attr(m[0], 'Id'), attr(m[0], 'Target')]));
   const ssXml = await text('xl/sharedStrings.xml');
   const shared = ssXml ? [...ssXml.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>|<si\s*\/>/g)].map((m) => (m[1] === undefined ? '' : richText(m[1]))) : [];
+  const tableRefOf = async (sheetPath) => {
+    const dir = sheetPath.replace(/[^/]*$/, ''), file = sheetPath.slice(dir.length);
+    const sr = await text(`${dir}_rels/${file}.rels`);
+    const t = sr && [...sr.matchAll(/<Relationship\b[^>]*>/g)].map((m) => attr(m[0], 'Target')).find((x) => /tables\/[^/]*\.xml$/.test(x || ''));
+    if (!t) return null;
+    const tx = await text(t.startsWith('/') ? t.slice(1) : `xl/${t.replace(/^(\.\.\/)+/, '')}`);
+    return (tx && attr(/<table\b[^>]*>/.exec(tx)?.[0] ?? '', 'ref')) || null;
+  };
   const sheetNames = [], sheets = {};
   for (const m of wb.matchAll(/<sheet\b[^>]*\/?>/g)) {
     const nm = attr(m[0], 'name'), rid = attr(m[0], 'r:id');
@@ -197,6 +211,7 @@ export async function readWorkbook(name, buffer) {
     if (xml === null) continue;
     sheetNames.push(nm);
     sheets[nm] = parseSheet(xml, shared);
+    sheets[nm].tableRef = await tableRefOf(path); // 시트의 첫 Excel 표 범위(없으면 null)
   }
   if (!sheetNames.length) throw new WorkbookError('워크시트가 없습니다.');
   return { sheetNames, sheets };
