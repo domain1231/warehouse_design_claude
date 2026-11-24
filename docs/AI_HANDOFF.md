@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Phase 11-4 독립 검토 — 자동 배치·Excel 적용 수정 · fix/placement-review
+- 독립 검토(별도 맥락) 지적 9건 중 재현·수정 3건: 고정 열 장애물 회피가 위치 유지 랙(keep·잠금·수동 유지)까지 밀던 문제(유지 랙은 겹침 장애물로 취급, 열 밀림 전파 차단), placementMeta 없는 예전 랙 TypeError, 경계 초과 열 중복 기록.
+- 기준본과 동일해 유지: 업데이트 시 일부 사용자 필드 기본값 복귀, 유지 랙 사후 검증 없음, BEFORE 잠금 UI 전용 확인, rackDiff 중복 키, 유지 시 좌상단 기준 — 사용자 결정 대기.
+- 로컬: unit 221, golden 298, build·verify, e2e 4파일 12 PASS.
+
 ### 2026-11-24 Phase 11-2 기능 동등성 판정 · test/phase11-parity
 - docs/FEATURE_PARITY_MATRIX.md: F-001~F-041 VERIFIED(41/41), F-042 모바일 DEFERRED. 행마다 검사 파일 명시, 상태값 정리.
 - 보충 검사: original-spec(F-017), storage2 진단(F-031), smoke 버전 분리(F-036), offline-walk 외부 요청 0·오류 0(F-038), probe-budget 탐색 한도(F-040). src 변경·버그 없음.
