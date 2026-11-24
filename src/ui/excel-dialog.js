@@ -3,7 +3,7 @@
 import { esc } from '../cad/scene.js';
 import { formatNumber as fmt } from '../core/format.js';
 import { readWorkbook, sheetMatrix, encodeCol } from '../excel/xlsx.js';
-import { FIELDS, detectHeaderRow, autoMap, analyzeSheet } from '../excel/analyze.js';
+import { FIELDS, detectHeaderRow, autoMap, analyzeSheet, readLowLocations } from '../excel/analyze.js';
 import { readExcelConfig, structuresOutside } from '../excel/proposal.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
 import { summaryCompare, causeCsvTable } from '../excel/summary-compare.js';
@@ -55,7 +55,7 @@ export function createExcelDialog({ toast, getProject, nextId, applyProposal, do
   function analyze() {
     if (!state.book) return;
     const sheet = state.book.sheets[state.sheetName];
-    state.analysis = analyzeSheet({ matrix: state.matrix, headerRow1: Number($('[data-header]').value), mapping: state.mapping, cell: (a) => sheet.cells.get(a), resolutions: state.resolutions, formula: (a) => sheet.formulas?.has(a), formulaText: (a) => sheet.formulas?.get(a) ?? '', tableRef: sheet.tableRef });
+    state.analysis = analyzeSheet({ matrix: state.matrix, headerRow1: Number($('[data-header]').value), mapping: state.mapping, cell: (a) => sheet.cells.get(a), resolutions: state.resolutions, formula: (a) => sheet.formulas?.has(a), formulaText: (a) => sheet.formulas?.get(a) ?? '', tableRef: sheet.tableRef, lowLocations: readLowLocations(state.book, state.sheetName) });
     renderAnalysis();
   }
   function renderMap() {
