@@ -25,7 +25,7 @@ export function clipPolygon(poly, w, h) {
 
 // 같은 도형 묶음의 합집합 면적은 화면을 다시 그릴 때마다(라벨·색 전환 등) 반복 계산되므로 최근 결과를 기억한다.
 // 키는 도형을 정하는 값 전부(창고 크기, 위치·크기·회전·다각형 꼭짓점). 결과는 계산값과 같다.
-const AREA_CACHE = new Map(), AREA_CACHE_MAX = 16;
+const AREA_CACHE = new Map(), AREA_CACHE_MAX = 64;
 const shapeKey = (objects, w, h) => `${w},${h};` + objects.map((o) => `${o.x},${o.y},${o.width},${o.depth},${o.rotation},${o.vertices ? JSON.stringify(o.vertices) : ''}`).join(';');
 
 /** 객체들이 창고 안에서 차지하는 면적(겹친 부분은 한 번만). */

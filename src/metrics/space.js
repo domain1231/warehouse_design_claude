@@ -164,15 +164,17 @@ const signed = (n, f = (x) => String(x), unit = '') => (n > 0 ? '+' : n < 0 ? MI
 const signedPp = (b, a) => (b === null || a === null ? '—' : signed(Math.round((a - b) * 1000) / 10, (x) => x.toFixed(1), '%p'));
 
 export function purposeCompare(project) {
-  const ready = project.scenarios.before.objects.some((o) => o.kind === 'rack');
+  const hasRack = (k) => project.scenarios[k].objects.some((o) => o.kind === 'rack');
+  const ready = hasRack('before'), afterOk = hasRack('after');
+  const NONE = '배치 없음';
   const b = scenarioSpace(project, 'before'), a = scenarioSpace(project, 'after');
-  const dl = (s) => (ready ? s : '기준 없음');
+  const dl = (s) => (!ready ? '기준 없음' : !afterOk ? '—' : s);
   const cnt = (x, y) => dl(signed(y - x));
   const loc = (m) => (m.locations ? `${m.lowLocations} / ${m.locations}` : '미확인');
   const emp = (m) => `${m.emptyRacks}` + (m.unknownRacks > 0 ? ` (미확인 ${m.unknownRacks})` : '');
   const cs = (m) => { const c = m.composition, p = (k) => pctText(c[k].share); return `랙 ${p('rack')} · 보관 불가 ${p('unavailable')} · 통로 ${p('aisle')} · 잔여 ${p('remaining')}`; };
   const aw = (m) => (m.minAisle ? `${m.minAisle.width.toFixed(3)}m` + (m.minAisle.code ? ` (${m.minAisle.code})` : "") : '통로 없음');
-  const row = (id, label, before, after, delta, tip) => ({ id, label, before, after, delta, tip });
+  const row = (id, label, before, after, delta, tip) => ({ id, label, before: ready ? before : NONE, after: afterOk ? after : NONE, delta, tip });
   return [
     row('M3', '평균 용적률', pctText(b.avgVolume), pctText(a.avgVolume), dl(signedPp(b.avgVolume, a.avgVolume)), '로케이션 용적률 Q = 자재높이 ÷ 단 높이 → 랙 용적률 R = 같은 랙 Q 평균 → 평균 용적률 = R의 평균 (Excel Summary F4)'),
     row('M4', '80% 미만 로케이션', loc(b), loc(a), dl(signed(a.lowLocations - b.lowLocations)), '로케이션 용적률 Q < 80%인 로케이션 수 (Excel Summary C열)'),

@@ -64,3 +64,24 @@ test('Δ 지도: 기본 모드·구간·라벨·이동 외곽선·모드 전환'
   assert.deepEqual(problems, []);
   await ctx.close();
 });
+
+test('AFTER 배치가 비면: 목적 지표 AFTER 칸 배치 없음·Δ 범례 안내', async () => {
+  const ctx = await browser.newContext({ offline: true, viewport: { width: 1920, height: 1080 } });
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(e.message));
+  page.on('dialog', (d) => d.accept());
+  await page.goto(fileUrl);
+  await page.waitForFunction(() => window.__warehouseView && document.querySelector('[data-testid=plan] g[data-id]'));
+  await page.evaluate(() => window.__warehouseSession.apply('AFTER 비우기', (P) => { P.scenarios.after.objects = []; return { ok: true, project: P }; }));
+  await click(page, 'scenario-compare');
+  const rows = page.locator('[data-testid=compare-purpose] tr[data-metric]');
+  for (let i = 0; i < await rows.count(); i++) {
+    const c = await rows.nth(i).locator('td').allTextContents();
+    assert.equal(c[2], '배치 없음');
+    assert.equal(c[3], '—');
+  }
+  assert.equal(await page.locator('[data-testid=compare-delta-legend]').textContent(), 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.');
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
