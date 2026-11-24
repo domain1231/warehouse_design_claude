@@ -246,7 +246,7 @@ export function buildProposal(project, analysis, c, { nextId, filename = '', she
   for (const o of racksOf(p.layout)) {
     const b = prior.get(o.id);
     o.placementMeta = clone(b?.placementMeta || { manualEdited: false, positionLocked: false, waiting: false, editedAt: null });
-    if (b && (b.placementMeta.positionLocked || (c.autoPlacement.keepManual && b.placementMeta.manualEdited !== false))) {
+    if (b && (b.placementMeta?.positionLocked || (c.autoPlacement.keepManual && b.placementMeta?.manualEdited !== false))) {
       o.x = b.x;
       o.y = b.y;
       o.rotation = b.rotation;

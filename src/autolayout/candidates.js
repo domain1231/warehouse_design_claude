@@ -244,14 +244,15 @@ export const OBSTACLE_KINDS = ['wall', 'column', 'blocked', 'door', 'aisle'];
  * 창고 길이를 넘으면 그대로 두고 경계 초과로 표시된다. 입력 layout을 직접 고친다.
  * @returns {{ moved: number, columns: string[], blocked: string[] }}
  */
-export function avoidObstacles(layout, { axes, targets, keys, clearance }) {
-  const obstacles = layout.objects.filter((o) => OBSTACLE_KINDS.includes(o.kind));
+export function avoidObstacles(layout, { axes, targets, keys, clearance, frozen = new Set() }) {
+  const isFrozen = (o) => frozen.has(o.id) || !!o.placementMeta?.positionLocked;
+  const obstacles = layout.objects.filter((o) => OBSTACLE_KINDS.includes(o.kind) || (o.kind === 'rack' && isFrozen(o)));
   const res = { moved: 0, columns: [], blocked: [] };
-  if (!obstacles.length) return res;
+  if (!layout.objects.some((o) => OBSTACLE_KINDS.includes(o.kind))) return res;
   const dot = (p, u) => p[0] * u[0] + p[1] * u[1];
   const byCol = new Map();
-  for (const o of layout.objects) if (o.kind === 'rack' && o.excel && keys.has(o.excel.key) && !o.placementMeta?.positionLocked) byCol.set(o.excel.column, [...(byCol.get(o.excel.column) ?? []), o]);
-  const hits = (o) => obstacles.filter((b) => overlaps(o, b) || gap(o, b) + EPS < clearance);
+  for (const o of layout.objects) if (o.kind === 'rack' && o.excel && keys.has(o.excel.key) && !isFrozen(o)) byCol.set(o.excel.column, [...(byCol.get(o.excel.column) ?? []), o]);
+  const hits = (o) => obstacles.filter((b) => overlaps(o, b) || (b.kind !== 'rack' && gap(o, b) + EPS < clearance));
   for (const [col, list] of byCol) {
     const t = targets[col];
     if (!t) continue;
@@ -267,7 +268,7 @@ export function avoidObstacles(layout, { axes, targets, keys, clearance }) {
         const far = Math.max(...hs.flatMap((b) => polygon(b).map((p) => dot(p, D))));
         const push = Math.max(1e-3, far + clearance - near);
         o.x += D[0] * push; o.y += D[1] * push; shift += push; touched = true; res.moved++;
-        if (guard === 63) res.blocked.push(col);
+        if (guard === 63 && !res.blocked.includes(col)) res.blocked.push(col);
       }
     }
     if (touched) res.columns.push(col);
@@ -280,7 +281,10 @@ function buildFixedOne(project, analysis, c, opts, pick) {
   const proposal = buildProposal(project, analysis, fc.config, opts);
   const f = c.autoPlacement.fixedColumns;
   const keys = new Set(analysis.racks.filter((r) => r.floor === c.floor).map((r) => r.key));
-  fc.info.obstacles = avoidObstacles(proposal.layout, { axes: fc.config.fixedLayout.axes, targets: fc.config.fixedLayout.targets, keys, clearance: Math.max(c.wallGap, project.settings.minGap || 0) });
+  // 위치를 유지해야 하는 랙(proposal.js 가 기존 좌표를 복원한 랙)은 밀지 않고 장애물로 취급한다.
+  const prior = new Map(project.scenarios[c.target].objects.map((o) => [o.id, o]));
+  const frozen = new Set(proposal.layout.objects.filter((o) => { const b = o.kind === 'rack' && prior.get(o.id); return b && ((c.mode !== 'new' && c.keep === 'keep') || b.placementMeta?.positionLocked || (c.autoPlacement.keepManual && !project.metadata.sample && b.placementMeta?.manualEdited !== false)); }).map((o) => o.id));
+  fc.info.obstacles = avoidObstacles(proposal.layout, { axes: fc.config.fixedLayout.axes, targets: fc.config.fixedLayout.targets, keys, frozen, clearance: Math.max(c.wallGap, project.settings.minGap || 0) });
   fc.info.obstacleCount = proposal.layout.objects.filter((o) => OBSTACLE_KINDS.includes(o.kind)).length;
   // 실제 쓴 가장 좁은 열 간격(등 맞댐이면 등 간격)을 설계 간격으로 기록한다. 기준본 간격 검사는 랙 간격을 모든 랙 쌍에 적용하므로
   // 등 맞댐이면 랙 간격 기록값도 등 간격 이하로 둔다(같은 열 안 실제 간격은 사용자 값 그대로 생성). 통로 목표는 사용자 값 그대로.
