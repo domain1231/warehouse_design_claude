@@ -29,7 +29,9 @@ test('f.text()가 AbortError여도 FileReader로 다시 읽어 교체한다', as
   const json = await page.evaluate(() => { const p = structuredClone(window.__warehouseSession.state.project); p.metadata.name = '가상 불러오기 시험'; return JSON.stringify(p); });
   await page.evaluate(() => { File.prototype.text = () => Promise.reject(new DOMException('The operation was aborted.', 'AbortError')); });
   await page.setInputFiles('#jsonIn', { name: 'virtual.json', mimeType: 'application/json', buffer: Buffer.from(json) });
-  if (await page.locator('[data-testid=replace-save]').isVisible().catch(() => false)) await page.click('[data-testid=replace-save]');
+  // 교체 확인 창은 파일을 읽은 뒤에 열린다. 창이 열리거나(미저장 상태) 바로 교체될 때(저장됨 상태: confirm 자동 수락)까지 기다린다.
+  await page.waitForFunction(() => document.querySelector('[data-testid=replace-dialog]')?.open || window.__warehouseSession.state.project.metadata.name === '가상 불러오기 시험');
+  if (await page.evaluate(() => !!document.querySelector('[data-testid=replace-dialog]')?.open)) await page.click('[data-testid=replace-save]');
   await page.waitForFunction(() => window.__warehouseSession.state.project.metadata.name === '가상 불러오기 시험' && window.__warehouseSession.state.status === 'saved');
   assert.deepEqual(page.problems, []);
   await ctx.close();
