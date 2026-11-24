@@ -6,6 +6,7 @@
 // 면적·통로 계열(M5~M7)은 총면적 기준을 고를 수 있다: ① Excel 입력 순 바닥면적(기본) ② 도면 전체(가로×세로).
 import { unionArea } from '../warehouse/metrics.js';
 import { aisleReviewRows } from '../warehouse/aisles.js';
+import { heightUtilization } from '../warehouse/appearance.js';
 
 export const LOW_LOCATION_RATIO = 0.8; // M4 기준(Summary C열 '용적률 80% 미만')
 export const LOW_RACK_RATIO = 0.5; // M9 기본 기준
@@ -120,4 +121,32 @@ export function spaceMetrics(layout, { referenceArea = null, lowRack = LOW_RACK_
     minAisle: minAisle ? { code: minAisle.code, width: minAisle.width, target: minAisle.target, min: minAisle.min } : null, // M11
     perRack,
   };
+}
+
+// ── C1 2단계: 화면 연결용 보조 함수 ──
+
+/** Excel 총면적(①). Excel 적용 시 sourceInfo.referenceArea로 저장된다(D-061). 없으면 null → ② 도면 전체. */
+export const referenceAreaOf = (project, key) => {
+  const v = project?.scenarioMeta?.[key]?.sourceInfo?.referenceArea;
+  return Number.isFinite(v) && v > 0 ? v : null;
+};
+
+/** 보조 모드 '선반 가중' 평균 용적률(기존 앱 방식: 랙별 높이 활용률 평균, 높이 정책 설정 그대로). */
+export function shelfWeightedVolume(layout, policy = 'weightedMax') {
+  const v = layout.objects.filter((o) => o.kind === 'rack').map((o) => heightUtilization(o, policy)).filter((x) => x !== null && Number.isFinite(x));
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length / 100 : null;
+}
+
+/** 시나리오 지표(BEFORE·AFTER 각각 자기 Excel 총면적 기준). */
+export const scenarioSpace = (project, key, layout = project.scenarios[key]) => spaceMetrics(layout, { referenceArea: referenceAreaOf(project, key) });
+
+/** BEFORE→AFTER 증감(AFTER − BEFORE). 한쪽 배치가 비면 { empty: 'BEFORE'|'AFTER' }. */
+export function scenarioDelta(project, current = null) {
+  const b = project.scenarios?.before, a = project.scenarios?.after;
+  if (!b || !a) return null;
+  if (!b.objects.length || !a.objects.length) return { empty: !b.objects.length ? 'BEFORE' : 'AFTER' };
+  const mb = current?.key === 'before' ? current.m : scenarioSpace(project, 'before');
+  const ma = current?.key === 'after' ? current.m : scenarioSpace(project, 'after');
+  const d = (x, y) => (x === null || y === null ? null : x - y);
+  return { racks: ma.racks - mb.racks, avgVolume: d(ma.avgVolume, mb.avgVolume), areaUse: d(ma.areaUse, mb.areaUse), aisleShare: d(ma.aisleShare.excel, mb.aisleShare.excel) };
 }

@@ -53,6 +53,12 @@ for (const c of proposalCases) {
         const r = applyExcelProposal(p, last, { filename: 'synthetic-basic.xlsx', sheet: '자재 목록', analysis: JSON.parse(JSON.stringify(a)), acknowledged: true }, { nextId, now: () => '2026-11-15T00:00:00.000Z' });
         if (r.ok) p = validateProject(r.project);
         const { scenarios, scenarioMeta, locationLayout, layoutBackups, layoutRevisions, importHistory, excelSnapshots, layoutSnapshots, editing, settings, metadata, autoPlacement } = JSON.parse(JSON.stringify(p));
+        // D-061: 재구축은 Excel 총면적(referenceArea)을 sourceInfo에 추가로 저장한다(기준본에 없음, 의도적 차이).
+        for (const m of Object.values(scenarioMeta || {})) {
+          const ra = m?.sourceInfo?.referenceArea;
+          if (ra !== undefined) assert.ok(Number.isFinite(ra) && ra > 0, `referenceArea must be finite > 0: ${ra}`);
+          if (m?.sourceInfo) delete m.sourceInfo.referenceArea;
+        }
         out.push({ applied: r.ok, project: { scenarios, scenarioMeta, locationLayout, layoutBackups, layoutRevisions, importHistory, excelSnapshots, layoutSnapshots, selection: [editing.selectedRackIds, editing.selectionScenario], scenario: settings.scenario, sample: metadata.sample, autoSettings: autoPlacement.settings, autoHistory: autoPlacement.history.map((h) => ({ ...h, fingerprint: h.fingerprint === scanLayout(h.layout, p).fingerprint })) } });
         continue;
       }

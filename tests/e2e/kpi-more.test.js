@@ -1,4 +1,4 @@
-// D-059: 상단 보관 가능 잔여 비중·최소 통로 폭, 오른쪽 공간 지표 5줄(잔여 비중·통로:랙 면적비·최소 통로 폭·BEFORE→AFTER 증감·평균 용적률).
+// D-059·D-061: 오른쪽 공간 지표(모듈 src/metrics/space.js) — 평균 용적률(Excel F4 방식, 선반 가중 보조), 80% 미만, 빈·저활용, 유휴, 공간 구성, BEFORE→AFTER 증감.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -14,8 +14,13 @@ before(async () => { browser = await chromium.launch({ headless: true, executabl
 after(async () => { await browser?.close(); });
 
 const rows = (page) => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#spaceMetrics .metricline')].map((r) => [r.children[0].textContent, r.children[1].textContent])));
+const repaint = async (page) => {
+  const cur = await page.evaluate(() => window.__warehouseSession.state.project.settings.scenario);
+  await page.locator(`[data-testid=scenario-${cur === 'after' ? 'before' : 'after'}]`).click();
+  await page.locator(`[data-testid=scenario-${cur}]`).click();
+};
 
-test('추가 공간 지표: 상단 8칸·오른쪽 5줄, 값 일치, BEFORE→AFTER 증감이 편집에 따라 바뀐다', async () => {
+test('오른쪽 공간 지표: 줄 구성, 평균 용적률 = 가상 Excel 높이로 계산한 F4, BEFORE→AFTER 증감이 편집에 따라 바뀐다', async () => {
   const ctx = await browser.newContext({ offline: true, viewport: { width: 1920, height: 1080 } });
   const page = await ctx.newPage();
   const problems = [];
@@ -23,31 +28,33 @@ test('추가 공간 지표: 상단 8칸·오른쪽 5줄, 값 일치, BEFORE→AF
   page.on('dialog', (d) => d.accept());
   await page.goto(fileUrl);
   await page.waitForFunction(() => window.__warehouseView);
-  const labels = await page.$$eval('#topStats .stat small', (n) => n.map((e) => e.textContent));
-  assert.deepEqual(labels, ['전체 창고 면적', '현재 랙 수', '랙 면적 점유율', '통로 비중', '보관 불가 구역 비중', '보관 가능 잔여 비중', '최소 통로 폭', '공간 경고']);
   let r = await rows(page);
-  for (const k of ['보관 가능 잔여 비중', '통로 : 랙 면적비', '최소 통로 폭', 'BEFORE→AFTER 증감', '평균 용적률']) assert.ok(k in r, k);
-  const area = Number(await page.textContent('#kArea'));
-  const remain = Number(r['중복 제외 잔여 면적'].replace('㎡', ''));
-  assert.equal(await page.textContent('#kRemainShare'), ((remain / area) * 100).toFixed(1));
-  assert.equal(r['보관 가능 잔여 비중'], ((remain / area) * 100).toFixed(1) + '%');
-  const aisle = Number(r['통로 / 작업 구역'].replace('㎡', '')), rack = Number(r['랙 면적 합계'].replace('㎡', ''));
-  if (rack > 0) assert.ok(Math.abs(Number(r['통로 : 랙 면적비']) - aisle / rack) < 0.01);
-  assert.match(r['평균 용적률'], /미확인|%/, '용적률 표시(가상 샘플은 Excel 높이 정보 없음)');
+  for (const k of ['평균 용적률', '80% 미만 로케이션', '빈 랙 · 저활용 랙', '유휴 공간 랙', '공간 구성', '통로 : 랙 면적비', '최소 통로 폭', 'BEFORE→AFTER 증감']) assert.ok(k in r, k);
 
-  // AFTER에서 랙 하나를 지우면 증감의 랙 수가 −1 만큼 바뀐다
+  // 가상 Excel 높이: 랙 2개에 로케이션을 붙인다(R = 0.5, 0.9 → F4 70.0%, 80% 미만 2/4, 저활용 0)
   await page.locator('[data-testid=scenario-after]').click();
   await page.waitForFunction(() => window.__warehouseSession.state.project.settings.scenario === 'after');
+  await page.evaluate(() => window.__warehouseSession.apply('가상 높이', (P) => {
+    const racks = P.scenarios.after.objects.filter((o) => o.kind === 'rack');
+    const mk = (o, key, ps) => { o.excel = { key, floor: '7F', column: 'Z', rackNumber: 1, building: '가상', shelves: [{ level: 1, key: key + '-1', items: ps.map((p, i) => ({ location: `${key}-1-${i + 1}`, shelfHeight: 1000, materialHeight: p, rackHeight: 2000 })) }] }; };
+    mk(racks[0], '7F-Z-1', [400, 600]);
+    mk(racks[1], '7F-Z-2', [800, 1000]);
+    return { ok: true, project: P };
+  }));
+  await repaint(page);
+  await page.waitForFunction(() => /70\.0%/.test(document.getElementById('spaceMetrics').textContent));
+  r = await rows(page);
+  assert.match(r['평균 용적률'], /^70\.0% 2\/\d+랙/);
+  assert.match(r['80% 미만 로케이션'], /^2 \/ 4/);
+  assert.match(r['유휴 공간 랙'], /천장 높이 미입력|^\d+/);
+
+  // AFTER 랙 하나 삭제 → 증감 랙 수가 바뀐다
   const n = await page.evaluate(() => { const P = window.__warehouseSession.state.project; return { b: P.scenarios.before.objects.filter((o) => o.kind === 'rack').length, a: P.scenarios.after.objects.filter((o) => o.kind === 'rack').length }; });
   if (n.a > 0 && n.b > 0) {
-    const d0 = (await rows(page))['BEFORE→AFTER 증감'];
-    await page.evaluate(() => window.__warehouseSession.apply('가상 삭제', (P) => { const i = P.scenarios.after.objects.findIndex((o) => o.kind === 'rack'); P.scenarios.after.objects.splice(i, 1); return { ok: true, project: P }; }));
-    // 시험용 직접 수정(apply)은 화면을 다시 그리지 않으므로 시나리오를 바꿔 다시 그린다
-    await page.locator('[data-testid=scenario-before]').click();
-    await page.locator('[data-testid=scenario-after]').click();
-    await page.waitForFunction((d) => document.querySelectorAll('#spaceMetrics .metricline')[7]?.children[1].textContent !== d, d0);
+    await page.evaluate(() => window.__warehouseSession.apply('가상 삭제', (P) => { const i = P.scenarios.after.objects.findLastIndex((o) => o.kind === 'rack'); P.scenarios.after.objects.splice(i, 1); return { ok: true, project: P }; }));
+    await repaint(page);
     const want = n.a - 1 - n.b;
-    assert.match((await rows(page))['BEFORE→AFTER 증감'], new RegExp('^랙 ' + (want > 0 ? '\\+' : want < 0 ? '−' : '±') + Math.abs(want) + ' '));
+    await page.waitForFunction((w) => new RegExp('^랙 ' + w).test([...document.querySelectorAll('#spaceMetrics .metricline')].find((x) => x.children[0].textContent === 'BEFORE→AFTER 증감').children[1].textContent), (want > 0 ? '\\+' : want < 0 ? '−' : '±') + Math.abs(want));
   }
   assert.deepEqual(problems, []);
   await ctx.close();

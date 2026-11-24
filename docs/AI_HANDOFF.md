@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C1 2단계 화면 단일화(D-061) · feature/space-metrics-c1b
+- 상단·오른쪽 공간 지표를 `src/metrics/space.js`로 연결, ① Excel 방식 기본(면적 사용률·통로 비중), Excel 총면적 `sourceInfo.referenceArea` 저장. `space-kpi.js` 삭제.
+- 검사: e2e `kpi-shares`·`kpi-more` 재작성, 단위 `excel-reference-area.test.js`. 로컬: 운영 JSON + 706호BE 업데이트 → 130.5 저장·44.0%·58.4%.
+- 다음: C2(비교표 재구성).
+
 ### 2026-11-24 Track C · C1 1단계 지표 모듈(D-060) · feature/space-metrics-c1
 - `src/metrics/space.js`(M1~M11 순수 함수) + 골든 테스트 `tests/unit/space-golden.test.js`(가상 데이터셋, GT 8건 PASS).
 - 로컬: 업무 Excel 706호 Summary 완전 일치, 운영 JSON BEFORE 평균 용적률 = F4. 다른 호실 Summary 차이는 Excel 표 범위 문제로 판단(C7에서 표시).
