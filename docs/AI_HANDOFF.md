@@ -9,6 +9,10 @@
 - docs/FEATURE_PARITY_MATRIX.md: F-001~F-041 VERIFIED(41/41), F-042 모바일 DEFERRED. 행마다 검사 파일 명시, 상태값 정리.
 - 보충 검사: original-spec(F-017), storage2 진단(F-031), smoke 버전 분리(F-036), offline-walk 외부 요청 0·오류 0(F-038), probe-budget 탐색 한도(F-040). src 변경·버그 없음.
 - 다음: 11-3 성능·메모리(0~1000랙, 실행취소 누적), 11-4 저장·자동 배치 독립 검토.
+### 2026-11-24 Phase 11-1 Golden 마무리 · test/phase11-golden
+- G3(Excel 분석, CSV·XLSX 2건)·G4(자동 배치 10건: inside·order·aisle·column nowrap/wrap, 30×20·10×10)를 기준본 Golden Master와 정확히 비교 — 차이 0. `pending.test.js` 삭제, golden todo 0(298 PASS).
+- fixture: `fixtures/excel/sample-inventory.*`(기준본 생성 가상 자료).
+- 다음: 11-2 기능 동등성 매트릭스 VERIFIED 판정.
 
 ### 2026-11-24 랙 선택 성능 — 공간 지표 메모 · perf/select-memo
 - panels.js 단일 슬롯 메모(배치 객체 동일성 + 값 의존성). 500랙 선택 중앙값 약 52ms(수정 전 55~65, Track C 전 45), 라벨 전환 약 200ms.
