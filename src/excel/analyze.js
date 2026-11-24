@@ -163,6 +163,8 @@ export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => un
   const result = { rows, racks: [...racks.values()].filter((r) => !r.invalid), issues, duplicates, dataRows, referenceArea, area, dimensionConflicts };
   const excelSummary = readSummary(cell, formula, tableRef);
   if (excelSummary) excelSummary.qDivisor = qDivisorOf(matrix, headerRow1, formulaText);
+  // C10: F4가 AVERAGEIF(…,">0")이면 Excel도 빈 랙(R = 0)을 평균에서 뺀다. 대조 계산이 같은 규칙을 쓰도록 표시한다(AVERAGE면 키 없음).
+  if (excelSummary && /AVERAGEIF\s*\(/i.test(String(formulaText('F4') ?? ''))) excelSummary.f4AverageIf = true;
   if (excelSummary && lowLocations) Object.assign(excelSummary, { lowLocations: lowLocations.value, lowLocationsSource: lowLocations.source });
   if (excelSummary) { // 머리글이 맞을 때만(없으면 키 없음)
     result.excelSummary = excelSummary;
@@ -172,7 +174,7 @@ export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => un
     for (let idx = headerRow1; idx < matrix.length; idx++) {
       const r = matrix[idx] || [];
       if (!r.some((v) => v !== null && String(v).trim() !== '')) continue;
-      result.summaryRows.push({ sourceRow: idx + 1, location: map.location >= 0 ? String(r[map.location] ?? '').trim() : '', shelfHeight: numAt(r, 'shelfHeight'), materialHeight: numAt(r, 'materialHeight'), rackWidth: numAt(r, 'rackWidth'), rackDepth: numAt(r, 'rackDepth'), rackHeight: numAt(r, 'rackHeight') });
+      result.summaryRows.push({ sourceRow: idx + 1, location: map.location >= 0 ? String(r[map.location] ?? '').trim() : '', itemCode: map.itemCode >= 0 ? String(r[map.itemCode] ?? '').trim() : '', shelfHeight: numAt(r, 'shelfHeight'), materialHeight: numAt(r, 'materialHeight'), rackWidth: numAt(r, 'rackWidth'), rackDepth: numAt(r, 'rackDepth'), rackHeight: numAt(r, 'rackHeight') });
     }
   }
   return result;

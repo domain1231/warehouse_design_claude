@@ -86,7 +86,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
       + (sum ? `<p class="r-changes" data-testid="compare-changes">배치 변경: ${esc(sum)}</p>` : '');
   };
   const BIN = Object.fromEntries(DELTA_BINS.map((b) => [b.id, b]));
-  const ALWAYS = ['up40', 'up20', 'up1', 'same', 'worse'];
+  const ALWAYS = ['up40', 'up20', 'up1', 'same', 'worse', 'emptied'];
   const drawDelta = (p, d, vb, sc) => {
     const m = rackDeltaMap(p), after = new Map(racksOf(p.scenarios.after).map((o) => [o.id, o]));
     const svg = q(md, '[data-delta]'), pct = (v) => (v === null ? '미확인' : (v * 100).toFixed(1) + '%');
@@ -94,9 +94,9 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     for (const r of m.racks) {
       const o = after.get(r.id), b = BIN[r.bin], pts = polygon(o), pp = pts.map((x) => x.join(',')).join(' ');
       const cx = pts.reduce((a, x) => a + x[0], 0) / pts.length, cy = pts.reduce((a, x) => a + x[1], 0) / pts.length;
-      const label = r.bin === 'new' ? 'NEW' : r.bin === 'unknown' ? '?' : r.bin === 'same' ? '' : (r.delta > 0 ? '+' : '−') + Math.abs(r.delta).toFixed(1);
+      const label = r.bin === 'new' ? 'NEW' : r.bin === 'unknown' ? '?' : r.bin === 'emptied' ? `${b.icon} 비움` : r.bin === 'same' ? '' : (r.delta > 0 ? '+' : '−') + Math.abs(r.delta).toFixed(1);
       const fs = Math.min(Math.min(o.width, o.depth) * 0.35, 0.3), op = r.bin === 'same' ? ' opacity=".35"' : '';
-      s += `<g data-bin="${r.bin}" data-rack="${esc(r.id)}"><polygon points="${pp}" fill="${b.color}"${op} stroke="${b.dash ? '#c9d1da' : 'none'}"${b.dash ? ' stroke-dasharray=".08 .06" vector-effect="non-scaling-stroke" style="stroke-width:1px"' : ''}><title>${esc(`${r.code} · BEFORE ${pct(r.rB)} → AFTER ${pct(r.rA)} (${r.delta === null ? '—' : (r.delta > 0 ? '+' : r.delta < 0 ? '−' : '') + Math.abs(r.delta).toFixed(1) + '%p'})`)}</title></polygon>`
+      s += `<g data-bin="${r.bin}" data-rack="${esc(r.id)}"><polygon points="${pp}" fill="${b.color}"${op} stroke="${b.dash ? '#c9d1da' : 'none'}"${b.dash ? ' stroke-dasharray=".08 .06" vector-effect="non-scaling-stroke" style="stroke-width:1px"' : ''}><title>${esc(`${r.code} · BEFORE ${pct(r.rB)} → AFTER ${pct(r.rA)} (${r.bin === 'emptied' ? '비움 · 이전 완료' : r.delta === null ? '—' : (r.delta > 0 ? '+' : r.delta < 0 ? '−' : '') + Math.abs(r.delta).toFixed(1) + '%p'})`)}</title></polygon>`
         + (b.pattern ? `<polygon points="${pp}" fill="url(#rDeltaHatch)" pointer-events="none"/>` : '')
         + (r.types.length ? `<polygon points="${pp}" fill="none" stroke="#ffd54f" stroke-dasharray=".1 .06" vector-effect="non-scaling-stroke" style="stroke-width:2px" data-changed pointer-events="none"/>` : '')
         + (label ? `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="${fs}" fill="${b.text}" stroke="${b.halo || b.color}" stroke-width="${(fs * 0.3).toFixed(3)}" paint-order="stroke" pointer-events="none">${label}</text>` : '') + '</g>';
@@ -112,7 +112,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     const p = getProject(), all = rackChangeList(p), rows = rackChangeList(p, chg), pc = (v) => (v === null ? '미확인' : (v * 100).toFixed(1) + '%');
     q(md, '[data-change-count]').textContent = `${rows.length} / ${all.length}랙`;
     q(md, '[data-change-table]').innerHTML = '<table><tr>' + ['랙', '로케이션 수 (BE → AF)', 'BEFORE R', 'AFTER R', 'Δ %p', '배치 변경'].map((h) => `<th>${h}</th>`).join('') + '</tr>'
-      + rows.map((r) => { const b = BIN[r.bin] ?? BIN.worse; return `<tr data-group="${r.group}" data-bin="${r.bin}"><td>${esc(r.code)}</td><td>${r.locB ?? '—'} → ${r.locA ?? '—'}</td><td>${pc(r.rB)}</td><td>${pc(r.rA)}</td><td><i class="r-swatch" style="background:${r.bin === 'removed' ? 'transparent' : b.color};border-color:${b.color}"></i>${signed(r.delta)}</td><td>${r.types.length ? r.types.map((t) => CHANGE_TYPE_NAMES[t]).join('·') : '—'}</td></tr>`; }).join('') + '</table>';
+      + rows.map((r) => { const b = BIN[r.bin] ?? BIN.worse; return `<tr data-group="${r.group}" data-bin="${r.bin}"><td>${esc(r.code)}</td><td>${r.locB ?? '—'} → ${r.locA ?? '—'}</td><td>${pc(r.rB)}</td><td>${pc(r.rA)}</td><td><i class="r-swatch" style="background:${r.bin === 'removed' ? 'transparent' : b.color};border-color:${b.color}"></i>${r.bin === 'emptied' ? '비움' : signed(r.delta)}</td><td>${r.types.length ? r.types.map((t) => CHANGE_TYPE_NAMES[t]).join('·') : '—'}</td></tr>`; }).join('') + '</table>';
   };
   const drawCompare = () => {
     const p = getProject(), d = rackDiff(p.scenarios.before, p.scenarios.after), vb = common(p), mode = q(md, '[data-mode]').value;
@@ -135,7 +135,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     q(md, '[data-purpose]').innerHTML = purposeHtml(p, d);
     q(md, '[data-metrics]').innerHTML = '<h3>세부 지표</h3>' + table(detailRows(p));
     const noBefore = !racksOf(p.scenarios.before).length;
-    q(md, '[data-rows]').innerHTML = `<p class="info">${noBefore ? '개선 전 기준 도면이 없어 배치 개선 효과를 비교할 수 없습니다.' : p.scenarios.before.referenceSample ? 'BEFORE는 참고 샘플입니다. 실제 기준 도면으로 확정하지 마세요.' : '공통 원점·동일 배율 비교입니다. 위치·치수 근거와 창고/층의 동일성을 확인하세요.'}</p><p class="muted">녹색: 신규 / 빨강 점선: 제거 / 파랑·화살표: 이동 / R: 회전 / 주황: 설계 규격 · 내부 채움은 기존 재고 색상</p>` + `<div class="r-change-tools"><select data-change-filter data-testid="change-filter" aria-label="랙 변화 필터">${[['all', '전체'], ['better', '개선'], ['worse', '악화'], ['same', '변화 없음'], ['other', '기타(미확인·신규·제거)']].map(([v, t]) => `<option value="${v}"${v === chg.filter ? ' selected' : ''}>${t}</option>`).join('')}</select><select data-change-sort data-testid="change-sort" aria-label="랙 변화 정렬">${[['delta-desc', 'Δ 큰 순'], ['delta-asc', '악화 큰 순'], ['code', '랙 코드 순']].map(([v, t]) => `<option value="${v}"${v === chg.sort ? ' selected' : ''}>${t}</option>`).join('')}</select><span data-change-count></span></div><div data-change-table></div>`;
+    q(md, '[data-rows]').innerHTML = `<p class="info">${noBefore ? '개선 전 기준 도면이 없어 배치 개선 효과를 비교할 수 없습니다.' : p.scenarios.before.referenceSample ? 'BEFORE는 참고 샘플입니다. 실제 기준 도면으로 확정하지 마세요.' : '공통 원점·동일 배율 비교입니다. 위치·치수 근거와 창고/층의 동일성을 확인하세요.'}</p><p class="muted">녹색: 신규 / 빨강 점선: 제거 / 파랑·화살표: 이동 / R: 회전 / 주황: 설계 규격 · 내부 채움은 기존 재고 색상</p>` + `<div class="r-change-tools"><select data-change-filter data-testid="change-filter" aria-label="랙 변화 필터">${[['all', '전체'], ['better', '개선'], ['worse', '악화'], ['same', '변화 없음'], ['emptied', '비움'], ['other', '기타(미확인·신규·제거)']].map(([v, t]) => `<option value="${v}"${v === chg.filter ? ' selected' : ''}>${t}</option>`).join('')}</select><select data-change-sort data-testid="change-sort" aria-label="랙 변화 정렬">${[['delta-desc', 'Δ 큰 순'], ['delta-asc', '악화 큰 순'], ['code', '랙 코드 순']].map(([v, t]) => `<option value="${v}"${v === chg.sort ? ' selected' : ''}>${t}</option>`).join('')}</select><span data-change-count></span></div><div data-change-table></div>`;
     drawChangeTable();
   };
   q(md, '[data-mode]').addEventListener('change', drawCompare);

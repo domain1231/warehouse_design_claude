@@ -1,6 +1,6 @@
 // C7: 방 시트의 Excel Summary(C3..H4)와 앱의 행 기준 계산을 나란히 놓고 차이 원인 후보를 자동 감지한다. DOM 없음.
 // 앱 계산은 excelRowMetrics(Summary와 같은 규칙)를 쓰고, 입력 행은 분석에서 거부된 행(형식 밖 로케이션·중복)까지 포함한다.
-import { excelRowMetrics, locationRatio, rackPrefix } from '../metrics/space.js';
+import { excelRowMetrics, locationRatio, rackPrefix, emptyLocationTest } from '../metrics/space.js';
 
 export const RATIO_TOLERANCE = 0.0005; // 비율 지표: 0.05%p 미만이면 같음
 const MINUS = '−';
@@ -21,7 +21,10 @@ export function tableDataRows(ref) {
  * @returns { rows:[{id,label,excel,app,diff,same,ratio,excelText,appText,diffText}], causes:[{id,text,count,sample,items}], differs }
  */
 export function summaryCompare(summary, rows, { ceilingMm = null, shelfHeader = 'Rack 단 높이 (mm)' } = {}) {
-  const m = excelRowMetrics(rows, { totalArea: summary.totalArea, ceilingMm });
+  const m = excelRowMetrics(rows, { totalArea: summary.totalArea, ceilingMm, averageIf: !!summary.f4AverageIf });
+  // C10: 앱 지표는 빈 랙(R = 0)·빈 로케이션(품목코드 없음)을 뺀다. Excel 대조와 별개로 몇 개인지 알린다.
+  const isEmpty = emptyLocationTest(rows);
+  const empty = { racks: m.racks.filter((g) => g.r === 0).length, locations: rows.filter(isEmpty).length };
   const defs = [
     ['F4', '평균 용적률 (F4)', summary.avgVolume, m.avgVolume, true],
     ['D4', '면적 사용률 (D4)', summary.areaUse, m.areaUse, true],
@@ -54,7 +57,7 @@ export function summaryCompare(summary, rows, { ceilingMm = null, shelfHeader = 
     const explained = causes.some((c) => c.id !== 'directInput' || direct.some((c4) => bad.has(c4)));
     if (!explained) causes.push({ id: 'unknown', text: '그 밖의 차이 — Excel 수식·표 범위를 직접 확인', count: 0, sample: null, items: [] });
   }
-  return { rows: out, causes, differs };
+  return { rows: out, causes, differs, empty };
 }
 
 /** 원인에 걸린 행 CSV용 표(머리글 포함). */
