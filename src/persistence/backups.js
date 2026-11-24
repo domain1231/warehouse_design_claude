@@ -74,10 +74,22 @@ export function createBackupRing({ storage, prefix = DEFAULT_PREFIX, validate, f
    */
   async function checkpoint(project, reason) {
     const p = validate(structuredClone(project));
-    const previous = raw();
-    const rows = previous === null ? [] : await decode(previous);
-    const last = rows.at(-1);
-    if (last && last.reason === reason && fingerprint(validate(structuredClone(last.project))) === fingerprint(p)) return { id: last.id, receipt: null };
+    let previous = raw();
+    let rows = [];
+    let last;
+    if (previous !== null) {
+      try {
+        rows = await decode(previous);
+        last = rows.at(-1);
+        if (last && last.reason === reason && fingerprint(validate(structuredClone(last.project))) === fingerprint(p)) return { id: last.id, receipt: null };
+      } catch {
+        // 손상·검증 실패 링은 삭제하지 않고 격리 키로 옮긴 뒤 새 링으로 시작한다(영구 백업 실패 방지).
+        op('backup-quarantine', () => storage.setItem(`${key}:quarantine`, previous));
+        if (op('backup-quarantine-read', () => storage.getItem(`${key}:quarantine`)) !== previous) throw new StoreError('손상된 백업 링 격리 확인 실패', { code: 'VERIFY', stage: 'backup-quarantine' });
+        rows = [];
+        previous = null;
+      }
+    }
     const b = { id: nextId(), time: now(), name: p.metadata.name, version: p.version, target: BACKUP_TARGET, reason, project: p };
     const next = rows.concat(b);
     while (next.length > BACKUP_LIMIT) next.shift();
@@ -87,11 +99,12 @@ export function createBackupRing({ storage, prefix = DEFAULT_PREFIX, validate, f
       r = await write(JSON.stringify(next), previous);
     }
     if (r.over) throw new StoreError('백업 용량 한도 초과: 프로젝트 백업 3개 / 압축 합계 3.2MB', { code: 'BACKUP_LIMIT', stage: 'backup-limit' });
-    return { id: b.id, receipt: { previous } };
+    return { id: b.id, receipt: { previous, written: r.packed } };
   }
   /** 기준본 V.restore(영수증): 저장 실패 시 백업 링을 checkpoint 전 원문으로 되돌린다. */
   function rollback(receipt) {
     if (!receipt) return;
+    if (receipt.written !== undefined && raw() !== receipt.written) return; // 그 사이 다른 체크포인트가 링을 바꿨다면 되돌리지 않는다(여분의 백업은 무해)
     op('backup-rollback', () => (receipt.previous === null ? storage.removeItem(key) : storage.setItem(key, receipt.previous)));
   }
   return { key, list, checkpoint, rollback, raw };

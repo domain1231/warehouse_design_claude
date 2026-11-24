@@ -130,12 +130,23 @@ export function createProjectStore({ storage, prefix = DEFAULT_PREFIX, legacyKey
     // 기준본 V.write(allowProtectedReplace): 손상 원본을 교체하기 전에 원문 그대로 보호 키에 보존한다(쓰기 후 읽기 확인).
     // 이미 보호 원본이 있으면 덮어쓰지 않고 교체를 거부한다(앞선 원본 유실 방지).
     if (corrupt && replaceCorrupt) {
-      if (op('protected-read', () => storage.getItem(keys.protected)) !== null) {
-        throw new StoreError('이미 보존된 손상 원본이 있어 교체하지 않았습니다. 보호 원본 JSON을 내려받아 보관한 뒤 저장소 관리에서 정리하세요.', { code: 'CORRUPT', stage: 'protected-exists' });
+      const snap = { pointer: current, a: storage.getItem(keys.a), b: storage.getItem(keys.b), legacy: current === null ? storage.getItem(legacyKey) : null };
+      const existing = op('protected-read', () => storage.getItem(keys.protected));
+      let same = false;
+      if (existing !== null) {
+        try {
+          const o = JSON.parse(existing);
+          same = o?.format === 'warehouse-protected-original-v1' && ['pointer', 'a', 'b', 'legacy'].every((k) => o[k] === snap[k]);
+        } catch {
+          same = false;
+        }
+        // 같은 손상 원문의 보존본(이전 교체 시도가 슬롯 쓰기에서 실패해 남은 것)은 재사용한다. 다른 데이터면 덮어쓰지 않고 거부한다.
+        if (!same) throw new StoreError('이미 보존된 손상 원본이 있어 교체하지 않았습니다. 보호 원본 JSON을 내려받아 보관한 뒤 저장소 관리에서 정리하세요.', { code: 'CORRUPT', stage: 'protected-exists' });
+      } else {
+        const original = JSON.stringify({ format: 'warehouse-protected-original-v1', savedAt: now(), ...snap });
+        op('protected-write', () => storage.setItem(keys.protected, original));
+        if (op('protected-readback', () => storage.getItem(keys.protected)) !== original) throw new StoreError('손상 원본 보존 확인 실패. 교체하지 않았습니다.', { code: 'VERIFY', stage: 'protected-readback' });
       }
-      const original = JSON.stringify({ format: 'warehouse-protected-original-v1', savedAt: now(), pointer: current, a: storage.getItem(keys.a), b: storage.getItem(keys.b), legacy: current === null ? storage.getItem(legacyKey) : null });
-      op('protected-write', () => storage.setItem(keys.protected, original));
-      if (op('protected-readback', () => storage.getItem(keys.protected)) !== original) throw new StoreError('손상 원본 보존 확인 실패. 교체하지 않았습니다.', { code: 'VERIFY', stage: 'protected-readback' });
     }
     const ptr = current === null ? null : (() => {
       try {
