@@ -471,3 +471,9 @@
 - 호실 시트(…BE/…AF)를 불러올 때 같은 파일의 'Summary' 시트에서 '용적률 80% 미만' 블록을 찾아 해당 호실 행의 AS-IS(BE)·TO-BE(AF) 값을 읽어 `excelSummary.lowLocations`(+ 출처 셀)로 둔다. 블록이 여러 개면 '구분' 오른쪽 첫 AS-IS/TO-BE 열. 없으면 키를 만들지 않는다.
 - 대조 상자에 '80% 미만 로케이션 (Summary 시트)' 행 추가(개수 정확히 일치).
 - 로컬 실데이터(커밋 안 함): 205·214·706·709호 BE 일치. 202호 BE는 앱 87 / Summary 130 — 202호 용적률 수식이 MAX Stock 열로 나누는 오류(D-068 q-divisor 원인)로 Excel 쪽 값이 달라진 것.
+
+## D-070 Excel 업데이트·병합에서 사용자 수정값 보존 (2026-11-24, 사용자 승인)
+- 규칙: 모드 update·merge에서 기존 랙과 매칭되면 기존 랙을 깊은 복사해 시작하고 Excel 유래 값만 덮어쓴다. 덮어쓰는 값: `excel`(연결·선반·품목), `originalSpec`, 위치·회전(기존 keep/reflow 로직 그대로), 설계 규격(기존 `specPolicy` 로직 그대로). 구역(block)·유형·색상·메모·수량·단위·기타 사용자 속성은 보존한다. provenance는 위치와 묶여 있어 keep이면 기존 값, reflow면 자동 배치 값(기존 동작).
+- 근거: 기준본은 매칭 랙을 새로 만들어 id·code·note·capacity·quantity·unit만 복사하고 나머지는 기본값으로 되돌렸다(사용자 수정값 손실).
+- 불변: 모드 new(기준본과 동일), 위치·회전 계산, specPolicy, 결정성(ID 생성기 호출 순서 불변).
+- 골든: X2 등 골든 대조에는 사용자 수정 필드를 바꾼 사례가 없어 차이가 생기지 않았다(정규화 추가 없음). 단위 검사 `tests/unit/excel-keep-user-fields.test.js`로 보존을 확인한다.

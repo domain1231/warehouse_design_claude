@@ -172,13 +172,22 @@ export function buildProposal(project, analysis, c, { nextId, filename = '', she
   const matched = new Set();
   const incomingKeys = new Set(generated.map(rackKey));
   const codes = new Set(racksOf(old).filter((o) => c.mode !== 'new' || (o.excel && incomingKeys.has(rackKey(o))) || o.placementMeta?.positionLocked || (c.autoPlacement?.keepManual && !project.metadata.sample && o.placementMeta?.manualEdited !== false)).map((o) => o.code));
-  for (const fresh of generated) {
-    const prior = priorMap.get(rackKey(fresh));
+  for (const gen of generated) {
+    let fresh = gen;
+    const prior = priorMap.get(rackKey(gen));
     fresh.originalSpec = { ...dims(fresh), source: filename, asOf: c.date, origin: 'excel' };
     fresh.excel.originalRackSpecification = clone(fresh.originalSpec);
     if (prior) {
       matched.add(prior.id);
-      Object.assign(fresh, { id: prior.id, code: prior.code, note: prior.note, capacity: prior.capacity, quantity: prior.quantity, unit: prior.unit });
+      // D-070: 기존 랙 전체를 깊은 복사해 시작하고 Excel 유래 값(연결·선반·원본 규격·위치/회전·규격 정책)만 덮어쓴다.
+      // 구역·유형·색상·메모·수량 등 사용자 수정값은 그대로 보존한다(기준본은 일부를 기본값으로 되돌림).
+      if (c.mode === 'new') Object.assign(fresh, { id: prior.id, code: prior.code, note: prior.note, capacity: prior.capacity, quantity: prior.quantity, unit: prior.unit }); // 새 배치는 기준본과 같게
+      else {
+        const next = clone(prior);
+        Object.assign(next, { excel: gen.excel, originalSpec: gen.originalSpec, ...dims(gen), x: gen.x, y: gen.y, rotation: gen.rotation });
+        if (c.keep !== 'keep') next.provenance = gen.provenance;
+        fresh = next;
+      }
       if (c.keep === 'keep') Object.assign(fresh, { x: prior.x, y: prior.y, rotation: prior.rotation, provenance: prior.provenance });
       if (!sameDims(prior.originalSpec || prior, fresh.originalSpec)) changes.dimensions++;
       if (c.specPolicy === 'keep') Object.assign(fresh, dims(prior));
