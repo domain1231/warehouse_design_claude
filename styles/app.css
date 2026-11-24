@@ -178,7 +178,11 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 @media (max-width: 1500px) { #topStats .stat { padding: 10px 10px; } #topStats .stat small { font-size: 11px; } }
 .stat .stat-sub { display: block; margin-top: 2px; font-style: normal; font-size: 11px; color: var(--muted, #8fa3b8); }
 @media (max-width: 700px) { #topStats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.r-purpose { width: 100%; border-collapse: collapse; }
+.r-purpose { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.r-purpose th:first-child, .r-purpose td:first-child { width: 18%; }
+.r-purpose th:nth-child(2), .r-purpose td:nth-child(2), .r-purpose th:nth-child(3), .r-purpose td:nth-child(3) { width: 32%; }
+.r-purpose th:nth-child(4), .r-purpose td:nth-child(4) { width: 18%; }
+.r-purpose td { white-space: normal; overflow-wrap: anywhere; }
 .r-purpose th, .r-purpose td { padding: 3px 6px; text-align: right; }
 .r-purpose th:first-child, .r-purpose td:first-child { text-align: left; }
 .r-comp-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
@@ -188,6 +192,7 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .seg-blocked { background: #c0504d; }
 .seg-aisle { background: #8a96a3; }
 .seg-remain { background: #5fae5f; }
-.r-legend { display: flex; gap: 12px; font-size: 12px; color: var(--muted); }
+.r-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
+.r-legend[hidden] { display: none; }
 .r-legend .seg { display: inline-block; width: 10px; height: 10px; margin-right: 4px; border-radius: 2px; }
 .r-comp-bar .seg { height: 100%; display: block; }
