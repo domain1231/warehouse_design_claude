@@ -10,6 +10,19 @@ import { loadState } from '../cad/scene.js';
 
 const VIEW_FIELDS = { search: 'rackSearch', typeFilter: 'type', loadFilter: 'load', bRackSort: 'rackSort' };
 const $ = (id) => document.getElementById(id);
+// 선택만 바뀐 렌더(프로젝트 도면 불변)에서 공간 지표를 다시 계산하지 않도록 직전 결과를 기억한다.
+// 도면 확정은 항상 새 layout 객체(structuredClone 편집·undo·가져오기)이므로 객체 동일성 + 입력 참조가 같을 때만 재사용한다.
+export const spaceMemoStats = { computed: 0 };
+if (typeof window !== 'undefined') window.__spaceMemoStats = spaceMemoStats; // E2E 검사용 읽기 진입점
+const slots = {};
+const memo = (name, deps, fn) => {
+  const s = slots[name];
+  if (s && s.deps.length === deps.length && s.deps.every((d, i) => d === deps[i])) return s.value;
+  spaceMemoStats.computed++;
+  const value = fn();
+  slots[name] = { deps, value };
+  return value;
+};
 
 /**
  * 하단 패널의 랙 목록·공간 검토(마크업은 ui/bottom-markup.js, 기준본 #search·#typeFilter·#loadFilter·#bRackSort·#rackList·#warnings·#warningCount).
@@ -37,7 +50,7 @@ export function createPanels(roots, { onFocus, onView }) {
     /** @param {{ layout, project, selected: Set<string>, warnings: object[] }} s */
     render({ layout, project, selected, warnings }) {
       const m = metrics(layout, project, { warnings });
-      m.warnings = [...m.warnings, ...aisleSettingIssues(layout, project.aisleRules)]; // C5: 설정 경고(비공간·비차단)
+      m.warnings = [...m.warnings, ...memo('issues', [layout, project.aisleRules], () => aisleSettingIssues(layout, project.aisleRules))]; // C5: 설정 경고(비공간·비차단)
       lastWarnings = m.warnings;
         // 기준본 renderStats: 상단 KPI(kArea·kRacks·kFootprint·kWarnings)와 오른쪽 공간 지표(spaceMetrics).
       // D-058: '수량 기준 적재율 · 단위별'(kLoad) 대신 통로 비중·보관 불가 구역 비중(겹침 제외·창고 안쪽 면적 ÷ 전체 면적).
@@ -45,7 +58,8 @@ export function createPanels(roots, { onFocus, onView }) {
       k.area.textContent = fmt(m.area);
       k.racks.textContent = String(m.racks);
       // D-061(Track C C1 2단계): 공간 지표는 src/metrics/space.js 하나에서 계산한다. 면적 사용률·통로 비중은 ① Excel 방식(총면적 = Excel 입력값, 없으면 도면 전체).
-      const key = project.settings.scenario, x = scenarioSpace(project, key, layout);
+      const key = project.settings.scenario, sc = project.scenarios, meta = project.scenarioMeta, rules = project.aisleRules;
+      const x = memo('space', [layout, meta?.[key]?.sourceInfo?.referenceArea, rules], () => scenarioSpace(project, key, layout));
       const pct = (v, d = 1) => (v === null || v === undefined ? '—' : (v * 100).toFixed(d));
       const signed = (v, d = 1) => (v === null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v * 100).toFixed(d));
       const basisText = x.areaBasis === 'excel' ? `÷ ${fmt(x.totalArea)}㎡(Excel 총면적)` : `÷ ${fmt(x.totalArea)}㎡(도면 전체 · Excel 총면적 없음)`;
@@ -72,9 +86,10 @@ export function createPanels(roots, { onFocus, onView }) {
       const aisleStat = k.minAisle.closest('.stat');
       aisleStat.classList.toggle('warn', aisleWarn);
       aisleStat.title = '통로 단면 최소 폭. 기준 = max(통로 최소 확보 폭, 통로 종류 기준(왼쪽 통로 종류 기준에서 변경)). 참고 권장: 주통로 1.2m · 접근 통로 1.0m. 주통로 기준이 1.0m 미만이면 설정 경고';
-      const dl = scenarioDelta(project, { key, m: x });
+      const dl = memo('delta', [sc.before, sc.after, key, x, meta?.before?.sourceInfo?.referenceArea, meta?.after?.sourceInfo?.referenceArea, rules], () => scenarioDelta(project, { key, m: x }));
       const deltaText = !dl ? '—' : dl.empty ? `${dl.empty} 배치 비어 있음` : `랙 ${dl.racks > 0 ? '+' : dl.racks < 0 ? '−' : '±'}${Math.abs(dl.racks)} · 평균 용적률 ${signed(dl.avgVolume)}%p · 면적 사용률 ${signed(dl.areaUse)}%p`;
-      const shelf = shelfWeightedVolume(layout, project.settings.heightPolicy ?? 'weightedMax');
+      const policy = project.settings.heightPolicy ?? 'weightedMax';
+      const shelf = memo('shelf', [layout, policy], () => shelfWeightedVolume(layout, policy));
       const mutedS = (t) => `<small class="muted">${esc(t)}</small>`;
       const extra = [
         ['평균 용적률', x.avgVolume === null ? `미확인 ${mutedS(`0/${x.racks}랙`)}` : `${pct(x.avgVolume)}% ${mutedS(`${x.volumeRacks}/${x.racks}랙 · 선반 가중 ${shelf === null ? '—' : pct(shelf) + '%'}`)}`],
