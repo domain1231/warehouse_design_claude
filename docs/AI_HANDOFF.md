@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.9 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 상단 지표 통로 비중·보관 불가 비중(D-058) · feature/kpi-aisle-share
+- 상단 지표 6칸: 적재율 칸 제외, 통로 비중·보관 불가 구역 비중 추가(공간 지표 면적 ÷ 전체 면적). 사용자 운영 JSON으로 로컬 확인: 통로 36.2%(56.73㎡)·보관 불가 3.0%(4.74㎡).
+- e2e `kpi-shares.test.js`.
+
 ### 2026-11-23 JSON 불러오기 'The operation was aborted' · fix/json-import-abort
 - 사용자 보고(Windows): JSON 불러오기 시 'The operation was aborted'. 코드에 중단(abort) 호출 없음 → 브라우저 파일 읽기(`File.text()`)가 AbortError로 실패한 경우로 판단(클라우드 동기화 온라인 전용 파일·네트워크 드라이브·내려받는 중 파일 등). Linux에서 재현 불가 → NOT RUN(Windows 실기기).
 - 수정: 읽기 실패(AbortError/NotReadableError) 시 FileReader로 1회 재시도, 브라우저 오류일 때만 실패 문구에 단계·오류 종류·해결 안내 추가(일반 오류는 기준본 문구 그대로), 파일 선택은 읽은 뒤에 비움.

@@ -171,3 +171,8 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .metrics-toggle::before { content: '▾'; font-size: .85em; opacity: .75; }
 .metrics-toggle[aria-expanded="false"]::before { content: '▸'; }
 .metrics-toggle:focus-visible { outline: 2px solid var(--accent, #4ea1ff); outline-offset: 2px; border-radius: 3px; }
+
+/* D-058: 상단 지표 6칸(통로 비중·보관 불가 구역 비중 추가, 수량 기준 적재율 제외). 면적은 비중 아래 작은 글씨. */
+#topStats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.stat .stat-sub { display: block; margin-top: 2px; font-style: normal; font-size: 11px; color: var(--muted, #8fa3b8); }
+@media (max-width: 700px) { #topStats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
