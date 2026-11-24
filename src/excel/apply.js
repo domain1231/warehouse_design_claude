@@ -86,6 +86,9 @@ export function applyExcelProposal(project, proposal, context, { nextId, now }) 
     const source = { file: context.filename, sheet: context.sheet, asOf: c.date, source: c.source, importedAt: now() };
     // D-061: Excel 총면적(Summary C4 '총 면적 m²')을 함께 보관한다. 면적 사용률·통로 비중 ①의 기준(없으면 도면 전체).
     if (Number.isFinite(context.analysis?.referenceArea) && context.analysis.referenceArea > 0) source.referenceArea = context.analysis.referenceArea;
+    // C7: Excel Summary 값은 참고 정보로만 보관한다(화면 지표는 앱이 행으로 다시 계산). 숫자·null만.
+    const es = context.analysis?.excelSummary;
+    if (es) source.excelSummary = Object.fromEntries(['totalArea', 'areaUse', 'aisleShare', 'avgVolume', 'rackCount', 'idleRacks', 'lowLocations'].map((k) => [k, Number.isFinite(es[k]) ? es[k] : null]));
     P.scenarioMeta[c.target].sourceInfo = source;
     const conf = {};
     for (const k of LAYOUT_KEYS) conf[k] = clone(c[k]);

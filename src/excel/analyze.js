@@ -41,10 +41,10 @@ export function autoMap(matrix, headerRow1) {
 
 /**
  * 분석(기준본 EX.analyze). 선반·랙 계층, 규격 충돌, 높이 입력, 원본 면적 참고값을 검사한다.
- * @param {{ matrix: any[][], headerRow1: number, mapping: Record<string, number>, cell: (addr: string) => any, resolutions?: Record<string, number[]> }} input
+ * @param {{ matrix: any[][], headerRow1: number, mapping: Record<string, number>, cell: (addr: string) => any, resolutions?: Record<string, number[]>, formula?: (addr: string) => boolean, formulaText?: (addr: string) => string, tableRef?: string|null }} input
  * @returns {{ rows, racks, issues, duplicates, dataRows, referenceArea, area, dimensionConflicts }}
  */
-export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => undefined, resolutions = {} }) {
+export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => undefined, resolutions = {}, formula = () => false, formulaText = () => '', tableRef = null }) {
   const issues = [], rows = [], seen = new Set(), racks = new Map();
   const add = (type, row, text) => issues.push({ type, row, text });
   for (const k of REQUIRED_FIELDS) if (map[k] === undefined || map[k] < 0) add('error', headerRow1, '필수 열 미지정: ' + FIELDS.find(([key]) => key === k)[1]);
@@ -160,5 +160,48 @@ export function analyzeSheet({ matrix, headerRow1, mapping: map, cell = () => un
   if (modern.length) add('warning', null, `열 이름 ${modern.slice(0, 8).join('·')}${modern.length > 8 ? ' …' : ''}은(는) v2.4.1이 읽지 못하는 형식입니다. 이 랙을 적용한 프로젝트 JSON은 v2.4.1에서 열 수 없습니다.`);
   add('warning', null, '현재고·수량 단위·실제 평면 좌표가 없습니다. MAX Stock/평균 입고는 현재고로 대입하지 않습니다.');
   add('warning', null, '자동 배치 위치는 사용자 규칙에 따른 초기 설계안이며 실측 관계는 미확인입니다.');
-  return { rows, racks: [...racks.values()].filter((r) => !r.invalid), issues, duplicates, dataRows, referenceArea, area, dimensionConflicts };
+  const result = { rows, racks: [...racks.values()].filter((r) => !r.invalid), issues, duplicates, dataRows, referenceArea, area, dimensionConflicts };
+  const excelSummary = readSummary(cell, formula, tableRef);
+  if (excelSummary) excelSummary.qDivisor = qDivisorOf(matrix, headerRow1, formulaText);
+  if (excelSummary) { // 머리글이 맞을 때만(없으면 키 없음)
+    result.excelSummary = excelSummary;
+    // Excel 표는 거부된 행(형식 밖 로케이션·중복)도 센다. 대조용으로 모든 데이터 행을 숫자 변환만 해서 따로 보관한다.
+    const numAt = (r, k) => { const n = map[k] >= 0 ? excelNumber(r[map[k]]) : null; return Number.isNaN(n) ? null : n; };
+    result.summaryRows = [];
+    for (let idx = headerRow1; idx < matrix.length; idx++) {
+      const r = matrix[idx] || [];
+      if (!r.some((v) => v !== null && String(v).trim() !== '')) continue;
+      result.summaryRows.push({ sourceRow: idx + 1, location: map.location >= 0 ? String(r[map.location] ?? '').trim() : '', shelfHeight: numAt(r, 'shelfHeight'), materialHeight: numAt(r, 'materialHeight'), rackWidth: numAt(r, 'rackWidth'), rackDepth: numAt(r, 'rackDepth'), rackHeight: numAt(r, 'rackHeight') });
+    }
+  }
+  return result;
+}
+
+// C7: 용적률(Q) 열 수식 'P9/H9'(IFERROR·시트 한정·$ 허용)의 나누는 열 중 가장 많은 것. 수식이 없으면 null.
+function qDivisorOf(matrix, headerRow1, formulaText) {
+  const head = matrix[headerRow1 - 1] || [];
+  const qc = head.findIndex((v) => normHeader(v) === normHeader('용적률(%)'));
+  if (qc < 0) return null;
+  const counts = new Map();
+  for (let idx = headerRow1; idx < matrix.length; idx++) {
+    const m = /(?:[\w.]+!)?[A-Z]{1,3}\$?\d+\s*\/\s*(?:(?:'[^']*'|[\w.]+)!)?\$?([A-Z]{1,3})\$?\d+/.exec(formulaText(encodeColLetter(qc) + (idx + 1)) || '');
+    if (m) counts.set(m[1], (counts.get(m[1]) || 0) + 1);
+  }
+  const top = [...counts].sort((a, b) => b[1] - a[1])[0];
+  if (!top) return null;
+  const ci = top[0].split('').reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+  return { column: top[0], header: String(head[ci] ?? '').replace(/\s+/g, ' ').trim(), rows: top[1] };
+}
+const encodeColLetter = (c) => { let s = ''; for (c += 1; c > 0; c = Math.floor((c - 1) / 26)) s = String.fromCharCode(65 + ((c - 1) % 26)) + s; return s; };
+
+// C7: 방 시트 Summary(C3..H3 머리글, C4..H4 값). 숫자만 받는다(그 밖은 null).
+const SUMMARY_LABELS = [['C', '총면적'], ['D', '면적사용률'], ['E', '통로비중'], ['F', '평균용적률'], ['G', "rackq'ty"]];
+const sumNum = (v) => { const n = excelNumber(v); return typeof n === 'number' && Number.isFinite(n) ? n : null; };
+export function readSummary(cell, formula, tableRef) {
+  const h = (c) => normHeader(cell(c + '3'));
+  if (!SUMMARY_LABELS.every(([c, k]) => h(c).includes(k))) return null;
+  if (!h('H').includes('유휴') || !h('H').includes("q'ty")) return null;
+  const cols = ['C', 'D', 'E', 'F', 'G', 'H'];
+  const formulas = Object.fromEntries(cols.slice(1).map((c) => [c + '4', !!formula(c + '4')]));
+  return { totalArea: sumNum(cell('C4')), areaUse: sumNum(cell('D4')), aisleShare: sumNum(cell('E4')), avgVolume: sumNum(cell('F4')), rackCount: sumNum(cell('G4')), idleRacks: sumNum(cell('H4')), lowLocations: null, formulas, tableRef: tableRef || null, qDivisor: null };
 }

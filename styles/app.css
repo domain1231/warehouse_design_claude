@@ -201,3 +201,7 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-change-tools [data-change-count] { white-space: nowrap; }
 .r-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border: 1px solid; border-radius: 2px; vertical-align: middle; }
 .stat.warn { border-color: #e0a100; } .stat.warn strong { color: #ffc23d; } .stat.warn .stat-sub { color: #ffc23d; }
+
+.ex-sumcmp { margin: 8px 0; font-size: 12px; } .ex-sumcmp.warn { border: 1px solid #e0a100; border-radius: 6px; padding: 8px 10px; } .ex-sumcmp.warn b { color: #ffc23d; }
+.ex-sumcmp table { border-collapse: collapse; margin: 6px 0; } .ex-sumcmp th, .ex-sumcmp td { padding: 2px 10px; text-align: right; border-bottom: 1px solid var(--line, #444); } .ex-sumcmp th:first-child, .ex-sumcmp td:first-child { text-align: left; }
+.ex-sumcmp ul { margin: 4px 0 8px 18px; padding: 0; }

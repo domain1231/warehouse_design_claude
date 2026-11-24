@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C7 Excel Summary 대조(D-068) · feature/excel-summary-c7
+- Excel 미리보기에 Summary(F4·D4·E4·G4·H4) vs 앱 계산 대조, 원인 자동 감지(용적률 수식 분모 열·형식 밖·자재>단·표 범위 밖·직접 입력·단 높이 0), 차이 행 CSV. 적용 시 sourceInfo.excelSummary 저장.
+- 로컬 실데이터: 202호BE만 불일치(용적률 수식이 MAX Stock으로 나눔 193행). 나머지 일치.
+- 로컬: unit 206, golden 286, build·verify, e2e 4파일 11 PASS. 전체 E2E는 CI.
+- Track C(C1~C7) 완료. 다음 후보: alpha.11 버전 PR·Draft, Summary 시트 80% 미만 블록 대조, Phase 계속.
+
 ### 2026-11-24 Track C · C6 벽 이격 수정(D-067) · 검사 절차 간소화(D-066) · feature/wallgap-c6
 - #prWallGap 모든 배치에서 활성, `wallGapOf`·`setWallGap`(src/warehouse/placement-rules.js). 직접 그린 배치는 layout.wallGap만 변경.
 - D-066: PR 전 로컬은 단위·골든·빌드·검증 + 관련 E2E, 전체 E2E는 CI. Codex 리뷰 절차 제외.
