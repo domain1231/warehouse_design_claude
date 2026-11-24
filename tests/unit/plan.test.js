@@ -30,6 +30,16 @@ test('영역 선택: 랙만, 겹침/포함 규칙, 클릭 크기 사각형은 �
   assert.deepEqual([...marqueeSelect(os, { x: 2, y: 0 }, { x: 3, y: 0.5 }, { rule: 'contain' })], ['R2']);
 });
 
+test('영역 선택 모든 객체 규칙: -all은 랙 외 객체도 같은 기하로 고른다, 기본·contain은 랙만', () => {
+  const os = [rack('R1', 0, 0), { ...rack('C1', 0.2, 0.1), kind: 'column', width: 0.3, depth: 0.3 }, { ...rack('A1', 0, 0.3), kind: 'aisle', width: 3, depth: 0.5 }, { ...rack('D1', 0, 0), kind: 'door', width: 0.9, depth: 0.1 }];
+  const a = { x: -0.1, y: -0.1 }, b = { x: 1.2, y: 0.7 };
+  const sel = (rule) => [...marqueeSelect(os, a, b, { rule })].sort();
+  assert.deepEqual(sel('intersect'), ['R1']);
+  assert.deepEqual(sel('contain'), ['R1']);
+  assert.deepEqual(sel('intersect-all'), ['A1', 'C1', 'D1', 'R1']);
+  assert.deepEqual(sel('contain-all'), ['C1', 'D1', 'R1']); // A1(폭 3m)은 완전 포함이 아니다
+});
+
 test('저장된 선택 복원: 같은 배치에서 저장한 것만, 없는 ID 제거', () => {
   const p = validateProject(createProject({ sample: true, nextId: createIdGenerator({ seed: 'sel' }) }));
   const id = p.scenarios.after.objects[0].id;

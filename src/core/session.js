@@ -328,7 +328,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
       next.editing = { ...(next.editing ?? state.project.editing), allowWarnings };
       next.settings = { ...state.project.settings, policy: allowWarnings ? 'warn' : 'block' };
     }
-    if (selectionRule === 'intersect' || selectionRule === 'contain') next.editing = { ...(next.editing ?? state.project.editing), selectionRule };
+    if (['intersect', 'contain', 'intersect-all', 'contain-all'].includes(selectionRule)) next.editing = { ...(next.editing ?? state.project.editing), selectionRule };
     if (typeof snap === 'boolean') next.settings = { ...(next.settings ?? state.project.settings), snap };
     if (precision) next.precision = { ...state.project.precision, ...precision };
     // BEFORE/AFTER 전환(기준본 R.switch): 대상의 자동 배치 설정을 현재 설정으로 복사하고 선택을 비운다.
