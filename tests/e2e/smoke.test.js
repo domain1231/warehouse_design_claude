@@ -34,6 +34,9 @@ test('빌드 HTML이 오프라인으로 실행되고 버전을 분리해 표시�
     const versions = page.locator('[data-testid="versions"]');
     assert.equal(await versions.textContent(), `v${pkg.version}`);
     assert.equal(await versions.getAttribute('title'), `앱 v${pkg.version} · 프로젝트 스키마 ${pkg.warehouse.projectSchemaVersion}`);
+    assert.notEqual(pkg.version, pkg.warehouse.projectSchemaVersion);
+    assert.equal(pkg.warehouse.projectSchemaVersion, '2.3.6');
+    assert.equal(await page.evaluate(() => window.__warehouseSession.state.project.version), pkg.warehouse.projectSchemaVersion);
     assert.deepEqual(problems, []);
   } finally {
     await browser.close();

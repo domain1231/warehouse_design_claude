@@ -100,6 +100,20 @@ test('저장소 관리: 행에 숫자가 보이고 현재 JSON을 내려받는�
   assert.equal(get('현재 저장 상태'), '저장됨 (SAVED)');
   assert.match(await page.textContent('[data-testid=storage-estimate]'), /estimate/);
   assert.match(await page.textContent('[data-testid=storage-metrics]'), /wholeOriginAndApplication/);
+  // F-031: 상세 진단 JSON의 크기·키·슬롯 단계
+  const m = JSON.parse(await page.textContent('[data-testid=storage-metrics]'));
+  assert.equal(m.status, 'saved');
+  assert.ok(m.currentMemory.valid && m.currentMemory.projectJSONUTF8Bytes > 0);
+  assert.ok(m.packedCurrentCandidate.packedUTF8Bytes > 0 && !m.packedCurrentCandidate.errorType);
+  const { primary, lastGood, projectBackups } = m.actualStoredEntries;
+  assert.match(primary.key, /^warehouse-layout-v2:slot-[ab]$/);
+  assert.match(lastGood.key, /^warehouse-layout-v2:slot-[ab]$/);
+  assert.notEqual(primary.key, lastGood.key);
+  assert.ok(primary.present && primary.valueUTF8Bytes > 0 && primary.errorType === null);
+  assert.ok(projectBackups.present && projectBackups.valueUTF8Bytes > 0);
+  const o = m.wholeOriginAndApplication;
+  assert.ok(o.complete && o.readKeys >= 3 && o.appUTF8Bytes > 0 && o.utf8Bytes >= o.appUTF8Bytes);
+  assert.ok(m.lastConfirmedSave);
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=storage-download]').click()]);
   assert.match(dl.suggestedFilename(), /^warehouse_project_v2_3_6_\d{4}-\d{2}-\d{2}\.json$/);
   assert.equal(JSON.parse(fs.readFileSync(await dl.path(), 'utf8')).scenarios.after.objects.filter((o) => o.kind === 'rack').length, 45);
