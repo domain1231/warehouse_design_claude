@@ -37,3 +37,15 @@ test('layoutChangeSummary: 변경 없음 → 빈 문자열, 이동·제거 집�
   assert.match(s, /이동 1/);
   assert.match(s, /제거 1/);
 });
+
+test('purposeCompare: AFTER 비면 AFTER 칸은 배치 없음, 차이는 —', () => {
+  const p = project();
+  p.scenarios.after.objects = [];
+  for (const x of purposeCompare(p)) { assert.equal(x.after, '배치 없음'); assert.equal(x.delta, '—'); assert.notEqual(x.before, '배치 없음'); }
+});
+
+test('purposeCompare: BEFORE 비면 BEFORE 칸 배치 없음', () => {
+  const p = project();
+  p.scenarios.before.objects = [];
+  for (const x of purposeCompare(p)) { assert.equal(x.before, '배치 없음'); assert.equal(x.delta, '기준 없음'); }
+});

@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 최적화·디버그 4 · chore/optimize-debug-4
+- 성능: 500랙 랙 선택 106 → 55~65ms(alpha.9 45), 라벨 전환 301 → 207~237ms. 원인 면적 합집합 LRU 캐시 thrash, `AREA_CACHE_MAX` 16 → 64. `docs/perf/2026-11-24-trackc.md`.
+- 실데이터 스모크(운영 JSON 11/02 + 업무 Excel, 로컬·미커밋): 페이지 오류 0, NaN/undefined 표시 0, 저장·재열기 유지. 발견 1건 수정 — AFTER가 빈 배치일 때 비교표가 통로 비중 100% 등으로 표시 → '배치 없음', Δ 범례 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.'
+- 확인: 통로 종류 기준 적용 시 '하한' 외 경고 증가분은 같은 적용이 목표 폭(1.2m)도 덮어써서 생긴 '유효 폭 … / 목표 … 미달'(기준본 동작, 정상).
+- 로컬: unit 209, golden 286, build·verify, e2e 6파일 PASS. 전체 E2E는 CI.
+
 ### 2026-11-24 Track C · C7 Excel Summary 대조(D-068) · feature/excel-summary-c7
 - Excel 미리보기에 Summary(F4·D4·E4·G4·H4) vs 앱 계산 대조, 원인 자동 감지(용적률 수식 분모 열·형식 밖·자재>단·표 범위 밖·직접 입력·단 높이 0), 차이 행 CSV. 적용 시 sourceInfo.excelSummary 저장.
 - 로컬 실데이터: 202호BE만 불일치(용적률 수식이 MAX Stock으로 나눔 193행). 나머지 일치.

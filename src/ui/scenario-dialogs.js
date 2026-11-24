@@ -104,7 +104,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     for (const o of d.removed) s += outline(o, '#ff7180', '.08 .06', 1).replace('<polygon', '<polygon data-removed');
     svg.setAttribute('viewBox', vb);
     svg.innerHTML = s;
-    q(md, '[data-delta-legend]').innerHTML = m.ready ? DELTA_BINS.filter((b) => m.counts[b.id] || ALWAYS.includes(b.id)).map((b) => `<span data-bin="${b.id}"><i class="seg" style="background:${b.color}"></i>${b.label} ${m.counts[b.id]}</span>`).join('') + '<span>노랑 점선: 이동·회전·규격 변경 / 빨강 점선: 제거</span>' : '개선 전 기준 도면이 없어 Δ를 계산할 수 없습니다.';
+    q(md, '[data-delta-legend]').innerHTML = m.ready && !p.scenarios.after.objects.some((o) => o.kind === 'rack') ? 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.' : m.ready ? DELTA_BINS.filter((b) => m.counts[b.id] || ALWAYS.includes(b.id)).map((b) => `<span data-bin="${b.id}"><i class="seg" style="background:${b.color}"></i>${b.label} ${m.counts[b.id]}</span>`).join('') + '<span>노랑 점선: 이동·회전·규격 변경 / 빨강 점선: 제거</span>' : '개선 전 기준 도면이 없어 Δ를 계산할 수 없습니다.';
   };
   const chg = { filter: 'all', sort: 'delta-desc' };
   const signed = (v) => (v === null ? '—' : (v < 0 ? '−' : v > 0 ? '+' : '') + Math.abs(v).toFixed(1));
