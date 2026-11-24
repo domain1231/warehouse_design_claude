@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Phase 11-2 기능 동등성 판정 · test/phase11-parity
+- docs/FEATURE_PARITY_MATRIX.md: F-001~F-041 VERIFIED(41/41), F-042 모바일 DEFERRED. 행마다 검사 파일 명시, 상태값 정리.
+- 보충 검사: original-spec(F-017), storage2 진단(F-031), smoke 버전 분리(F-036), offline-walk 외부 요청 0·오류 0(F-038), probe-budget 탐색 한도(F-040). src 변경·버그 없음.
+- 다음: 11-3 성능·메모리(0~1000랙, 실행취소 누적), 11-4 저장·자동 배치 독립 검토.
+
 ### 2026-11-24 랙 선택 성능 — 공간 지표 메모 · perf/select-memo
 - panels.js 단일 슬롯 메모(배치 객체 동일성 + 값 의존성). 500랙 선택 중앙값 약 52ms(수정 전 55~65, Track C 전 45), 라벨 전환 약 200ms.
 - 검사: unit 209, golden 286, build·verify, e2e 11파일 17 PASS(새 space-memo: 선택 3회 재계산 0, 삭제·실행취소·다시실행 후 값 갱신).
