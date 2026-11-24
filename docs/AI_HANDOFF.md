@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C3 Δ 지도 모드(D-063) · feature/delta-map-c3
+- 비교 대화상자 기본 보기 = Δ 용적률 지도(랙별 ΔR 구간 색, 라벨 Δ%p, 변경은 노랑 점선만). 기존 모드는 보조.
+- `rackDeltaMap`·`DELTA_BINS`(src/metrics/delta.js). UI parity 간극 22 → 23.
+- 검사: pnpm check PASS(PR 본문 수치). 색약 시뮬레이션 실기 확인·Windows Edge NOT RUN.
+- 다음: C4 랙 변화 목록(ΔR 정렬·개선/악화/변화 없음 필터·CSV).
+
 ### 2026-11-24 Track C · C2 비교표 재구성(D-062) · feature/compare-c2
 - 비교 대화상자 첫 화면: 목적 지표 7행(산식 툴팁) · 공간 구성 누적 막대 · 배치 변경 한 줄 요약(0이면 숨김). 기존 표는 '세부 지표'로 화면 필터만.
 - `purposeCompare`(src/metrics/space.js), `layoutChangeSummary`(src/warehouse/scenarios.js). compareRows 불변(골든 S2).
