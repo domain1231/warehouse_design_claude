@@ -1325,10 +1325,13 @@ async function start() {
       const dt = Math.min(0.1, (now - panLast) / 1000);
       panLast = now;
       const { dx, dy } = panDelta(held, panShift, dt);
-      if (!held.size || selected.size || view.centerLocked) { panRaf = 0; commitView(view); return; }
+      if (!held.size || selected.size) { panRaf = 0; commitView(view); return; }
       if (dx || dy) {
+        // 마우스 끌기 이동과 같이 '창고 중심 고정'을 풀고 이동한다(고정 중에는 panX/panY가 무시되므로 0에서 시작).
+        if (view.centerLocked) view = { ...view, panX: 0, panY: 0, centerLocked: false };
         const mpp = viewBox(view, W(), size()).w / size().w;
-        view = panFrom(view, -dx * mpp, -dy * mpp);
+        // D-071 보완: 도면(내용)이 누른 방향으로 움직인다(선택 객체 미세 이동과 같은 방향감).
+        view = panFrom(view, dx * mpp, dy * mpp);
         applyCamera();
       }
       panRaf = requestAnimationFrame(step);

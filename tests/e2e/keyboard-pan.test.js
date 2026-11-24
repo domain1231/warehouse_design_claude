@@ -36,16 +36,30 @@ const hold = async (page, keys, ms) => {
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≠ ${b}`);
 const unlock = async (page) => { await page.locator('[data-testid=center-lock]').uncheck(); await page.evaluate(() => document.activeElement.blur()); };
 
+test('기본 상태(창고 중심 고정 켜짐)에서도 방향키로 이동하고, 마우스 끌기처럼 중심 고정이 풀린다', async () => {
+  const { ctx, page } = await open();
+  assert.equal(await page.locator('[data-testid=center-lock]').isChecked(), true, '새로 연 도면은 중심 고정 상태');
+  await page.locator('[data-testid=plan]').click({ position: { x: 5, y: 5 } }); // 빈 곳 클릭(선택 없음)
+  const b0 = await box(page);
+  await hold(page, ['ArrowLeft'], 300);
+  const b1 = await box(page);
+  assert.ok(b1.x > b0.x, `← 누르면 도면이 왼쪽으로(보는 창은 오른쪽) ${b0.x} → ${b1.x}`);
+  await page.waitForFunction(() => window.__warehouseSession.state.project.viewport.centerLocked === false);
+  assert.equal(await page.locator('[data-testid=center-lock]').isChecked(), false);
+  assert.deepEqual(page.problems, []);
+  await ctx.close();
+});
+
 test('선택 없음: ArrowRight 유지 → 화면만 이동, 데이터 불변, 저장 뷰 반영', async () => {
   const { ctx, page } = await open();
   await unlock(page);
   const s0 = await scen(page), b0 = await box(page);
   await hold(page, ['ArrowRight'], 300);
   const b1 = await box(page);
-  assert.ok(b1.x > b0.x, `${b0.x} → ${b1.x}`);
+  assert.ok(b1.x < b0.x, `→ 누르면 도면이 오른쪽으로 ${b0.x} → ${b1.x}`);
   assert.equal(b1.y, b0.y);
   assert.equal(await scen(page), s0);
-  await page.waitForFunction((x) => window.__warehouseSession.state.project.viewport.panX > x, 0);
+  await page.waitForFunction((x) => window.__warehouseSession.state.project.viewport.panX !== x, 0);
   assert.deepEqual(page.problems, []);
   await ctx.close();
 });
@@ -56,15 +70,15 @@ test('대각선·Shift 가속', async () => {
   let b0 = await box(page);
   await hold(page, ['ArrowUp', 'ArrowRight'], 300);
   let b1 = await box(page);
-  assert.ok(b1.x > b0.x && b1.y < b0.y, 'diag');
+  assert.ok(b1.x < b0.x && b1.y > b0.y, '↑+→ 도면이 오른쪽 위로');
   b0 = await box(page);
   await hold(page, ['ArrowLeft'], 400);
-  const slow = b0.x - (await box(page)).x;
+  const slow = (await box(page)).x - b0.x;
   b0 = await box(page);
   await page.keyboard.down('Shift');
   await hold(page, ['ArrowRight'], 400);
   await page.keyboard.up('Shift');
-  const fast = (await box(page)).x - b0.x;
+  const fast = b0.x - (await box(page)).x;
   assert.ok(slow > 0 && fast > slow * 1.5, `slow ${slow} fast ${fast}`);
   assert.deepEqual(page.problems, []);
   await ctx.close();
