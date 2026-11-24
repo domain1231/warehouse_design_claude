@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Phase 11-1 Golden 마무리 · test/phase11-golden
+- G3(Excel 분석, CSV·XLSX 2건)·G4(자동 배치 10건: inside·order·aisle·column nowrap/wrap, 30×20·10×10)를 기준본 Golden Master와 정확히 비교 — 차이 0. `pending.test.js` 삭제, golden todo 0(298 PASS).
+- fixture: `fixtures/excel/sample-inventory.*`(기준본 생성 가상 자료).
+- 다음: 11-2 기능 동등성 매트릭스 VERIFIED 판정.
+
 ### 2026-11-24 랙 선택 성능 — 공간 지표 메모 · perf/select-memo
 - panels.js 단일 슬롯 메모(배치 객체 동일성 + 값 의존성). 500랙 선택 중앙값 약 52ms(수정 전 55~65, Track C 전 45), 라벨 전환 약 200ms.
 - 검사: unit 209, golden 286, build·verify, e2e 11파일 17 PASS(새 space-memo: 선택 3회 재계산 0, 삭제·실행취소·다시실행 후 값 갱신).
