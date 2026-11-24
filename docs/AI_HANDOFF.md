@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Phase 11-4 독립 검토 — 저장·세션 수정 · fix/storage-review
+- 독립 검토 지적 재현·수정: ① 손상 저장본 교체가 QUOTA로 한 번 실패하면 이후 영구 저장 불가(같은 손상 원문의 보호 사본이면 재사용) ② 저장 중 들어온 편집이 SAVED로 가려짐(보낸 프로젝트와 같을 때만 saved) ③ 실패한 저장의 백업 되돌리기가 백업을 지움(저장 실패 시 되돌리지 않음, 교체 취소는 링이 그대로일 때만) ④ 손상 백업 링이 큰 편집을 영구 차단(':quarantine' 키로 격리 후 새 링) ⑤ BEFORE 잠금 중 BEFORE를 바꾸는 실행취소/다시실행 허용(기준본 R.step 규칙·문구 이식).
+- 기록만: 전체 교체 실패 시 그 사이 화면 보기 변경 유실(영향 작음).
+- 재현 검사 tests/unit/persistence-review.test.js(7, 수정 전 실패 확인). session-backups 기대값 갱신(실패 저장 후 백업 1개 유지).
+- 로컬: unit 225, golden 298, build·verify, e2e storage·storage2·history·scenarios·json-import-abort 18 PASS.
 ### 2026-11-24 Phase 11-4 독립 검토 — 자동 배치·Excel 적용 수정 · fix/placement-review
 - 독립 검토(별도 맥락) 지적 9건 중 재현·수정 3건: 고정 열 장애물 회피가 위치 유지 랙(keep·잠금·수동 유지)까지 밀던 문제(유지 랙은 겹침 장애물로 취급, 열 밀림 전파 차단), placementMeta 없는 예전 랙 TypeError, 경계 초과 열 중복 기록.
 - 기준본과 동일해 유지: 업데이트 시 일부 사용자 필드 기본값 복귀, 유지 랙 사후 검증 없음, BEFORE 잠금 UI 전용 확인, rackDiff 중복 키, 유지 시 좌상단 기준 — 사용자 결정 대기.

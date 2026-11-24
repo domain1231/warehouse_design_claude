@@ -131,9 +131,11 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     emit();
     try {
       storeScanResults(state.project);
-      const r = await store.save(state.project, { force, replaceCorrupt });
-      state.project.persistence = structuredClone(r.persistence);
-      state.status = 'saved';
+      const sent = state.project;
+      const r = await store.save(sent, { force, replaceCorrupt });
+      sent.persistence = structuredClone(r.persistence);
+      // 저장 시작 시점의 프로젝트만 검증되었다. 그 사이 편집·화면 변경이 들어왔다면 SAVED로 가리지 않는다.
+      state.status = state.project === sent ? 'saved' : 'unsaved';
       state.error = null;
       state.corrupt = false;
       if (state.notice && (r.state === 'SAVED' || force)) state.notice = '';
@@ -188,15 +190,9 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     }
   }
   async function saveWithReceipt(receipt) {
-    const r = await save();
-    if (receipt && r.state === 'FAILED') {
-      try {
-        backups.rollback(receipt);
-      } catch {
-        // 되돌리기 실패는 저장 오류로 이미 보고됨. 백업 링에는 직전 상태 백업이 하나 더 남을 뿐이다.
-      }
-    }
-    return r;
+    // 저장이 실패해도 편집은 메모리에 남으므로 편집 직전 백업을 지우지 않는다(다른 편집의 백업을 지울 위험도 없앤다). receipt는 전체 교체 취소에서만 쓴다.
+    void receipt;
+    return save();
   }
 
   /**
@@ -300,6 +296,8 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     const label = kind === 'undo' ? history.undo(draft) : history.redo(draft);
     if (label === null) return { changed: false };
     try {
+      // 기준본 R.step: BEFORE 잠금 중에는 BEFORE가 달라지는 실행취소/다시실행을 거부한다.
+      if (state.project.scenarioMeta.before.locked && JSON.stringify(draft.scenarios.before) !== JSON.stringify(state.project.scenarios.before)) throw new Error('BEFORE 잠금을 해제한 후 실행 취소/다시 실행하세요.');
       state.project = projectValidator(draft);
     } catch (e) {
       history.restore(snapshot);
