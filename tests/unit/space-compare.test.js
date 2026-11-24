@@ -15,7 +15,7 @@ const project = () => ({ scenarios: { before: layout(synthetic({ F4: 0.583931863
 
 test('purposeCompare: 순서·값·차이·설명', () => {
   const r = purposeCompare(project());
-  assert.deepEqual(r.map((x) => x.id), ['M3', 'M4', 'M8', 'M9', 'M6', 'M7', 'M11']);
+  assert.deepEqual(r.map((x) => x.id), ['M3', 'M4', 'M8', 'M9', 'M6', 'M7', 'M12', 'M13', 'M11']);
   assert.deepEqual([r[0].before, r[0].after, r[0].delta], ['58.4%', '84.3%', '+25.9%p']);
   assert.deepEqual([r[1].before, r[1].after, r[1].delta], ['305 / 343', '47 / 343', '−258']);
   for (const x of r) assert.ok(x.tip);

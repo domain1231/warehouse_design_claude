@@ -74,3 +74,51 @@ test('F4 수식이 AVERAGEIF면 excelSummary.f4AverageIf = true, AVERAGE면 키 
   assert.equal('f4AverageIf' in run(null).excelSummary, false, '예제 F4 = AVERAGE(...)');
   assert.equal(run('IFERROR(AVERAGEIF(Table1[랙 용적률(%)],">0"),"0")').excelSummary.f4AverageIf, true);
 });
+
+// ── C8(D-074): 공간 구성 5분해 · M12 보관 가능 합계 · M13 선반 여유 용적 ──
+import { shelfFreeVolume } from '../../src/metrics/space.js';
+
+test('GT-M7(개정) 5분해 합계 100.00% ± 0.01, 빈 랙 면적 = 빈 랙 footprint 합 9.5064㎡ · M12 = 빈 랙 + 잔여', () => {
+  const l = layoutOf(syntheticEmpty());
+  l.objects.push({ id: 'C1', kind: 'column', x: 0.5, y: 0.5, width: 1, depth: 1, rotation: 0 }, { id: 'A1', kind: 'aisle', x: 0, y: 11, width: 20, depth: 1, rotation: 0 });
+  const m = spaceMetrics(l), c = m.composition;
+  const sum = ['rack', 'emptyRack', 'unavailable', 'aisle', 'remaining'].reduce((a, k) => a + c[k].share, 0);
+  assert.ok(Math.abs(sum - 1) < 1e-4, `합계 ${sum}`);
+  assert.ok(Math.abs(c.emptyRack.area - 9.5064) < 1e-9, `빈 랙 ${c.emptyRack.area}`);
+  assert.ok(Math.abs(c.rack.area - 44) < 1e-9, '적치 랙 44 × 1㎡');
+  assert.ok(Math.abs(c.unavailable.area - 0.75) < 1e-9, '기둥 1㎡ 중 랙과 겹친 0.5×0.5㎡ 제외');
+  assert.ok(Math.abs(m.storable.area - (c.emptyRack.area + c.remaining.area)) < 1e-12);
+  assert.ok(Math.abs(m.storable.share - m.storable.area / 240) < 1e-12);
+});
+
+test('빈 랙과 적치 랙이 겹치면 적치 랙이 우선(빈 랙은 겹치지 않은 부분만)', () => {
+  const rk = (id, x, mh) => ({ id, kind: 'rack', code: id, x, y: 0, width: 2, depth: 1, rotation: 0, height: 2, excel: { key: id, shelves: [{ level: 1, items: [{ location: `7F-A-${id}-1-1`, itemCode: mh ? 'P' : '', shelfHeight: 1000, materialHeight: mh }] }] } });
+  const c = spaceMetrics({ warehouse: { width: 10, height: 5 }, objects: [rk('1', 0, 500), rk('2', 1, 0)] }).composition;
+  assert.ok(Math.abs(c.rack.area - 2) < 1e-9);
+  assert.ok(Math.abs(c.emptyRack.area - 1) < 1e-9);
+});
+
+test('M13 선반 여유 용적: (단 높이 − 선반 최대 자재높이) × 가로 × 세로, 빈 선반은 단 높이 전체, 초과는 0', () => {
+  const o = { width: 2, depth: 0.5, excel: { shelves: [
+    { level: 1, items: [{ shelfHeight: 1000, materialHeight: 300 }, { shelfHeight: 1000, materialHeight: 600 }] }, // 여유 0.4m
+    { level: 2, items: [{ shelfHeight: 800, materialHeight: 0 }] }, // 빈 선반 0.8m
+    { level: 3, items: [{ shelfHeight: 500, materialHeight: 700 }] }, // 초과 → 0
+  ] } };
+  const r = shelfFreeVolume([o]);
+  assert.ok(Math.abs(r.free - (0.4 + 0.8) * 1) < 1e-12);
+  assert.ok(Math.abs(r.total - (1 + 0.8 + 0.5) * 1) < 1e-12);
+  assert.ok(Math.abs(r.share - 1.2 / 2.3) < 1e-12);
+  assert.deepEqual(shelfFreeVolume([]), { free: 0, total: 0, share: null });
+});
+
+test('비교표에 보관 가능 합계·선반 여유 용적 행(GT-EMPTY: AFTER 빈 랙 12대만큼 보관 여유 증가)', () => {
+  const by = Object.fromEntries(purposeCompare(project()).map((r) => [r.id, r]));
+  assert.ok(by.M12 && by.M13);
+  const b = spaceMetrics(project().scenarios.before), a = spaceMetrics(project().scenarios.after);
+  assert.ok(Math.abs(a.storable.area - b.storable.area - 9.5064) < 1e-9, '비운 랙 면적만큼 보관 가능 합계 증가');
+  assert.ok(Math.abs(a.shelfFree.total - b.shelfFree.total) < 1e-12, '선반 구성 같음');
+  assert.equal(by.M13.after, `${a.shelfFree.free.toFixed(2)}m³ (${(a.shelfFree.share * 100).toFixed(1)}%)`);
+  assert.match(by.M12.delta, /^\+\d+\.\d%p$/);
+  assert.match(by.M13.delta, /^[+−]\d+\.\d\dm³$/);
+  assert.match(by.M7.after, /빈 랙 \d+\.\d%/);
+});

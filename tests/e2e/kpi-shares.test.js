@@ -1,5 +1,5 @@
 // D-058·D-059·D-061: 상단 지표 8칸. 면적 사용률·통로 비중은 ① Excel 방식(총면적 = Excel 입력값, 없으면 도면 전체),
-// 보관 불가·잔여 비중은 공간 구성 4분해(도면 기준). 값의 출처는 src/metrics/space.js 하나.
+// 보관 불가·잔여 비중은 공간 구성 5분해(도면 기준, D-074: 랙·빈 랙·보관 불가·통로·잔여). 값의 출처는 src/metrics/space.js 하나.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -35,8 +35,9 @@ test('상단 지표 8칸: 면적 사용률·통로 비중 ① Excel 방식(총�
   assert.match(k['통로 비중'].sub, /도면 통로 [\d.]+%/, '② 도면 방식 값도 함께 표시');
   const comp = (await rows(page))['공간 구성'].match(/[\d.]+/g).map(Number);
   assert.ok(Math.abs(comp.reduce((a, b) => a + b, 0) - 100) <= 0.2, `공간 구성 합 ${comp}`);
-  assert.equal(Number(k['보관 불가 구역 비중'].v), comp[1]);
-  assert.equal(Number(k['보관 가능 잔여 비중'].v), comp[3]);
+  assert.equal(comp.length, 5, `공간 구성 5분해 ${comp}`);
+  assert.equal(Number(k['보관 불가 구역 비중'].v), comp[2]);
+  assert.equal(Number(k['보관 가능 잔여 비중'].v), comp[4]);
 
   // Excel 총면적이 기록된 배치: 그 값을 기준으로
   await page.evaluate(() => window.__warehouseSession.apply('가상 총면적', (P) => {

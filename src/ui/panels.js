@@ -96,14 +96,14 @@ export function createPanels(roots, { onFocus, onView }) {
         ['80% 미만 로케이션', x.locations ? `${x.lowLocations} ${mutedS(`/ ${x.locations}`)}` : '—'],
         ['빈 랙 · 저활용 랙', `${x.emptyRacks} · ${x.lowRacks} ${mutedS(`R<${Math.round(x.lowRackThreshold * 100)}% · 미확인 ${x.unknownRacks}`)}`],
         ['유휴 공간 랙', x.idleRacks === null ? `— ${mutedS('천장 높이 미입력')}` : `${x.idleRacks} ${mutedS('천장−랙−500mm > 500mm')}`],
-        ['공간 구성', `랙 ${pct(comp.rack.share)} · 불가 ${pct(comp.unavailable.share)} · 통로 ${pct(comp.aisle.share)} · 잔여 ${pct(comp.remaining.share)}`],
+        ['공간 구성', `랙 ${pct(comp.rack.share)} · 빈 랙 ${pct(comp.emptyRack.share)} · 불가 ${pct(comp.unavailable.share)} · 통로 ${pct(comp.aisle.share)} · 잔여 ${pct(comp.remaining.share)}`],
         ['통로 : 랙 면적비', m.rackArea > 0 ? (m.aisles / m.rackArea).toFixed(2) : '—'],
         ['최소 통로 폭', minA ? `${aisleText}m ${mutedS(aisleSub)}` : '통로 객체 없음'],
         ['BEFORE→AFTER 증감', deltaText],
       ];
       k.warnings.textContent = String(m.warnings.length);
       if (k.summary) k.summary.textContent = `${m.racks}랙 · 면적 사용률 ${pct(x.areaUse)}% · 평균 용적률 ${pct(x.avgVolume)}% · 공간 경고 ${m.warnings.length}건`;
-      roots.metrics.innerHTML = `${[['랙 면적 합계', fmt(m.rackArea) + '㎡'], ['보관 불가 / 문 안전 구역', fmt(m.unavailable) + '㎡'], ['통로 / 작업 구역', fmt(m.aisles) + '㎡'], ['중복 제외 잔여 면적', fmt(m.remaining) + '㎡'], ...extra].map(([t, v]) => `<div class="metricline"><span>${t}</span><strong>${v}</strong></div>`).join('')}<p class="note">각 구역 지표는 서로 겹칠 수 있습니다. 잔여 면적만 전체 합집합을 차감합니다. 평균 용적률은 Excel 방식(로케이션 자재높이 ÷ 단 높이 → 랙 평균 → 랙 평균의 평균)이며 현재고가 아닙니다. 평균 용적률은 빈 랙, 80% 미만은 빈 로케이션(품목코드 없음)을 뺍니다. 공간 구성은 랙 > 보관 불가 > 통로 > 잔여 순서로 겹침을 지운 도면 기준입니다.</p>`;
+      roots.metrics.innerHTML = `${[['랙 면적 합계', fmt(m.rackArea) + '㎡'], ['보관 불가 / 문 안전 구역', fmt(m.unavailable) + '㎡'], ['통로 / 작업 구역', fmt(m.aisles) + '㎡'], ['중복 제외 잔여 면적', fmt(m.remaining) + '㎡'], ...extra].map(([t, v]) => `<div class="metricline"><span>${t}</span><strong>${v}</strong></div>`).join('')}<p class="note">각 구역 지표는 서로 겹칠 수 있습니다. 잔여 면적만 전체 합집합을 차감합니다. 평균 용적률은 Excel 방식(로케이션 자재높이 ÷ 단 높이 → 랙 평균 → 랙 평균의 평균)이며 현재고가 아닙니다. 평균 용적률은 빈 랙, 80% 미만은 빈 로케이션(품목코드 없음)을 뺍니다. 공간 구성은 랙 > 빈 랙 > 보관 불가 > 통로 > 잔여 순서로 겹침을 지운 도면 기준입니다.</p>`;
       $('warningCount').textContent = m.warnings.length + '건';
       roots.warnings.innerHTML = m.warnings.length
         ? m.warnings.map((w, i) => `<li data-warning="${i}" style="cursor:pointer;padding:4px 0">${esc(w.text)}</li>`).join('')

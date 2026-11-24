@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.12 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C C8 공간 구성 5분해 + M12·M13(D-074) · feature/c8-composition-storage (C10 위에 쌓음)
+- M7 5분해(composition.emptyRack), M12 storable, M13 shelfFree(`shelfFreeVolume`). 비교표 9행, 막대 빈 랙 빗금(`.seg-empty`).
+- 로컬: unit 246, golden 298, build·verify, e2e compare-purpose·compare-delta·compare-change-list·ui-parity PASS. 706호 6.8%→12.9% 예시 파일 없음(NOT RUN).
+- 다음: C9(BE/AF 면적 기준 통일).
+
 ### 2026-11-24 Track C C10 빈 랙 처리 규칙(D-073) · feature/c10-empty-racks
 - M3 빈 랙(R = 0) 제외, M4 빈 로케이션(품목코드 없음) 제외(품목코드 열 없으면 미적용), Δ 지도 '비움(이전 완료)'·범례·변화 목록 필터, C7 대조는 F4 AVERAGEIF 감지 + 빈 랙·로케이션 안내.
 - GT-EMPTY 가상 데이터셋(`tests/unit/helpers/space-synthetic.js` syntheticEmpty, 430행·빈 랙 12): 84.81% · 33 / 343 · 빈 랙 12 · 빈 랙 면적 9.5064㎡ · 악화 0.
