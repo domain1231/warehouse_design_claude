@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.10 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 Track C · C2 비교표 재구성(D-062) · feature/compare-c2
+- 비교 대화상자 첫 화면: 목적 지표 7행(산식 툴팁) · 공간 구성 누적 막대 · 배치 변경 한 줄 요약(0이면 숨김). 기존 표는 '세부 지표'로 화면 필터만.
+- `purposeCompare`(src/metrics/space.js), `layoutChangeSummary`(src/warehouse/scenarios.js). compareRows 불변(골든 S2).
+- 검사: pnpm check PASS(아래 PR 본문 수치). Windows Edge·실제 마우스 NOT RUN.
+- 다음: C3 Δ 지도 모드(구간 +40/+20~40/+1~20/0/악화, 색약 명도 차 확인).
+
 ### 2026-11-24 Track C · C1 2단계 화면 단일화(D-061) · feature/space-metrics-c1b
 - 상단·오른쪽 공간 지표를 `src/metrics/space.js`로 연결, ① Excel 방식 기본(면적 사용률·통로 비중), Excel 총면적 `sourceInfo.referenceArea` 저장. `space-kpi.js` 삭제.
 - 검사: e2e `kpi-shares`·`kpi-more` 재작성, 단위 `excel-reference-area.test.js`. 로컬: 운영 JSON + 706호BE 업데이트 → 130.5 저장·44.0%·58.4%.

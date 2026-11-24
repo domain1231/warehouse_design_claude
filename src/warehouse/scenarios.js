@@ -117,3 +117,10 @@ export function compareRows(project) {
   rows.push(['전체 면적 ㎡', fmt(b.area), fmt(a.area), fmt(a.area - b.area)], ['잔여 면적 ㎡', fmt(b.remaining), fmt(a.remaining), fmt(a.remaining - b.remaining)], ['신규 랙 추가 가능 여부', '미판정', '미판정', '잔여 면적만으로 실제 배치 가능성을 확정하지 않음']);
   return rows;
 }
+
+/** C2: 배치 변경 한 줄 요약(rackDiff 결과). 변경이 없으면 ''. */
+export function layoutChangeSummary(d) {
+  const n = (t) => d.matched.filter((r) => r.types.includes(t)).length;
+  const [m, r, s, a, x] = [n('moved'), n('rotated'), n('resized'), d.added.length, d.removed.length];
+  return m + r + s + a + x ? `이동 ${m} · 회전 ${r} · 신규 ${a} · 제거 ${x} · 규격 ${s}` : '';
+}
