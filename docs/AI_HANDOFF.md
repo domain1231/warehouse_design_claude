@@ -5,6 +5,9 @@
 - 앱 2.5.0-alpha.11 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-24 영역 선택 '모든 객체'(D-072) · feature/marquee-all
+- #mSelectRule에 intersect-all·contain-all 추가(기본 랙만). 혼합 선택: 이동·삭제 전체, 회전·복제·그룹 편집 랙만, 삭제 확인문 종류별 개수.
+- UI parity 간극 24 → 25. 로컬: unit 234, golden 298, build·verify, e2e marquee-all 외 9파일 PASS.
 ### 2026-11-24 방향키 화면 이동·대각선(D-071) · feature/keyboard-pan
 - 선택 없음: 방향키 화면 이동(Shift 3배, 대각선, 누르는 동안 연속), 멈출 때 viewport 1회 저장. 선택 있음: 기존 미세 이동 + 두 키 동시 대각선 한 명령.
 - `src/cad/keypan.js`(heldVector·panDelta·isArrow). 실제 키보드·터치패드 NOT RUN.

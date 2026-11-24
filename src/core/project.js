@@ -404,7 +404,7 @@ export function validateProject(p) {
   if (!['1', '2.0', '2.2', '2.3.1', '2.3.2', '2.3.3', '2.3.4', '2.3.5', '2.3.6'].includes(String(p.version))) fail('지원되지 않는 편집 버전');
   const ed = p.editing;
   const vp = p.viewport;
-  if (!Array.isArray(ed.selectedRackIds) || ed.selectedRackIds.some((id) => typeof id !== 'string') || !['intersect', 'contain'].includes(ed.selectionRule) || typeof ed.allowWarnings !== 'boolean') fail('편집 상태 형식 오류');
+  if (!Array.isArray(ed.selectedRackIds) || ed.selectedRackIds.some((id) => typeof id !== 'string') || !['intersect', 'contain', 'intersect-all', 'contain-all'].includes(ed.selectionRule) || typeof ed.allowWarnings !== 'boolean') fail('편집 상태 형식 오류');
   finite(vp.zoom, '배율', 1e-4, 30);
   finite(vp.panX, '화면 X', -5e3, 5e3);
   finite(vp.panY, '화면 Y', -5e3, 5e3);
