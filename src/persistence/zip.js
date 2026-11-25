@@ -7,8 +7,10 @@
 export const PACK_FORMAT = 'warehouse-backup-zip-v1';
 export const ENTRY_NAME = 'project.json';
 // 기준본과 같은 상한: base64 12,000,000자, 압축 해제 24,000,000바이트
+// E1(D-086): 압축 해제 상한이 곧 프로젝트 크기 상한(PROJECT_MAX_BYTES)이다. JSON 불러오기·JSON 저장 경고도 이 값을 쓴다.
+export const PROJECT_MAX_BYTES = 24e6;
 export const MAX_BASE64_LENGTH = 12e6;
-export const MAX_CONTENT_BYTES = 24e6;
+export const MAX_CONTENT_BYTES = PROJECT_MAX_BYTES;
 
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256);
@@ -66,7 +68,7 @@ async function transform(bytes, stream, limit) {
 export async function packProject(text) {
   if (typeof text !== 'string') throw new TypeError('프로젝트 JSON 문자열이 필요합니다.');
   const content = new TextEncoder().encode(text);
-  if (content.length > MAX_CONTENT_BYTES) throw new Error('프로젝트가 저장 형식 크기 상한을 넘습니다.');
+  if (content.length > MAX_CONTENT_BYTES) throw new Error(`프로젝트(${(content.length / 1e6).toFixed(1)}MB)가 저장 크기 상한 24MB를 넘습니다. 이력(배치·Excel 스냅샷, 자동 배치 이력)을 정리한 뒤 저장하세요.`);
   const compressed = await transform(content, new CompressionStream('deflate-raw'));
   const name = new TextEncoder().encode(ENTRY_NAME);
   const crc = crc32(content);
@@ -160,8 +162,24 @@ function readEntry(zip) {
 export async function unpackStored(raw) {
   const parsed = JSON.parse(raw);
   if (parsed?.format !== PACK_FORMAT) return raw;
-  if (typeof parsed.data !== 'string' || parsed.data.length > MAX_BASE64_LENGTH) throw new Error('압축 백업 크기 오류');
-  const entry = readEntry(fromBase64(parsed.data));
+  return unpackPacked(parsed);
+}
+
+/** 이미 해석한 압축 저장 객체 {format, data}를 프로젝트 JSON 문자열로 되돌린다. */
+export async function unpackPacked(parsed) {
+  if (typeof parsed?.data !== 'string' || parsed.data.length > MAX_BASE64_LENGTH) throw new Error('압축 백업 크기 오류');
+  return inflateEntry(readEntry(fromBase64(parsed.data)));
+}
+
+/** zip 파일의 첫 4바이트가 로컬 파일 헤더(PK\x03\x04)인지. */
+export const isZipBytes = (b) => b.length >= 4 && b[0] === 0x50 && b[1] === 0x4b && b[2] === 3 && b[3] === 4;
+
+/** project.json이 든 zip 파일(압축 백업 data를 그대로 파일로 저장한 것)을 프로젝트 JSON 문자열로 되돌린다. */
+export async function unzipProject(bytes) {
+  return inflateEntry(readEntry(bytes));
+}
+
+async function inflateEntry(entry) {
   let content;
   if (entry.method === 0) content = entry.data;
   else if (entry.method === 8) content = await transform(entry.data, new DecompressionStream('deflate-raw'), MAX_CONTENT_BYTES);

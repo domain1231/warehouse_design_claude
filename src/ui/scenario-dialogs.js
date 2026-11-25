@@ -48,7 +48,7 @@ const dlg = (cls, testid, html, id) => {
 };
 
 /** @param {{ getProject: () => object, toast: (t: string) => void, apply: (label: string, compute: Function) => Promise<any>, download: Function, cloneBeforeToAfter: Function, restoreBackup: Function, cloneCommand: string, restoreCommand: string }} deps */
-export function createScenarioDialogs({ getProject, toast, apply, download, pngBlob, jsonName, openHistoryPanel, cloneBeforeToAfter, restoreBackup, cloneCommand, restoreCommand, setCompareView = () => {} }) {
+export function createScenarioDialogs({ getProject, toast, apply, download, pngBlob, jsonName, openHistoryPanel, cloneBeforeToAfter, restoreBackup, cloneCommand, restoreCommand, setCompareView = () => {}, downloadProject = (name, p) => download(name, JSON.stringify(p, null, 2), 'application/json') }) {
   const failed = (r) => r && !r.ok && toast('ROLLED_BACK · 전체 취소: ' + r.reason);
 
   // ── 복제 ──
@@ -287,7 +287,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     drawChangeTable(); applyFocus();
   });
   q(md, '[data-change-csv]').addEventListener('click', () => download('warehouse_rack_delta.csv', csvEncode(changeListCsvRows(rackChangeList(getProject(), chg))), 'text/csv;charset=utf-8'));
-  q(md, '[data-save]').addEventListener('click', () => download(jsonName(), JSON.stringify(getProject(), null, 2), 'application/json'));
+  q(md, '[data-save]').addEventListener('click', () => downloadProject(jsonName(), getProject()));
   q(md, '[data-csv]').addEventListener('click', () => { const p = getProject(); download('warehouse_rack_changes.csv', csvEncode([DIFF_CSV_HEADER, ...diffRows(rackDiff(p.scenarios.before, p.scenarios.after))]), 'text/csv;charset=utf-8'); });
   q(md, '[data-compare-csv]').addEventListener('click', () => download('warehouse_comparison.csv', csvEncode((() => { const p = getProject(), c = compareRows(p); return [c[0], ...purposeCompare(p).map((r) => [r.label, r.before, r.after, r.delta]), ...c.slice(1)]; })()), 'text/csv;charset=utf-8'));
   q(md, '[data-compare-svg]').addEventListener('click', () => download('warehouse_before_after.svg', compareSvg(getProject()), 'image/svg+xml;charset=utf-8'));
