@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.18 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track E E8 공유용 JSON(D-095) · feature/e8-share-export
+- 사용자: alpha.18 확인 '문제 없음'(2026-11-25).
+- `src/warehouse/share-export.js`(신규: `shareProject`·`SHARE_DROPS`), storage-dialogs `exportShare`·`#vShareJson`.
+- 로컬: unit 307(신규 share-export 2), golden 298, build·verify, e2e share-export(신규)·ui-parity(고정 목록 +1)·storage·storage2·history-cleanup·compare-headline PASS.
+- Track E(E1~E8)·차분 저장 완료. 다음 후보: D9(Δ 지도 휠 줌·드래그) 또는 실사용 피드백.
+
 ### 2026-11-25 기준일 스냅샷 차분 저장(D-094) · feature/e9-snapshot-delta
 - `src/core/snapshot-delta.js`(신규: `diff`·`patch`·`deepSame`·`packSnapshotDeltas`·`expandSnapshotDeltas`·`countSnapshotDeltas`, 기준점 10). backup-refs `packProjectRefs`/`expandProjectRefs`가 차분까지 포함(저장 지점 변경 없음). history-cleanup이 남긴 이력의 스냅샷 기준일 보존. size-budget 8MB 고정 검사.
 - 테스트 도우미 sizedProject 기본 형식 'legacy'(이전 앱 저장본과 같은 원문). E1 E2E는 '기준본 호환 JSON'으로 큰 파일 저장.
