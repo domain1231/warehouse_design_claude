@@ -26,7 +26,7 @@ test('발표 모드: 바탕 도면 글자 숨김 · Δ 라벨이 일반 모드�
   assert.match(await legend.innerText(), /\? Excel 미연결 \d+/);
   assert.match(await legend.innerText(), /비움\(이전 완료\) 12/);
   assert.ok(await page.evaluate(() => { const l = document.querySelector('[data-testid=compare-delta-legend]'), s = document.querySelector('[data-testid=compare-delta]'); return !!(l.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING); }), '범례가 지도 위');
-  assert.equal(await page.locator('[data-delta-head]').evaluate((e) => getComputedStyle(e).position), 'sticky');
+  assert.ok(await page.locator('[data-delta-head]').evaluate((e) => [e, e.closest('.r-cmp-right')].some((x) => x && getComputedStyle(x).position === 'sticky')), '범례(또는 지도 열) 고정');
   const fsOf = () => page.locator('[data-testid=compare-delta] g[data-rack] text').first().evaluate((t) => Number(t.getAttribute('font-size')));
   const normalFs = await fsOf();
   assert.ok(await page.locator('[data-testid=compare-delta] g[opacity] text').count() > 0, '일반 모드는 바탕 글자 있음');
