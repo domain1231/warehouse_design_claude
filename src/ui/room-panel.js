@@ -1,14 +1,16 @@
 // 창고 치수·참고 도면 칸(기준본 01 프로젝트·공간, 04 참고 도면 배경). 계산은 warehouse/room.js, 변경은 main이 준 콜백(실행취소 기록).
 import { roomApplyReason, deriveRoom } from '../warehouse/room.js';
 import { formatNumber as fmt } from '../core/format.js';
+import { tooLargeText, SIZE_HINTS } from '../core/file-size.js';
 
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
 /** 파일 → 배경 data URL. 오류는 기준본 문구로 던진다. */
 export async function readBackgroundFile(f) {
-  if (f.size > 12e6) throw new Error('12MB 이하 파일만 지원합니다.');
+  // E3(D-088): 종류·크기·상한(4MB)·해결 방법. 12MB 초과는 형식 확인 전에 거부(기준본 순서), 상한 표시는 실제 상한 4MB.
+  if (f.size > 12e6) throw new Error(tooLargeText('참고 도면 이미지', f.size, 4e6, SIZE_HINTS.image));
   if (!IMAGE_TYPES.includes(f.type)) throw new Error('PNG/JPEG/WebP 이미지만 지원합니다.');
-  if (f.size > 4e6) throw new Error('배경 이미지는 4MB 이하를 권장·지원합니다.');
+  if (f.size > 4e6) throw new Error(tooLargeText('참고 도면 이미지', f.size, 4e6, SIZE_HINTS.image));
   return new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(r.result);

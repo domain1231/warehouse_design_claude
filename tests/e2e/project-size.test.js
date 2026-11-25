@@ -57,7 +57,7 @@ test('E1·E2: 23.9MB JSON → 읽기 쉬운 JSON 저장(크기 경고)·작은 J
   const exported = fs.readFileSync(await dl.path());
   assert.ok(exported.length > 12e6 && exported.length <= 24e6, String(exported.length));
   assert.ok(Math.abs(exported.length - Buffer.byteLength(big.text)) < 200, '불러온 뒤 다시 저장해도 크기가 거의 같음(저장 시각 등만 추가)');
-  assert.match(await toast(page), /^JSON 파일 2\d\.\dMB · 불러오기 상한 24MB의 50%를 넘었습니다\. 이력\(.*작은 JSON을 고르면 크기가 약 절반으로 줄어듭니다\.$/);
+  assert.match(await toast(page), /^JSON 파일 2\d\.\dMB\(탐색기 2\d,\d{3}KB\) · 불러오기 상한 24MB의 50%를 넘었습니다\. 이력\(.*작은 JSON을 고르면 크기가 약 절반으로 줄어듭니다\.$/);
 
   // 작은 JSON: 내용 동일, 크기 약 절반
   await page.locator('[data-testid=storage-open]').click();
