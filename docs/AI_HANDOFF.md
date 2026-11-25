@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.16 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track E E5 배치 백업 안 스냅샷 참조(D-089) · feature/e5-backup-dedup (E3 위에 쌓음)
+- `src/core/backup-refs.js`(신규: `packBackupRefs`·`expandBackupRefs`·`countBackupRefs`·`isBackupRef`). project.js validateProject 맨 앞 `expandBackupRefs`. project-file `JSON_FORMATS`에 'legacy', storage.js 슬롯·backups.js 링 저장에 `packBackupRefs`.
+- 테스트 도우미 `historyProject()`(size-fixture.js). v2.4.1 되돌림 확인 스크립트는 저장소 밖(로컬)에서 실행, 결과는 D-089.
+- 로컬: unit 284(신규 backup-refs 7), golden 298, build·verify, e2e backup-refs(신규)·scenarios·excel·excel-gates·storage·storage2·project-size·json-import-abort·ui-parity·ux-improvements PASS.
+- 다음: E6(자동 배치 이력 상한) → E4(이력 정리 도구, 보존 개수 결정 필요) → E7.
+
 ### 2026-11-25 Track E E3 파일 크기 초과 문구(D-088) · feature/e3-size-messages
 - `src/core/file-size.js`(신규: `explorerKb`·`sizeText`·`tooLargeText`·`SIZE_HINTS`). project-file `projectKind`, 사용처: readProjectFile·room-panel readBackgroundFile·records-panel 재고 CSV·xlsx readWorkbook. project-file `LIMIT_TEXT` 제거.
 - 로컬: unit 277(신규 file-size 3), golden 298, build·verify, e2e project-size·storage2·room·excel·excel-gates·excel-summary-compare PASS.

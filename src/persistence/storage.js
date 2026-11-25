@@ -11,6 +11,7 @@
 //
 // 기준본 키(warehouse-studio-v1)는 읽기만 하고 수정하지 않는다(D-006).
 import { packProject, unpackStored } from './zip.js';
+import { packBackupRefs } from '../core/backup-refs.js';
 
 export const POINTER_FORMAT = 'warehouse-layout-pointer-v1';
 export const DEFAULT_PREFIX = 'warehouse-layout-v2';
@@ -163,7 +164,7 @@ export function createProjectStore({ storage, prefix = DEFAULT_PREFIX, legacyKey
 
     const revision = Math.max(ptr?.revision ?? 0, candidate.persistence?.revision ?? 0) + 1;
     candidate.persistence = { lastSavedAt: now(), revision };
-    const text = JSON.stringify(candidate);
+    const text = JSON.stringify(packBackupRefs(candidate)); // E5(D-089): 백업 안 스냅샷은 참조로(읽을 때 validate가 펼침)
     let packed;
     try {
       packed = await packProject(text);
