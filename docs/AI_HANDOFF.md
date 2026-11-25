@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track D D2 Δ 지도 발표 모드(D-078) · feature/d2-delta-presentation (D1 위에 쌓음)
+- `columnKeyOf`·`columnDeltaMap`(delta.js), session.setView `compareView`, 검증기 `settings.compareView`, main.js `setCompareView` 주입. 화면: `[data-delta-head]`(도구+범례 sticky), `[data-present]`, `[data-unit]`.
+- E2E 공용 헬퍼를 검증기 규칙에 맞게 수정(building·선반 번호). UI 차이 고정 목록 25 → 27.
+- 로컬: unit 257, golden 298, build·verify, e2e compare-present(신규, 라벨 bbox 겹침 0)·compare-headline·compare-delta·compare-basis·compare-purpose·compare-change-list·ui-parity PASS.
+- 다음: D3(2단 배치·발표용 내보내기).
+
 ### 2026-11-25 Track D D1 결론 문장·KPI 카드·방향 색(D-077) · feature/d1-compare-headline
 - `METRIC_DIRECTION`·`metricTrend`·`compareSummary`·`HEADLINE_PRIORITY`(space.js), purposeCompare 행에 num·direction·trend. 화면: `[data-headline]`·`[data-kpis]`·`.r-trend`.
 - E2E 공용 `tests/e2e/compare-helpers.js`(가상 GT-EMPTY 배치로 비교 화면 열기).

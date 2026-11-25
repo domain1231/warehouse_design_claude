@@ -57,3 +57,31 @@ export function changeListCsvRows(rows) {
   return [['랙', '로케이션 수 BEFORE', '로케이션 수 AFTER', 'BEFORE R %', 'AFTER R %', 'Δ %p', '구분', '배치 변경'],
     ...rows.map((r) => [r.code, r.locB ?? '', r.locA ?? '', pct1(r.rB), pct1(r.rA), r.delta === null ? '' : (r.delta < 0 ? '−' : r.delta > 0 ? '+' : '') + Math.abs(r.delta).toFixed(1), GROUP_NAMES[r.group], r.types.length ? r.types.map((t) => CHANGE_TYPE_NAMES[t]).join('·') : '—'])];
 }
+
+/** D2(D-078): 랙의 '열' 키 = Excel 랙 키(건물-열-랙번호)에서 마지막 랙 번호를 뺀 값. Excel 미연결이면 null. */
+export const columnKeyOf = (o) => { const k = o?.excel?.key; if (typeof k !== 'string') return null; const i = k.lastIndexOf('-'); return i > 0 ? k.slice(0, i) : null; };
+
+/**
+ * D2(D-078): Δ 지도 '열 단위 요약'. 열마다 BEFORE·AFTER 랙 용적률 R의 평균(두 값이 모두 있는 랙만)과 Δ(%p, 0.1 반올림).
+ * 열의 모든 랙이 '비움'이면 비움, R을 알 수 없으면 미확인. label은 열 이름(건물이 달라 겹치면 전체 키).
+ */
+export function columnDeltaMap(project, map = rackDeltaMap(project)) {
+  const after = new Map(project.scenarios.after.objects.filter((o) => o.kind === 'rack').map((o) => [o.id, o]));
+  const groups = new Map();
+  for (const r of map.racks) {
+    const key = columnKeyOf(after.get(r.id));
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  }
+  const short = (k) => k.slice(k.lastIndexOf('-') + 1);
+  const dup = new Set([...groups.keys()].map(short).filter((x, i, a) => a.indexOf(x) !== i));
+  return [...groups].map(([key, rs]) => {
+    const both = rs.filter((r) => r.rB !== null && r.rA !== null);
+    const mean = (f) => (both.length ? both.reduce((a, r) => a + f(r), 0) / both.length : null);
+    const rB = mean((r) => r.rB), rA = mean((r) => r.rA);
+    const delta = rB === null ? null : Math.round((rA - rB) * 1000) / 10;
+    const bin = rs.every((r) => r.bin === 'emptied') ? 'emptied' : delta === null ? 'unknown' : binOf(delta);
+    return { key, label: dup.has(short(key)) ? key : short(key), rackIds: rs.map((r) => r.id), rB, rA, delta, bin };
+  }).sort((a, b) => a.key.localeCompare(b.key, 'ko', { numeric: true }));
+}
