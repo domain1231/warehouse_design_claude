@@ -2,7 +2,7 @@
 
 ## 현재 상태 (2026-11-15)
 - 단계: Phase 5c(라벨·색 표시) 완료. PR `feature/phase5c2-colors`(기준: main). PR #1~#26은 main에 병합됨.
-- 앱 2.5.0-alpha.18 / 스키마 2.3.6.
+- 앱 2.5.0-alpha.19 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
 ### 2026-11-25 저장 경로 성능 개선(D-096) · perf/save-path
