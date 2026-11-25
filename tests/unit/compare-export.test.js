@@ -1,4 +1,4 @@
-// D3(D-079): 발표용 1장 배치 계획(글자 9pt 이상·페이지 안)과 최소 PDF 구조.
+// D3(D-080): 발표용 1장 배치 계획(글자 9pt 이상·페이지 안)과 최소 PDF 구조.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { presentationLayout, jpegToPdf, PAGE, MIN_TEXT_PX } from '../../src/ui/compare-export.js';

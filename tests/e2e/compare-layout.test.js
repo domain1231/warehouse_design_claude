@@ -1,4 +1,4 @@
-// D3(D-079): 1366×768에서 결론·KPI·Δ 지도가 스크롤 없이 보임(2단 배치), 발표용 PNG/PDF 1장 내보내기(오프라인).
+// D3(D-080): 1366×768에서 결론·KPI·Δ 지도가 스크롤 없이 보임(2단 배치), 발표용 PNG/PDF 1장 내보내기(오프라인).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

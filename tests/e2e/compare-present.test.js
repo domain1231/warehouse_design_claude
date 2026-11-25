@@ -1,4 +1,4 @@
-// D2(D-078): Δ 지도 발표 모드(바탕 글자 숨김·Δ 크게, 라벨 겹침 0)·열 단위 요약·범례 고정·설정 JSON 저장.
+// D2(D-079): Δ 지도 발표 모드(바탕 글자 숨김·Δ 크게, 라벨 겹침 0)·열 단위 요약·범례 고정·설정 JSON 저장.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';

@@ -1,4 +1,4 @@
-// D3(D-079): 비교 화면 '발표용 1장 내보내기' — A4 가로(150dpi, 1754×1240px) 한 장에 결론·KPI·목적 지표·공간 구성 막대·Δ 지도(발표 모드)·각주.
+// D3(D-080): 비교 화면 '발표용 1장 내보내기' — A4 가로(150dpi, 1754×1240px) 한 장에 결론·KPI·목적 지표·공간 구성 막대·Δ 지도(발표 모드)·각주.
 // 배치 계획(presentationLayout)과 PDF 조립(jpegToPdf)은 DOM 없는 순수 함수, 그리기(renderPresentation)만 브라우저 캔버스를 쓴다. 외부 자원 없음.
 
 export const PAGE = Object.freeze({ width: 1754, height: 1240, dpi: 150 });

@@ -330,7 +330,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
     }
     if (['intersect', 'contain', 'intersect-all', 'contain-all'].includes(selectionRule)) next.editing = { ...(next.editing ?? state.project.editing), selectionRule };
     if (typeof snap === 'boolean') next.settings = { ...(next.settings ?? state.project.settings), snap };
-    // D2(D-078): 비교 Δ 지도 발표 모드·단위(실행취소 없이 저장, 재구축 확장 필드)
+    // D2(D-079): 비교 Δ 지도 발표 모드·단위(실행취소 없이 저장, 재구축 확장 필드)
     if (compareView) next.settings = { ...(next.settings ?? state.project.settings), compareView: { presentation: !!compareView.presentation, unit: compareView.unit === 'column' ? 'column' : 'rack' } };
     if (precision) next.precision = { ...state.project.precision, ...precision };
     // BEFORE/AFTER 전환(기준본 R.switch): 대상의 자동 배치 설정을 현재 설정으로 복사하고 선택을 비운다.

@@ -208,7 +208,7 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-delta-tools { display: flex; align-items: center; gap: 10px; }
 .r-delta-tools label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .r-delta-tools select { width: auto; }
-/* D3(D-079): 1280px 이상은 왼쪽 KPI·표·막대, 오른쪽 지도 고정. 좁으면 지도를 표 위로 쌓는다. */
+/* D3(D-080): 1280px 이상은 왼쪽 KPI·표·막대, 오른쪽 지도 고정. 좁으면 지도를 표 위로 쌓는다. */
 .r-cmp-grid { display: flex; flex-direction: column; gap: 10px; }
 .r-cmp-right { order: -1; min-width: 0; }
 .r-cmp-left { min-width: 0; }
