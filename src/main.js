@@ -13,7 +13,7 @@ import { clickSelect, marqueeSelect, restoreSelection } from './cad/selection.js
 import { loadWheelMode, saveWheelMode, WHEEL_LABELS, WHEEL_STATUS_TEXT } from './cad/wheel-settings.js';
 import { pixelsPerMeter } from './cad/camera.js';
 import { heldVector, panDelta } from './cad/keypan.js';
-import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, mmInputMessage, isMmInput, setPositionLock, setLimit, setAspectLock, setAisleField, setReviewMark, LIMIT_COMMAND, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
+import { applyCommand, applyMove, addObjectAt, deleteObjects, duplicateObjects, rotateObjects, nudgeObjects, fieldValue, setField, setDimension, DIMENSION_COMMAND, MM_INPUT_FIELDS, mmInputMessage, revertedFieldMessage, isMmInput, setPositionLock, setLimit, setAspectLock, setAisleField, setReviewMark, LIMIT_COMMAND, COMMAND_DEFAULT, selectAllRacks, applyAisleRule, addPolygonAisle, snapped, dragDelta, alignmentGuides, movedLayout, isLocked, RACK_DEFAULTS } from './warehouse/commands.js';
 import { setObjectColor, setColorMode, applyThresholdColors, resetColors } from './warehouse/appearance.js';
 import { renderInspector } from './ui/inspector.js';
 import { selectedCsvRows, SELECTED_CSV_NAME } from './warehouse/group-panel.js';
@@ -488,7 +488,21 @@ async function start() {
       return;
     }
     const dim = (field === 'width' || field === 'depth') && selected.size === 1;
-    (dim ? command(DIMENSION_COMMAND, setDimension(id, field, raw), DIMENSION_COMMAND) : command('객체 수정', setField(id, field, fieldValue(field, raw, isNumber)))).then(() => renderPlan(true));
+    const mm = selected.size === 1 && MM_INPUT_FIELDS.has(field);
+    (dim ? command(DIMENSION_COMMAND, setDimension(id, field, raw), DIMENSION_COMMAND) : command('객체 수정', setField(id, field, fieldValue(field, raw, isNumber)))).then((r) => {
+      renderPlan(true);
+      if (mm && r && !r.ok && r.spatial) markReverted(field, raw, r.reason);
+    });
+  }
+  /** D-076: 공간 검증으로 취소된 정밀 입력 칸을 표시한다(다음 입력까지). 다른 칸 입력은 이미 적용됐을 수 있으므로 어느 칸이 되돌아갔는지 알린다. */
+  function markReverted(field, raw, reason) {
+    const el = ui.inspector.querySelector(`[data-field="${field}"]`);
+    if (!el) return;
+    el.classList.add('field-reverted');
+    el.setAttribute('aria-invalid', 'true');
+    el.title = `${raw} 입력이 전체 취소되어 원래 값으로 되돌렸습니다`;
+    el.addEventListener('input', () => { el.classList.remove('field-reverted'); el.removeAttribute('aria-invalid'); el.removeAttribute('title'); }, { once: true });
+    showToast(revertedFieldMessage(field, raw, reason, el.value));
   }
   // 선택 정보 패널(ui/inspector.js)의 동작. 모두 command(applyCommand)를 거쳐 실행취소에 기록되고, 실패하면 '전체 취소: …'를 알린다.
   const redraw = (r) => { renderPlan(true); return r; };

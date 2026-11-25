@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 정밀 입력 전체 취소 칸 표시(D-076, #105) · fix/aisle-input-revert-feedback
+- `revertedFieldMessage`(commands.js), main.js `editField`→`markReverted`, styles `.field-reverted`. 공간 검증(`r.spatial`) 취소일 때만.
+- 로컬: unit(신규 1) · golden · build · verify, e2e edit(D-076 신규·속성 입력·드래그 이동)·ux-improvements·group-panel·details·ui-parity PASS.
+- 설명서(tools/guide) 3장 경고 상자·A-6 문구는 이 변경이 들어간 alpha가 나오면 새 토스트 문구로 갱신.
+
 ### 2026-11-25 사용자 설명서 촬영·빌드 파이프라인 이관(#107) · docs/guide-pipeline
 - `tools/guide/run.py --work <폴더> --app dist/…html`: 촬영(capture) → 빌드 → 검증(문구 대조·기능·실습 파일 불러오기) → PDF·사용자용 판. 경로는 토큰(@@W@@·@@CHROME@@)으로 두고 실행 시 치환. 교육용 가상 Excel은 `fixtures/guide/`.
 - 앱 소스·검사 변경 없음. 설명서 관련 이슈: #105(통로 숫자 입력 순서에 따른 전체 취소), #106(백업 시각 UTC 표시).

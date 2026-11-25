@@ -201,3 +201,9 @@ test('다중 랙 편집: 왼쪽 정렬·고정 간격 배치·그룹 이동은 �
   assert.deepEqual(move.layout.objects.slice(0, 2).map((o) => [o.x, o.y]), [[2.1, 2.2], [5.1, 2.2]]);
   assert.equal(JSON.stringify(l), snapshot);
 });
+
+test('D-076: 정밀 입력 전체 취소 문구는 기존 앞부분을 유지하고 칸 이름·입력값·현재값을 붙인다', async () => {
+  const { revertedFieldMessage } = await import('../../src/warehouse/commands.js');
+  assert.equal(revertedFieldMessage('x', '0.7', '통로 001 · 통로 폭 부족 0.2m', '7.45'), '전체 취소: 통로 001 · 통로 폭 부족 0.2m · X 0.7 입력을 되돌렸습니다(현재 7.45)');
+  assert.match(revertedFieldMessage('depth', '7.6', '창고 경계 이탈', '1.5'), /^전체 취소: 창고 경계 이탈 · 깊이 7\.6 입력을/);
+});
