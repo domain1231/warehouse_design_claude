@@ -172,8 +172,11 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     q(md, '[data-unit]').value = cv.unit;
     // C9(D-075): 두 시나리오의 총면적 기준을 맞춘다. 한쪽에만 Excel 총면적이 있으면 다른 쪽에 적용하는 버튼.
     const cb = compareBasis(p), to = cb.from === 'before' ? 'after' : 'before', toLocked = to === 'before' && p.scenarioMeta.before.locked;
-    q(md, '[data-sources]').innerHTML = ['before', 'after'].map((k) => `<p class="muted"><b>${k.toUpperCase()}</b> · ${esc(sourceText(p, k))}</p>`).join('')
-      + `<p class="r-basis" data-testid="compare-basis">${esc(compareBasisText(cb))}${cb.from ? ` <button type="button" data-basis-apply data-testid="compare-basis-apply"${toLocked ? ' disabled title="BEFORE 잠금을 해제한 후 적용하세요."' : ''}>${cb.from.toUpperCase()} Excel 총면적 ${Math.round(cb.fromArea * 100) / 100}㎡를 ${to.toUpperCase()}에도 적용</button>` : ''}</p>`;
+    // D6(D-083): 출처 두 줄 → 칩 3개(BEFORE 시트·기준일 / AFTER 시트·기준일 / 면적 기준) 한 줄. 파일명·가져온 시각은 칩 툴팁.
+    const chip = (k) => { const si = p.scenarioMeta[k].sourceInfo, K = k.toUpperCase(); return `<span class="r-chip" data-chip="${k}" data-testid="compare-source-${k}" title="${esc(`${K} · ${sourceText(p, k)}`)}"><b>${K}</b> ${esc(si ? `${si.sheet} · ${si.asOf}` : '출처 미등록' + (p.scenarios[k].referenceSample ? ' · 참고 샘플' : ''))}</span>`; };
+    const basisCls = cb.basis === 'excel' ? 'basis-excel' : cb.from ? 'basis-partial' : 'basis-drawing';
+    q(md, '[data-sources]').innerHTML = `<div class="r-chips">${chip('before')}${chip('after')}<span class="r-chip r-basis ${basisCls}" data-testid="compare-basis" title="${esc(compareBasisText(cb) + (cb.basis === 'drawing' ? ' — 한쪽이라도 Excel 총면적이 없으면 양쪽 모두 도면 전체로 맞춥니다.' : ''))}">${esc(compareBasisText(cb))}</span>`
+      + (cb.from ? `<button type="button" class="r-chip-btn" data-basis-apply data-testid="compare-basis-apply"${toLocked ? ' disabled title="BEFORE 잠금을 해제한 후 적용하세요."' : ''}>${cb.from.toUpperCase()} Excel 총면적 ${Math.round(cb.fromArea * 100) / 100}㎡를 ${to.toUpperCase()}에도 적용</button>` : '') + '</div>';
     const rows = purposeCompare(p), sm = compareSummary(p, rows);
     q(md, '[data-headline]').innerHTML = `<p data-testid="compare-conclusion">${esc(sm.headline)}</p>` + (sm.warning ? `<p class="warn" data-testid="compare-warning">⚠ ${esc(sm.warning)}</p>` : '');
     q(md, '[data-kpis]').innerHTML = sm.kpis.map(kpiHtml).join('');

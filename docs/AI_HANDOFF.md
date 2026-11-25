@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track D D6 출처 칩(D-083) · feature/d6-source-chips (D5 위에 쌓음)
+- `[data-sources]` → `.r-chips`(칩 3개 + 적용 버튼), `.basis-excel|partial|drawing`. testid `compare-source-before/after`, `compare-basis`는 칩.
+- 로컬: unit 263, golden 298, build·verify, e2e compare-table(D6 추가: 1600·1366 한 줄)·compare-basis·compare-layout·compare-headline·ui-parity PASS.
+- 다음: D7(표·지도 연동).
+
 ### 2026-11-25 Track D D5 공간 구성 막대 숫자·Δ(D-082) · feature/d5-composition-bars (D4 위에 쌓음)
 - `compHtml`(scenario-dialogs, compBar 대체), `.seg b`·`.seg.changed`·`.r-comp-delta`. 내보내기 막대 비율 표시.
 - 로컬: unit 263, build·verify, e2e compare-table(D5 추가)·compare-purpose·compare-layout·ui-parity PASS.

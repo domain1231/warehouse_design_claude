@@ -233,6 +233,15 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-comp-delta .r-comp-dl { color: #8d99a6; }
 .r-comp-delta .zero { opacity: 0.45; }
 .r-comp-delta .changed { font-weight: 600; color: #ffd54f; }
+/* D6(D-083): 출처 칩 한 줄 */
+.r-chips { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; overflow: hidden; margin: 2px 0 6px; min-width: 0; }
+.r-chip { flex: 0 1 auto; min-width: 0; max-width: 34%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 9px; border: 1px solid #2c3a49; border-radius: 999px; background: #17212c; color: #c6d2de; font-size: 12px; line-height: 18px; }
+.r-chip b { color: #9fb0c2; font-weight: 600; margin-right: 2px; }
+.r-chip.r-basis { margin: 0; }
+.r-chip.basis-excel { border-color: #2f7d55; color: #8fe0b5; }
+.r-chip.basis-partial { border-color: #a07a1c; color: #ffd27a; }
+.r-chip.basis-drawing { color: #9fb0c2; }
+.r-chip-btn { flex: 0 0 auto; padding: 1px 9px; min-height: 0; height: auto; line-height: 18px; font-size: 12px; white-space: nowrap; border-radius: 999px; }
 .r-change-tools { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
 .r-change-tools select { width: auto; flex: 0 0 auto; min-width: 160px; }
 .r-change-tools [data-change-count] { white-space: nowrap; }
