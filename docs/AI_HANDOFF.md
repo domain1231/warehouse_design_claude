@@ -5,18 +5,22 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
-### 2026-11-25 Track D D2 Δ 지도 발표 모드(D-078) · feature/d2-delta-presentation (D1 위에 쌓음)
+### 2026-11-25 Track D D2 Δ 지도 발표 모드(D-079) · feature/d2-delta-presentation (D1 위에 쌓음)
 - `columnKeyOf`·`columnDeltaMap`(delta.js), session.setView `compareView`, 검증기 `settings.compareView`, main.js `setCompareView` 주입. 화면: `[data-delta-head]`(도구+범례 sticky), `[data-present]`, `[data-unit]`.
 - E2E 공용 헬퍼를 검증기 규칙에 맞게 수정(building·선반 번호). UI 차이 고정 목록 25 → 27.
 - 로컬: unit 257, golden 298, build·verify, e2e compare-present(신규, 라벨 bbox 겹침 0)·compare-headline·compare-delta·compare-basis·compare-purpose·compare-change-list·ui-parity PASS.
 - 다음: D3(2단 배치·발표용 내보내기).
 
-### 2026-11-25 Track D D1 결론 문장·KPI 카드·방향 색(D-077) · feature/d1-compare-headline
+### 2026-11-25 Track D D1 결론 문장·KPI 카드·방향 색(D-078) · feature/d1-compare-headline
 - `METRIC_DIRECTION`·`metricTrend`·`compareSummary`·`HEADLINE_PRIORITY`(space.js), purposeCompare 행에 num·direction·trend. 화면: `[data-headline]`·`[data-kpis]`·`.r-trend`.
 - E2E 공용 `tests/e2e/compare-helpers.js`(가상 GT-EMPTY 배치로 비교 화면 열기).
 - 로컬: unit 254, golden 298, build·verify, e2e compare-headline(신규)·compare-basis·compare-purpose·compare-delta·compare-change-list·ui-parity PASS.
 - 다음: D2(Δ 지도 발표 모드) → D3(2단 배치·발표용 내보내기).
 
+### 2026-11-25 백업·가져오기 시각 한국 시각 표시(D-077, #106) · fix/backup-local-time
+- `formatTime`·`timeHtml`(core/format.js), storage-dialogs 백업 목록, scenario-dialogs 가져오기 이력·대상별 백업·복원 확인. 저장 값 불변.
+- 로컬: unit(신규 format-time 3, TZ=America/New_York에서도 PASS) · golden · build · verify, e2e storage2(시각 표시 단언 추가)·scenarios·storage·ui-parity PASS.
+- 미확인: v2.4.1의 같은 화면 표시 방식(기준본 저장소 대조 필요).
 ### 2026-11-25 정밀 입력 전체 취소 칸 표시(D-076, #105) · fix/aisle-input-revert-feedback
 - `revertedFieldMessage`(commands.js), main.js `editField`→`markReverted`, styles `.field-reverted`. 공간 검증(`r.spatial`) 취소일 때만.
 - 로컬: unit(신규 1) · golden · build · verify, e2e edit(D-076 신규·속성 입력·드래그 이동)·ux-improvements·group-panel·details·ui-parity PASS.

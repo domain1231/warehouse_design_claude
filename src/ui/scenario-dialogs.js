@@ -5,6 +5,7 @@ import { csvEncode } from '../warehouse/rackinfo.js';
 import { purposeCompare, scenarioSpace, compareBasis, compareBasisText, compareSummary } from '../metrics/space.js';
 import { rackDeltaMap, rackChangeList, changeListCsvRows, CHANGE_TYPE_NAMES, DELTA_BINS, columnDeltaMap } from '../metrics/delta.js';
 import { legend } from '../warehouse/racklist.js';
+import { formatTime, timeHtml } from '../core/format.js';
 import { rackDiff, diffRows, compareRows, layoutChangeSummary, setReferenceArea, DIFF_CSV_HEADER } from '../warehouse/scenarios.js';
 
 const racksOf = (l) => l.objects.filter((o) => o.kind === 'rack');
@@ -79,7 +80,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     const c = scenarioSpace(p, k).composition;
     return `<div class="r-comp-row"><span>${k.toUpperCase()}</span><div class="r-comp-bar">${SEG.map(([n, cls, t]) => `<i class="seg ${cls}" style="width:${(c[n].share * 100).toFixed(2)}%" title="${t} ${(c[n].share * 100).toFixed(1)}% · ${c[n].area.toFixed(2)}㎡"></i>`).join('')}</div></div>`;
   };
-  // D1(D-077): 좋아지는 방향에 따라 개선 ▲(초록)·악화 ▼(빨강)·변화 없음 —(회색). 색만 쓰지 않고 화살표·문구를 함께 둔다.
+  // D1(D-078): 좋아지는 방향에 따라 개선 ▲(초록)·악화 ▼(빨강)·변화 없음 —(회색). 색만 쓰지 않고 화살표·문구를 함께 둔다.
   const TREND = { better: ['▲', '개선'], worse: ['▼', '악화'], same: ['—', '변화 없음'] };
   const trendHtml = (r) => { const t = TREND[r.trend]; return t ? `<span class="r-trend ${r.trend}" title="${t[1]}"><span class="r-arrow" aria-hidden="true">${t[0]}</span> ${esc(r.delta)}</span>` : esc(r.delta); };
   const kpiHtml = (r) => { const t = TREND[r.trend]; return `<div class="r-kpi" data-kpi="${r.id}" title="${esc(r.tip)}"><b>${esc(r.label)}</b><span class="r-kpi-v">${esc(r.before)} → ${esc(r.after)}</span><span class="r-trend ${r.trend}">${t ? `<span class="r-arrow" aria-hidden="true">${t[0]}</span> ` : ''}${esc(r.delta)}${t ? ` <small>${t[1]}</small>` : ''}</span></div>`; };
@@ -91,7 +92,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   };
   const BIN = Object.fromEntries(DELTA_BINS.map((b) => [b.id, b]));
   const ALWAYS = ['up40', 'up20', 'up1', 'same', 'worse', 'emptied', 'unknown'];
-  // D2(D-078): 발표 모드 — 바탕 도면의 글자(통로 이름·치수·구조물 이름·랙 태그)를 숨기고 Δ 값을 랙 칸에 맞춰 크게.
+  // D2(D-079): 발표 모드 — 바탕 도면의 글자(통로 이름·치수·구조물 이름·랙 태그)를 숨기고 Δ 값을 랙 칸에 맞춰 크게.
   const cview = (p) => ({ presentation: false, unit: 'rack', ...(p.settings.compareView ?? {}) });
   const textW = (t) => [...t].reduce((a, c) => a + (c.charCodeAt(0) < 128 ? 0.6 : 1), 0);
   const bbox = (pts) => { const xs = pts.map((x) => x[0]), ys = pts.map((x) => x[1]); return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) }; };
@@ -207,8 +208,8 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   const drawHistory = () => {
     if (!hd.open) return;
     const p = getProject();
-    q(hd, '[data-hrows]').innerHTML = '<table><tr><th>가져오기 시각 / 기준일</th><th>파일 / 시트</th><th>대상 / 방식</th><th>추가·수정·삭제 / 오류·경고</th><th>이전 상태</th></tr>' + p.importHistory.slice(-50).reverse().map((h) => `<tr><td>${esc(h.importedAt || '시각 미기록')}<br>${esc(h.date)}</td><td>${esc(h.file)} / ${esc(h.sheet)}</td><td>${esc(h.scenario)} / ${esc(h.mode)}</td><td>${h.changes?.added ?? '—'} / ${h.changes?.updated ?? '—'} / ${h.changes?.deleted ?? '미기록'} · ${h.errorCount ?? '미기록'} / ${h.warningCount ?? '미기록'}</td><td><button type="button" data-restore="${esc(h.backupId || '')}" ${p.layoutBackups.some((b) => b.id === h.backupId) ? '' : 'disabled'}>이전 상태 복원</button></td></tr>`).join('') + '</table>';
-    q(hd, '[data-brows]').innerHTML = '<table>' + p.layoutBackups.slice().reverse().map((b) => `<tr><td>${esc(b.time)}</td><td>${b.target.toUpperCase()}</td><td>${esc(b.reason)} / ${esc(b.meta.versionId)}</td><td><button type="button" data-restore="${esc(b.id)}">이 상태로 복원</button></td></tr>`).join('') + '</table>';
+    q(hd, '[data-hrows]').innerHTML = '<table><tr><th>가져오기 시각 / 기준일</th><th>파일 / 시트</th><th>대상 / 방식</th><th>추가·수정·삭제 / 오류·경고</th><th>이전 상태</th></tr>' + p.importHistory.slice(-50).reverse().map((h) => `<tr><td>${timeHtml(h.importedAt, '시각 미기록', esc)}<br>${esc(h.date)}</td><td>${esc(h.file)} / ${esc(h.sheet)}</td><td>${esc(h.scenario)} / ${esc(h.mode)}</td><td>${h.changes?.added ?? '—'} / ${h.changes?.updated ?? '—'} / ${h.changes?.deleted ?? '미기록'} · ${h.errorCount ?? '미기록'} / ${h.warningCount ?? '미기록'}</td><td><button type="button" data-restore="${esc(h.backupId || '')}" ${p.layoutBackups.some((b) => b.id === h.backupId) ? '' : 'disabled'}>이전 상태 복원</button></td></tr>`).join('') + '</table>';
+    q(hd, '[data-brows]').innerHTML = '<table>' + p.layoutBackups.slice().reverse().map((b) => `<tr><td>${timeHtml(b.time, '시각 미기록', esc)}</td><td>${b.target.toUpperCase()}</td><td>${esc(b.reason)} / ${esc(b.meta.versionId)}</td><td><button type="button" data-restore="${esc(b.id)}">이 상태로 복원</button></td></tr>`).join('') + '</table>';
   };
   hd.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-restore]');
@@ -216,7 +217,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     const p = getProject(), backup = p.layoutBackups.find((x) => x.id === b.dataset.restore);
     if (!backup) return toast('백업이 만료되었거나 없습니다.');
     if (backup.target === 'before' && p.scenarioMeta.before.locked && !confirm('잠긴 BEFORE를 백업으로 복원합니까? AFTER는 유지됩니다.')) return;
-    if (!confirm(`${backup.target.toUpperCase()}의 ${backup.time} 이전 상태를 복원합니까? 현재 대상 상태도 다시 백업합니다.`)) return;
+    if (!confirm(`${backup.target.toUpperCase()}의 ${formatTime(backup.time, '시각 미기록')} 이전 상태를 복원합니까? 현재 대상 상태도 다시 백업합니다.`)) return;
     const r = await apply(restoreCommand, (pr, o) => restoreBackup(pr, backup.id, o));
     if (r?.ok) drawHistory(); else failed(r);
   });

@@ -1,4 +1,4 @@
-// D2(D-078): Δ 지도 열 단위 요약 = 열 안 랙 용적률 R의 평균. 가상 데이터.
+// D2(D-079): Δ 지도 열 단위 요약 = 열 안 랙 용적률 R의 평균. 가상 데이터.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rackDeltaMap, columnDeltaMap, columnKeyOf } from '../../src/metrics/delta.js';

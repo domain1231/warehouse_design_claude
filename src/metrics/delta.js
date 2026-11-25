@@ -58,11 +58,11 @@ export function changeListCsvRows(rows) {
     ...rows.map((r) => [r.code, r.locB ?? '', r.locA ?? '', pct1(r.rB), pct1(r.rA), r.delta === null ? '' : (r.delta < 0 ? '−' : r.delta > 0 ? '+' : '') + Math.abs(r.delta).toFixed(1), GROUP_NAMES[r.group], r.types.length ? r.types.map((t) => CHANGE_TYPE_NAMES[t]).join('·') : '—'])];
 }
 
-/** D2(D-078): 랙의 '열' 키 = Excel 랙 키(건물-열-랙번호)에서 마지막 랙 번호를 뺀 값. Excel 미연결이면 null. */
+/** D2(D-079): 랙의 '열' 키 = Excel 랙 키(건물-열-랙번호)에서 마지막 랙 번호를 뺀 값. Excel 미연결이면 null. */
 export const columnKeyOf = (o) => { const k = o?.excel?.key; if (typeof k !== 'string') return null; const i = k.lastIndexOf('-'); return i > 0 ? k.slice(0, i) : null; };
 
 /**
- * D2(D-078): Δ 지도 '열 단위 요약'. 열마다 BEFORE·AFTER 랙 용적률 R의 평균(두 값이 모두 있는 랙만)과 Δ(%p, 0.1 반올림).
+ * D2(D-079): Δ 지도 '열 단위 요약'. 열마다 BEFORE·AFTER 랙 용적률 R의 평균(두 값이 모두 있는 랙만)과 Δ(%p, 0.1 반올림).
  * 열의 모든 랙이 '비움'이면 비움, R을 알 수 없으면 미확인. label은 열 이름(건물이 달라 겹치면 전체 키).
  */
 export function columnDeltaMap(project, map = rackDeltaMap(project)) {
