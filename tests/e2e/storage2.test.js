@@ -72,6 +72,9 @@ test('대량 삭제 전 백업이 목록에 보이고, 복원하면 랙이 돌�
   const row = page.locator('[data-testid=backup-row]', { hasText: '대량 객체 삭제 전' });
   await row.waitFor();
   assert.match(await row.textContent(), /BEFORE \+ AFTER/);
+  // D-077: 시각은 한국 시각으로 표시하고 원래 ISO는 title에 남긴다
+  assert.doesNotMatch(await row.textContent(), /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+  assert.match(await row.locator('span[title]').first().getAttribute('title'), /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
   const [dl] = await Promise.all([page.waitForEvent('download'), row.locator('[data-testid=backup-download]').click()]);
   assert.match(dl.suggestedFilename(), /^warehouse_previous_\d+\.json$/);
   await row.locator('[data-testid=backup-restore]').click();
