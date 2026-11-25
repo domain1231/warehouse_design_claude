@@ -5,6 +5,10 @@
 - 앱 2.5.0-alpha.16 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 배치 백업 한도 저장 크기 계산(D-092) · fix/backup-cap-stored-size
+- apply.js backupTarget: 합계 3.2MB를 `packBackupRefs` 적용 크기로 계산. 신규 unit backup-cap(수정 전 2건 실패 → 수정 후 통과 확인).
+- 로컬: unit 296, golden 298, build·verify, e2e excel·excel-gates·scenarios·backup-refs·history-cleanup PASS.
+
 ### 2026-11-25 Track E E4 이력 정리 도구(D-091) · feature/e4-history-cleanup (E6 위에 쌓음)
 - `src/warehouse/history-cleanup.js`(신규: `historySizes`·`planCleanup`·`DEFAULT_KEEP`=10·`CLEANUP_COMMAND`). storage-dialogs 이력 정리 구역(`renderCleanup`·`previewCleanup`·`runCleanup`), main.js가 `apply`(historyBlocked 확인 후 session.apply) 전달. 정리 전 backups.checkpoint('이력 정리 전').
 - 로컬: unit 294(신규 history-cleanup 5), golden 298, build·verify, e2e history-cleanup(신규)·storage·storage2·ui-parity(고정 목록 +5)·project-size·backup-refs·ux-improvements PASS.
