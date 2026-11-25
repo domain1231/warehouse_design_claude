@@ -1,6 +1,7 @@
 // 재고 기록·배치 이력 화면(기준본 65 하단 패널 bInventory·bLayout, 70 기록 범위). 정보 패널 안의 두 구역으로 둔다.
 import { esc, buildScene } from '../cad/scene.js';
 import { dateOK } from '../core/project.js';
+import { tooLargeText, SIZE_HINTS } from '../core/file-size.js';
 import { inventorySnapshotExists } from '../warehouse/inventory-csv.js';
 import { inventoryRows, snapshotRows, PAGE_SIZE_INVENTORY, PAGE_SIZE_LAYOUT } from '../warehouse/records.js';
 
@@ -77,7 +78,7 @@ export function createRecordsPanel({ getProject, today, saveSnapshot, saveInvent
     input.value = '';
     input.disabled = true;
     try {
-      if (f.size > 12e6) throw new Error('12MB 이하 파일만 지원합니다.');
+      if (f.size > 12e6) throw new Error(tooLargeText('재고 CSV', f.size, 12e6, SIZE_HINTS.inventory)); // E3(D-088)
       if (isHistory()) throw new Error('현재 편집으로 돌아온 후 가져오세요.');
       await importCsv(await f.text(), $('replaceCsv').checked);
     } catch (e) {

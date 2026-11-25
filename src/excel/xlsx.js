@@ -3,6 +3,7 @@
 // 수식은 계산하지 않고 저장된 결과값(<v>)을 쓴다. 날짜는 Excel 일련번호(숫자) 그대로 둔다(raw).
 // 브라우저와 Node(18+) 모두 DecompressionStream을 쓴다. DOM이 필요 없다.
 
+import { tooLargeText, SIZE_HINTS } from '../core/file-size.js';
 export const MAX_FILE_BYTES = 12e6;
 export const SHEET_ROWS = 20010; // 기준본 sheetRows
 
@@ -176,7 +177,7 @@ function parseCsv(text) {
 export async function readWorkbook(name, buffer) {
   if (!/\.(xlsx|csv)$/i.test(name)) throw new WorkbookError('XLSX 또는 UTF-8 CSV 파일을 선택하세요.');
   const u8 = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
-  if (u8.byteLength > MAX_FILE_BYTES) throw new WorkbookError('12MB 이하 파일만 지원합니다.');
+  if (u8.byteLength > MAX_FILE_BYTES) throw new WorkbookError(tooLargeText(/\.csv$/i.test(name) ? 'CSV 파일' : 'Excel 파일', u8.byteLength, MAX_FILE_BYTES, SIZE_HINTS.workbook)); // E3(D-088)
   if (/\.csv$/i.test(name)) {
     const text = new TextDecoder('utf-8', { fatal: true }).decode(u8);
     return { sheetNames: ['Sheet1'], sheets: { Sheet1: parseCsv(text) } };

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sizedProject } from './size-fixture.js';
 import { projectValidator } from '../../src/core/session.js';
-import { PROJECT_MAX_BYTES, PROJECT_WARN_BYTES, LIMIT_TEXT, projectSizeNotice, projectFile, readProjectFile } from '../../src/persistence/project-file.js';
+import { PROJECT_MAX_BYTES, PROJECT_WARN_BYTES, projectSizeNotice, projectFile, readProjectFile } from '../../src/persistence/project-file.js';
 import { MAX_CONTENT_BYTES, packProject, unpackStored } from '../../src/persistence/zip.js';
 import { parseJsonText } from '../../src/ui/storage-dialogs.js';
 
@@ -15,14 +15,13 @@ test('상한 상수 하나: 압축 백업 상한 = 프로젝트 상한 24MB, 경
   assert.equal(PROJECT_MAX_BYTES, 24e6);
   assert.equal(MAX_CONTENT_BYTES, PROJECT_MAX_BYTES);
   assert.equal(PROJECT_WARN_BYTES, 12e6);
-  assert.equal(LIMIT_TEXT, '24MB 이하 파일만 지원합니다.');
 });
 
 test('저장 크기 안내: 12MB 이하 없음 · 12MB 초과 경고 · 24MB 초과 다시 열 수 없음 + 이력 정리 안내', () => {
   assert.equal(projectSizeNotice(12e6), null);
-  assert.match(projectSizeNotice(12e6 + 1), /^JSON 파일 12\.0MB · 불러오기 상한 24MB의 50%를 넘었습니다\. 이력\(/);
+  assert.match(projectSizeNotice(12e6 + 1), /^JSON 파일 12\.0MB\(탐색기 11,719KB\) · 불러오기 상한 24MB의 50%를 넘었습니다\. 이력\(/);
   assert.equal(projectSizeNotice(24e6).includes('50%'), true);
-  assert.match(projectSizeNotice(24e6 + 1), /불러오기 상한 24MB를 넘어 앱에서 다시 열 수 없습니다\. 이력\(배치·Excel 스냅샷, 자동 배치 이력\)을 정리한 뒤 저장하세요\.$/);
+  assert.match(projectSizeNotice(24e6 + 1), /불러오기 상한 24MB\(탐색기 23,438KB\)를 넘어 앱에서 다시 열 수 없습니다\. 이력\(배치·Excel 스냅샷, 자동 배치 이력\)을 정리한 뒤 저장하세요\.$/);
 });
 
 for (const target of [11.9e6, 12.1e6, 23.9e6]) {
@@ -42,7 +41,7 @@ for (const target of [11.9e6, 12.1e6, 23.9e6]) {
 }
 
 test('상한 초과 파일은 읽기 전에 거부, ZIP 안 project.json이 상한을 넘어도 거부', async () => {
-  await assert.rejects(readProjectFile(new Blob([Buffer.alloc(24e6 + 1, 32)]), io), { message: LIMIT_TEXT });
+  await assert.rejects(readProjectFile(new Blob([Buffer.alloc(24e6 + 1, 32)]), io), { message: /^프로젝트 JSON 24\.0MB\(탐색기 23,438KB\) · 상한 24MB\(탐색기 23,438KB\) 초과 — 앱에서 작은 JSON으로/ });
   await assert.rejects(packProject(' '.repeat(24e6 + 1)), /저장 크기 상한 24MB를 넘습니다\. 이력\(/);
   // 압축률이 높아 파일은 작지만 풀면 24MB를 넘는 zip
   const big = '"' + ' '.repeat(24e6) + '"';

@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.16 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track E E3 파일 크기 초과 문구(D-088) · feature/e3-size-messages
+- `src/core/file-size.js`(신규: `explorerKb`·`sizeText`·`tooLargeText`·`SIZE_HINTS`). project-file `projectKind`, 사용처: readProjectFile·room-panel readBackgroundFile·records-panel 재고 CSV·xlsx readWorkbook. project-file `LIMIT_TEXT` 제거.
+- 로컬: unit 277(신규 file-size 3), golden 298, build·verify, e2e project-size·storage2·room·excel·excel-gates·excel-summary-compare PASS.
+- 다음: E5(백업 안 이력 중복 제거, 사용자 승인 2026-11-25).
+
 ### 2026-11-25 Track E E2 작은 JSON 저장(D-087) · feature/e2-compact-json (E1 위에 쌓음)
 - project-file `JSON_FORMATS`·`DEFAULT_JSON_FORMAT`('compact')·`jsonFormatOf`, `projectJsonText(project, format)`·`projectFile(project, format)`·`projectSizeNotice(bytes, format)`. storage-dialogs `jsonFormat`·`setJsonFormat`(localStorage `<접두사>:json-format`), 저장소 관리 `#vJsonFormat`.
 - 로컬: unit 274(신규 compact-json 3), golden 298, build·verify, e2e project-size(형식 선택·작은 JSON 왕복·새로고침 유지 추가)·storage·storage2·json-import-abort·ux-improvements·ui-parity(고정 목록 +1)·compare-present PASS.
