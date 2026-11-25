@@ -48,7 +48,12 @@ export function presentationLayout(d) {
     let x = lx + 110;
     const bw = lw - 110;
     if (!b.segs.length) text(x, y + 32, '배치 없음', 22, C.sub);
-    for (const s of b.segs) { const w = bw * Math.max(0, s.share ?? 0); if (w > 0) rect(x, y, w, 44, s.color, { hatch: !!s.hatch }); x += w; }
+    for (const s of b.segs) { // D5(D-082): 4% 이상 구간은 막대 안에 비율
+      const w = bw * Math.max(0, s.share ?? 0);
+      if (w > 0) rect(x, y, w, 44, s.color, { hatch: !!s.hatch });
+      if ((s.share ?? 0) >= 0.04 && w >= 60) text(x + w / 2, y + 30, `${(s.share * 100).toFixed(1)}%`, 20, s.hatch ? '#ffffff' : '#0b1118', { align: 'center', weight: 700, maxWidth: w - 4 });
+      x += w;
+    }
     y += 44;
   }
   y += 40;

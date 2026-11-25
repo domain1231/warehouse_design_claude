@@ -22,7 +22,7 @@ test('A4 가로 150dpi 한 장 · 모든 글자 9pt(18.75px) 이상 · 모든 �
     const plan = presentationLayout(input(warn)), texts = plan.items.filter((i) => i.t === 'text');
     assert.ok(texts.every((t) => t.size >= MIN_TEXT_PX), `최소 글자 ${Math.min(...texts.map((t) => t.size))}px`);
     for (const it of plan.items) {
-      const x0 = it.t === 'rect' ? it.x : it.align === 'right' ? it.x - it.maxWidth : it.x, x1 = it.t === 'rect' ? it.x + it.w : it.align === 'right' ? it.x : it.x + it.maxWidth;
+      const x0 = it.t === 'rect' ? it.x : it.align === 'right' ? it.x - it.maxWidth : it.align === 'center' ? it.x - it.maxWidth / 2 : it.x, x1 = it.t === 'rect' ? it.x + it.w : it.align === 'right' ? it.x : it.align === 'center' ? it.x + it.maxWidth / 2 : it.x + it.maxWidth;
       const y0 = it.t === 'rect' ? it.y : it.y - it.size, y1 = it.t === 'rect' ? it.y + it.h : it.y;
       assert.ok(x0 >= 0 && x1 <= plan.width + 1e-9 && y0 >= 0 && y1 <= plan.height, `페이지 밖: ${JSON.stringify(it).slice(0, 80)}`);
     }
@@ -31,6 +31,7 @@ test('A4 가로 150dpi 한 장 · 모든 글자 9pt(18.75px) 이상 · 모든 �
     for (const k of ['평균 용적률', '80% 미만 로케이션', '빈 랙', '보관 가능 합계']) assert.ok(all.includes(k), k);
     assert.ok(all.includes('면적 기준: 도면 전체'), '각주에 면적 기준');
     if (warn) assert.ok(all.includes(warn));
+    assert.equal(texts.filter((t) => t.align === 'center' && /^\d+\.\d%$/.test(t.text)).length, 6, 'D5: 4% 이상 구간(BE·AF 각 3개) 막대 안 비율');
     const m = plan.map, lastTextAboveFoot = Math.max(...texts.filter((t) => !t.text.startsWith('BEFORE ·') && !t.text.startsWith('AFTER ·') && !t.text.startsWith('면적')).map((t) => t.y));
     assert.ok(m.w > 900 && m.h > 600, `지도 영역 ${m.w}×${m.h}`);
     assert.ok(lastTextAboveFoot < plan.height - 30 - 2 * 28 - 20, '본문이 각주와 겹치지 않음');

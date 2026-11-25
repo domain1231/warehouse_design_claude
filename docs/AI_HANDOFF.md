@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track D D5 공간 구성 막대 숫자·Δ(D-082) · feature/d5-composition-bars (D4 위에 쌓음)
+- `compHtml`(scenario-dialogs, compBar 대체), `.seg b`·`.seg.changed`·`.r-comp-delta`. 내보내기 막대 비율 표시.
+- 로컬: unit 263, build·verify, e2e compare-table(D5 추가)·compare-purpose·compare-layout·ui-parity PASS.
+- 다음: D6(출처 칩) → D7(표·지도 연동).
+
 ### 2026-11-25 Track D D4 비교표 열 재배치(D-081) · feature/d4-compare-table
 - purposeCompare 행에 `short {before, after}`. 표 3열·`.r-zero` 흐림·nowrap·max-width 720px. E2E 3개(compare-basis·compare-headline·compare-delta)의 열 위치 갱신.
 - 로컬: unit 263, golden 298, build·verify, e2e compare-table(신규)·compare-headline·compare-basis·compare-delta·compare-purpose·compare-layout·ui-parity PASS.
