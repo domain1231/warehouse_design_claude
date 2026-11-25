@@ -262,3 +262,16 @@ svg.focus g[data-rack].on > polygon:first-child { stroke: #ffffff; stroke-width:
 
 /* D-076: 공간 검증으로 전체 취소된 정밀 입력 칸 */
 [data-field].field-reverted{outline:2px solid #e46775;outline-offset:1px;background:rgba(228,103,117,.14)}
+
+/* D8(D-085): Δ 지도 크게 보기 — 왼쪽 칸을 접고 대화상자 전체를 지도에. 전체 화면은 같은 배치를 화면 전체로. */
+svg[data-delta] .r-code { display: none; }
+svg[data-delta] g.big .r-code { display: inline; }
+.compare-dialog.r-max { width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh; margin: 0; padding: 6px 10px; border-radius: 0; box-sizing: border-box; overflow: hidden; }
+.compare-dialog.r-max > .close, .compare-dialog.r-max > h2, .compare-dialog.r-max .r-compare-tools, .compare-dialog.r-max [data-headline], .compare-dialog.r-max [data-kpis], .compare-dialog.r-max .r-cmp-left { display: none; }
+.compare-dialog.r-max .r-cmp-grid { display: block; }
+.compare-dialog.r-max .r-cmp-right { position: static; }
+.compare-dialog.r-max .r-delta-head { position: static; padding: 0 0 4px; gap: 4px 12px; flex-wrap: nowrap; overflow: hidden; }
+.compare-dialog.r-max .r-delta-tools { flex: 0 0 auto; }
+.compare-dialog.r-max .r-delta-head .r-legend { font-size: 12px; flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.compare-dialog.r-max .r-focus-note { flex: 0 0 auto; flex-basis: auto; white-space: nowrap; }
+.compare-dialog.r-max svg[data-delta] { display: block; width: 100%; height: calc(100vh - 12px - var(--r-head, 64px)); min-height: 200px; }
