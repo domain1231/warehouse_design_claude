@@ -1,4 +1,4 @@
-// D1(D-077): 비교 지표 방향 메타데이터·추세 판정·결론 문장. 가상 데이터.
+// D1(D-078): 비교 지표 방향 메타데이터·추세 판정·결론 문장. 가상 데이터.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { METRIC_DIRECTION, metricTrend, purposeCompare, compareSummary, HEADLINE_PRIORITY } from '../../src/metrics/space.js';

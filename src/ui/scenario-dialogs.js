@@ -79,7 +79,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     const c = scenarioSpace(p, k).composition;
     return `<div class="r-comp-row"><span>${k.toUpperCase()}</span><div class="r-comp-bar">${SEG.map(([n, cls, t]) => `<i class="seg ${cls}" style="width:${(c[n].share * 100).toFixed(2)}%" title="${t} ${(c[n].share * 100).toFixed(1)}% · ${c[n].area.toFixed(2)}㎡"></i>`).join('')}</div></div>`;
   };
-  // D1(D-077): 좋아지는 방향에 따라 개선 ▲(초록)·악화 ▼(빨강)·변화 없음 —(회색). 색만 쓰지 않고 화살표·문구를 함께 둔다.
+  // D1(D-078): 좋아지는 방향에 따라 개선 ▲(초록)·악화 ▼(빨강)·변화 없음 —(회색). 색만 쓰지 않고 화살표·문구를 함께 둔다.
   const TREND = { better: ['▲', '개선'], worse: ['▼', '악화'], same: ['—', '변화 없음'] };
   const trendHtml = (r) => { const t = TREND[r.trend]; return t ? `<span class="r-trend ${r.trend}" title="${t[1]}"><span class="r-arrow" aria-hidden="true">${t[0]}</span> ${esc(r.delta)}</span>` : esc(r.delta); };
   const kpiHtml = (r) => { const t = TREND[r.trend]; return `<div class="r-kpi" data-kpi="${r.id}" title="${esc(r.tip)}"><b>${esc(r.label)}</b><span class="r-kpi-v">${esc(r.before)} → ${esc(r.after)}</span><span class="r-trend ${r.trend}">${t ? `<span class="r-arrow" aria-hidden="true">${t[0]}</span> ` : ''}${esc(r.delta)}${t ? ` <small>${t[1]}</small>` : ''}</span></div>`; };

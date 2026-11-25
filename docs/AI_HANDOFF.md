@@ -5,7 +5,7 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
-### 2026-11-25 Track D D1 결론 문장·KPI 카드·방향 색(D-077) · feature/d1-compare-headline
+### 2026-11-25 Track D D1 결론 문장·KPI 카드·방향 색(D-078) · feature/d1-compare-headline
 - `METRIC_DIRECTION`·`metricTrend`·`compareSummary`·`HEADLINE_PRIORITY`(space.js), purposeCompare 행에 num·direction·trend. 화면: `[data-headline]`·`[data-kpis]`·`.r-trend`.
 - E2E 공용 `tests/e2e/compare-helpers.js`(가상 GT-EMPTY 배치로 비교 화면 열기).
 - 로컬: unit 254, golden 298, build·verify, e2e compare-headline(신규)·compare-basis·compare-purpose·compare-delta·compare-change-list·ui-parity PASS.

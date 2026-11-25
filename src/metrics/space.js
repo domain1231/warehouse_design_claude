@@ -167,7 +167,7 @@ export function shelfFreeVolume(linkedRacks) {
 }
 
 /**
- * D1(D-077): 비교 화면 맨 위 결론 문장·경고·KPI 카드 4개. 개선 지표는 우선순위(평균 용적률 → 빈 랙 → 보관 가능 합계 → …)로 최대 3개.
+ * D1(D-078): 비교 화면 맨 위 결론 문장·경고·KPI 카드 4개. 개선 지표는 우선순위(평균 용적률 → 빈 랙 → 보관 가능 합계 → …)로 최대 3개.
  * @returns { headline: string, warning: string|null, kpis: purposeCompare 행 4개(M3·M4·M8·M12) }
  */
 export const HEADLINE_PRIORITY = ['M3', 'M8', 'M12', 'M4', 'M9', 'M11'];
@@ -257,7 +257,7 @@ const signed = (n, f = (x) => String(x), unit = '') => (n > 0 ? '+' : n < 0 ? MI
 const signedPp = (b, a) => (b === null || a === null ? '—' : signed(Math.round((a - b) * 1000) / 10, (x) => x.toFixed(1), '%p'));
 
 /**
- * D1(D-077): 비교 지표마다 '좋아지는 방향'. higher = 클수록 개선, lower = 작을수록 개선, neutral = 색·화살표 없음.
+ * D1(D-078): 비교 지표마다 '좋아지는 방향'. higher = 클수록 개선, lower = 작을수록 개선, neutral = 색·화살표 없음.
  * 통로 비중(M6)은 공간 확보/보관 효율 관점에 따라 반대라 사용자 결정 전까지 neutral(로드맵 7.3).
  * 선반 여유 용적(M13)은 평균 용적률이 오르면 줄어드는 값이라 neutral. 공간 구성(M7)은 복합 값이라 neutral.
  */

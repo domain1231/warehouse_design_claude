@@ -1,4 +1,4 @@
-// D1(D-077): 비교 화면 맨 위 결론 문장·KPI 카드 4개·개선/악화 표시(가상 GT-EMPTY 배치를 상태에 넣어 확인).
+// D1(D-078): 비교 화면 맨 위 결론 문장·KPI 카드 4개·개선/악화 표시(가상 GT-EMPTY 배치를 상태에 넣어 확인).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
