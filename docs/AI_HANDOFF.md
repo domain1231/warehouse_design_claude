@@ -9,6 +9,10 @@
 - `formatTime`·`timeHtml`(core/format.js), storage-dialogs 백업 목록, scenario-dialogs 가져오기 이력·대상별 백업·복원 확인. 저장 값 불변.
 - 로컬: unit(신규 format-time 3, TZ=America/New_York에서도 PASS) · golden · build · verify, e2e storage2(시각 표시 단언 추가)·scenarios·storage·ui-parity PASS.
 - 미확인: v2.4.1의 같은 화면 표시 방식(기준본 저장소 대조 필요).
+### 2026-11-25 정밀 입력 전체 취소 칸 표시(D-076, #105) · fix/aisle-input-revert-feedback
+- `revertedFieldMessage`(commands.js), main.js `editField`→`markReverted`, styles `.field-reverted`. 공간 검증(`r.spatial`) 취소일 때만.
+- 로컬: unit(신규 1) · golden · build · verify, e2e edit(D-076 신규·속성 입력·드래그 이동)·ux-improvements·group-panel·details·ui-parity PASS.
+- 설명서(tools/guide) 3장 경고 상자·A-6 문구는 이 변경이 들어간 alpha가 나오면 새 토스트 문구로 갱신.
 
 ### 2026-11-25 사용자 설명서 촬영·빌드 파이프라인 이관(#107) · docs/guide-pipeline
 - `tools/guide/run.py --work <폴더> --app dist/…html`: 촬영(capture) → 빌드 → 검증(문구 대조·기능·실습 파일 불러오기) → PDF·사용자용 판. 경로는 토큰(@@W@@·@@CHROME@@)으로 두고 실행 시 치환. 교육용 가상 Excel은 `fixtures/guide/`.
