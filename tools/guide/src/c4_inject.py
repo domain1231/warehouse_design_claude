@@ -6,13 +6,14 @@ ba+=box(255,104,190,40,'② 비교','','o')
 ba+='<text x="135" y="168" font-size="12.5" fill="#555" text-anchor="middle">현재 창고 그대로 · 바꾸지 않음</text><text x="565" y="168" font-size="12.5" fill="#555" text-anchor="middle">정렬·추가·삭제·Excel 적용</text>'
 SVG_BA=svg(700,185,ba,'그림 4-0 · BEFORE는 지키고, AFTER에서 바꾸고, 둘을 비교합니다')
 cm=''
-_L=[('① 면적 기준','분모가 같은가','n'),('② 목적 지표 9줄','성적표 · 공간 구성 막대','p'),('③ Δ 용적률 지도','어느 랙이 좋아졌나 (기본 보기)','b'),('④ 세부 지표','랙 수·면적·보관 수량','n'),('⑤ 랙 변화 목록','랙 하나씩 · 필터 · CSV','n')]
+_L=[('① 결론 문장','좋아진 지표 최대 3개 · ⚠ 주의 줄','p'),('② KPI 카드 4개','평균 용적률·80% 미만·빈 랙·보관 가능','p'),('③ 출처 칩','시트·기준일 · 면적 기준','n'),('④ 목적 지표 표','BE → AF · 차이 ▲▼','b'),('⑤ 공간 구성 막대','구간별 Δ · 노란 강조','n'),('⑥ 세부 지표 · ⑦ 랙 변화 목록','보관 수량 · 랙 하나씩 · 필터','n')]
 for _i,(_t,_s,_c) in enumerate(_L):
-    _y=10+_i*50; cm+=box(150,_y,380,42,_t+' — '+_s,'',_c)
-cm+='<line x1="560" y1="12" x2="560" y2="150" stroke="#2f8a5b" stroke-width="3"/><text x="572" y="86" font-size="13" fill="#164a31">여기까지 읽으면 결론</text>'
-SVG_CMP=svg(700,262,cm,'그림 4-4 · 비교 창의 다섯 층 (위에서 아래로)')
+    _y=10+_i*48; cm+=box(20,_y,400,44,_t,_s,_c)
+cm+=box(440,10,250,284,'⑧ Δ 용적률 지도','오른쪽 고정 · 발표 모드 · 열 요약','b')
+cm+='<text x="22" y="316" font-size="12" fill="#555">화면 폭 1280px 이상이면 왼쪽(①~⑦)과 오른쪽(⑧) 2단 · 좁으면 위아래로 이어짐 · 표·목록 행을 누르면 ⑧에서 그 랙이 강조</text>'
+SVG_CMP=svg(710,328,cm,'그림 4-4 · alpha.14 비교 창의 구성 (넓은 화면 기준)')
 c4=open('@@W@@/scripts/course4.html',encoding='utf-8').read().replace('{{SVG_BA}}',SVG_BA).replace('{{SVG_CMP}}',SVG_CMP)
-for n in ['c4_bar_locked','c4_bar_unlocked','c4_before','c4_clone_dialog','c4_after_improved','c4n_goals','c4n_map','c4n_list']:
+for n in ['c4_bar_locked','c4_bar_unlocked','c4_before','c4_clone_dialog','c4_after_improved','c4n_goals','c4n_map','c4n_list','c4n_compare_full','c4n_head','c4n_present','c4n_linked','c4n_pdf']:
     c4=c4.replace('{{'+n+'}}',img(n,1300))
 body=body.replace('<footer>',c4+'\n<footer>',1)
 TOC4=('  <div class="toc-col">\n    <div class="toc-h">코스 4 · 개선안 비교</div>\n'

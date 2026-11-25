@@ -28,6 +28,6 @@ def _after_h3(aid,html_):
 _after_h3('c1-7',f'<figure class="anim"><img src="{_anim("anim_drag.webp")}" alt="랙 끌어 옮기기 움직이는 그림"><figcaption>움직이는 그림 · R-03을 눌러 잡고 오른쪽으로 끌기 — 주변 객체까지 거리가 따라 바뀝니다</figcaption></figure>')
 _after_h3('c3-1',f'<figure class="anim"><img src="{_anim("anim_box.webp")}" alt="상자로 여러 개 고르기 움직이는 그림"><figcaption>움직이는 그림 · 빈 곳에서 끌어 상자를 그리면 걸린 랙이 모두 선택됩니다</figcaption></figure>')
 body=body.replace('<h4>꺾인 통로 (다각형)</h4>',f'<h4>꺾인 통로 (다각형)</h4><figure class="anim"><img src="{_anim("anim_poly.webp")}" alt="다각형 통로 그리기 움직이는 그림"><figcaption>움직이는 그림 · 모서리 6개를 차례로 클릭 → 「다각형 완성」</figcaption></figure>',1)
-body=body.replace('<li>프로그램 HTML(v2.5.0-alpha.13), 이 설명서, 교육용 Excel(<code>교육용_창고데이터.xlsx</code> · 가상 3열 11랙)</li>',
- '<li>프로그램 HTML(v2.5.0-alpha.13), 이 설명서</li><li>실습 파일(설명서 안에 들어 있음): '+' · '.join(DL(n) for n,_,_ in FILES)+'</li>',1)
+body=body.replace('<li>프로그램 HTML(v2.5.0-alpha.14), 이 설명서, 교육용 Excel(<code>교육용_창고데이터.xlsx</code> · 가상 3열 11랙)</li>',
+ '<li>프로그램 HTML(v2.5.0-alpha.14), 이 설명서</li><li>실습 파일(설명서 안에 들어 있음): '+' · '.join(DL(n) for n,_,_ in FILES)+'</li>',1)
 body=body+_store

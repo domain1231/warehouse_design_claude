@@ -155,7 +155,7 @@ kbd{display:inline-block;border:1px solid #c9ced6;border-bottom-width:2px;border
 @media print{.page{break-before:page}.quiz details{break-inside:avoid}}
 .b6c{background:#2f6f3e!important}
 .measured td.g{color:#164a31}.measured td.o{color:#6b3f06;background:#fdf6ea}.measured td.r{color:#6e1c14;background:#fdf0ef}
-.grid5{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid5 figure{margin:4px 0}
+.grid5{display:grid;grid-template-columns:1fr 1fr;gap:10px}figure.narrow img{max-width:680px;width:100%}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;align-items:start}@media (max-width:760px){.grid3,.grid2{grid-template-columns:1fr}}.grid5 figure{margin:4px 0}
 .vscope{font-size:13.5px}.vscope ul{margin:4px 0 6px;padding-left:20px}
 
 #gSide{display:none}
@@ -224,7 +224,7 @@ exec(open('@@W@@/scripts/m_inject.py',encoding='utf-8').read())
 exec(open('@@W@@/scripts/p2_inject.py',encoding='utf-8').read())
 exec(open('@@W@@/scripts/p3_inject.py',encoding='utf-8').read())
 assert '{{' not in body
-html=f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Warehouse Studio v2.5.0-alpha.13 사용자 설명서 v2.0 · 코스 0~5·부록</title><style>{CSS}</style></head><body><main>{body}</main><script>'+open('@@W@@/scripts/guide.js',encoding='utf-8').read()+'</script></body></html>'
+html=f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Warehouse Studio v2.5.0-alpha.14 사용자 설명서 v2.0 · 코스 0~5·부록</title><style>{CSS}</style></head><body><main>{body}</main><script>'+open('@@W@@/scripts/guide.js',encoding='utf-8').read()+'</script></body></html>'
 open('@@W@@/Warehouse_Studio_v2_5_0a2_UserGuide_v2_0.html','w',encoding='utf-8').write(html)
 import os as _os; _os.makedirs('@@W@@/out',exist_ok=True); open('@@W@@/out/Warehouse_Studio_v2_5_0a2_UserGuide_v2_0.html','w',encoding='utf-8').write(html)
 print('KB',len(html.encode())//1024)

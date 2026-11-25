@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.14 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 사용자 설명서 v2.2(alpha.14 기준) · docs/guide-v2.2-alpha14
+- tools/guide: 비교 창 촬영(c4b)을 alpha.14 구조로 — 1440×900 한 화면, 결론 문장·KPI 카드(c4n_head), 칩·표·막대(c4n_goals), Δ 지도·발표 모드·표↔지도 강조(c4n_map/present/linked), 발표용 PDF 1쪽(c4n_pdf). 시험 5번을 「발표용 PDF」로.
+- 본문: 4-4·4-5·M-3·M-4·A-1·빠른 카드 재작성, 백업 시각 한국 시각(D-077)·정밀 입력 취소 칸 표시(D-076) 반영, 판 v2.2.
+- 앱 확인 사항(미수정): 발표용 PNG/PDF 바닥글·출처 칩 툴팁·전후 비교 SVG 머리글·선택 정보 명령 이력의 시각이 아직 ISO(UTC) 원문(scenario-dialogs.js sourceText, inspector.js). D-077 범위 밖 → 후속 이슈 후보.
+
 ### 2026-11-25 Track D D7 표·지도 연동(D-084) · feature/d7-table-map-link (D6 위에 쌓음)
 - `metricRackIds`(space.js), scenario-dialogs `focus`·`applyFocus`·`toggleFocus`, 대화상자 `cancel`에서 강조 먼저 해제. CSS `svg.focus`·`tr[data-link]`·`.r-focus-note`.
 - 로컬: unit 264, golden 298, build·verify, e2e compare-link(신규)·compare-*(전체)·scenarios·ui-parity PASS.

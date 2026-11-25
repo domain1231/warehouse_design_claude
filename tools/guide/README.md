@@ -1,13 +1,13 @@
 # 사용자 설명서 촬영·빌드 파이프라인 (tools/guide)
 
-`Warehouse Studio 사용자 설명서`(v2.1, alpha.13 기준)를 **실제 빌드 결과를 자동 조작해 다시 찍고, 다시 측정하고, 다시 묶는** 스크립트 모음입니다. 새 alpha가 나오면 아래 한 줄로 설명서의 그림·측정값·실습 파일·PDF를 갱신합니다.
+`Warehouse Studio 사용자 설명서`(v2.2, alpha.14 기준)를 **실제 빌드 결과를 자동 조작해 다시 찍고, 다시 측정하고, 다시 묶는** 스크립트 모음입니다. 새 alpha가 나오면 아래 한 줄로 설명서의 그림·측정값·실습 파일·PDF를 갱신합니다.
 
 ```
 pnpm build
-python3 tools/guide/run.py --work /tmp/guide-work --app dist/warehouse_layout_designer_v2_5_0-alpha_13.html
+python3 tools/guide/run.py --work /tmp/guide-work --app dist/warehouse_layout_designer_v2_5_0-alpha_14.html
 ```
 
-결과물은 `<work>/out/`에, **배포용 이름으로 묶은 것은 `<work>/out/release/`**에 생깁니다(판 번호는 `GUIDE_VER=2.1 APP_TAG=a13` 환경변수). 단계별 로그는 `<work>/out/log_<단계>.txt`입니다.
+결과물은 `<work>/out/`에, **배포용 이름으로 묶은 것은 `<work>/out/release/`**에 생깁니다(판 번호는 `GUIDE_VER=2.2 APP_TAG=a14` 환경변수). 단계별 로그는 `<work>/out/log_<단계>.txt`입니다.
 
 | 산출물 | 파일 |
 |---|---|

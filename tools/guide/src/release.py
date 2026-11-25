@@ -1,7 +1,7 @@
 # 배포용 이름으로 묶기 + 사용자용 PDF (run.py --steps ... ,release)
 import os,shutil,json
 from playwright.sync_api import sync_playwright
-GUIDE_VER=os.environ.get('GUIDE_VER','2.1'); APP_TAG=os.environ.get('APP_TAG','a13')
+GUIDE_VER=os.environ.get('GUIDE_VER','2.2'); APP_TAG=os.environ.get('APP_TAG','a14')
 O='@@W@@/out/'; R=O+'release/'; os.makedirs(R,exist_ok=True)
 with sync_playwright() as p:
     b=p.chromium.launch(executable_path='@@CHROME@@',args=['--no-sandbox']); pg=b.new_page(viewport={'width':1300,'height':900})
