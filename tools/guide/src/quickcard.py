@@ -4,11 +4,11 @@ G='@@W@@/shots/g/'
 im=Image.open(G+'c1_map.png').convert('RGB'); d=ImageDraw.Draw(im)
 try: F=ImageFont.truetype('/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf',30)
 except: F=ImageFont.load_default()
-REG=[('1',(485,18,1093,37)),('2',(0,75,1600,28)),('3',(0,135,1600,81)),('4',(0,216,1600,50)),('5',(18,266,245,640)),('6',(263,266,1041,81)),('7',(263,353,1041,55)),('8',(263,414,1041,99)),('9',(263,513,1041,295)),('10',(263,808,1041,41)),('11',(263,849,1041,57)),('12',(1304,266,278,640))]
+REG=[('1',(485,18,1093,37)),('2',(0,75,1600,28)),('3',(0,135,1600,110)),('4',(0,245,1600,50)),('5',(18,295,245,1019)),('6',(263,300,1041,72)),('7',(263,378,1041,60)),('8',(263,445,1041,95)),('9',(263,542,1041,674)),('10',(263,1216,1041,41)),('11',(263,1257,1041,57)),('12',(1304,295,278,1019))]
 for n,(x,y,w,h) in REG:
     d.rectangle([x+2,y+2,x+w-2,y+h-2],outline=(255,200,60),width=4)
     d.ellipse([x+4,y+4,x+44,y+44],fill=(255,200,60)); d.text((x+24,y+24),n,fill=(20,30,45),font=F,anchor='mm')
-im=im.resize((800,475),Image.LANCZOS); b=io.BytesIO(); im.save(b,'WEBP',quality=80)
+im=im.resize((800,round(800*im.height/im.width)),Image.LANCZOS); b=io.BytesIO(); im.save(b,'WEBP',quality=80)
 MAP='data:image/webp;base64,'+base64.b64encode(b.getvalue()).decode()
 H=f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>Warehouse Studio 빠른 카드 · v2.5.0-alpha.13</title><style>.map img{{filter:invert(1) hue-rotate(180deg)}}
 @page{{size:A4;margin:9mm}}
@@ -25,7 +25,7 @@ b.k{{display:inline-block;border:1px solid #9aa3af;border-bottom-width:2px;borde
 table{{width:100%;border-collapse:collapse}}td{{border-top:1px solid #e3e6eb;padding:1px 3px;vertical-align:top}}
 .foot{{margin-top:5px;font-size:9px;color:#5b6573;display:flex;justify-content:space-between}}
 </style></head><body>
-<div class="top"><h1>Warehouse Studio 빠른 카드</h1><span>프로그램 v2.5.0-alpha.13 · 설명서 v2.0 · 자세한 내용은 「사용자 설명서」의 절 번호 참고</span></div>
+<div class="top"><h1>Warehouse Studio 빠른 카드</h1><span>프로그램 v2.5.0-alpha.13 · 설명서 v2.1 · 자세한 내용은 「사용자 설명서」의 절 번호 참고</span></div>
 <div class="g">
  <div class="c map"><h2>화면 지도</h2><img src="{MAP}" alt="화면 지도"></div>
  <div class="c lg"><h2>칸 이름</h2>
@@ -45,6 +45,6 @@ table{{width:100%;border-collapse:collapse}}td{{border-top:1px solid #e3e6eb;pad
  <div class="c"><h2>단축키</h2><table><tr><td><b class="k">Ctrl</b>+<b class="k">S</b></td><td>저장(결과 알림)</td></tr><tr><td><b class="k">Delete</b></td><td>삭제(2개 이상 확인)</td></tr><tr><td><b class="k">Enter</b></td><td>숫자 적용</td></tr><tr><td><b class="k">Esc</b></td><td>다각형 그리기 취소</td></tr><tr><td><b class="k">Shift</b>/<b class="k">Ctrl</b>+클릭</td><td>선택 추가 / 토글</td></tr><tr><td>더블클릭</td><td>랙 선반별 자재</td></tr></table></div>
  <div class="c w"><h2>꼭 기억</h2><ul><li>자동 배치는 <b>초기 설계안</b> — 실측·하중·피난 검토 별도</li><li>「경고 후 허용」은 검토 뒤 <b>바로 끄기</b></li><li>HTML만 보내면 작업은 안 감 → JSON을 함께</li><li>백업 시각은 UTC (+9시간)</li></ul></div>
 </div>
-<div class="foot"><span>문의처 [기입] · 사내 한정</span><span>Warehouse Studio 사용자 설명서 v2.0 부록 · 2026-11-16</span></div>
+<div class="foot"><span>문의처 [기입] · 사내 한정</span><span>Warehouse Studio 사용자 설명서 v2.1 부록 · 2026-11-25</span></div>
 </body></html>'''
 open('@@W@@/Warehouse_Studio_빠른카드_v2_0.html','w',encoding='utf-8').write(H); print('ok',len(H)//1024,'KB')

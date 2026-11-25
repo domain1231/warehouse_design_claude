@@ -119,7 +119,7 @@
     </ol>
     <div class="two">
       <figure><img src="{{c3_poly_drawing}}" alt="다각형 그리는 중"><figcaption>꼭짓점 6개를 찍는 중 (파란 점선)</figcaption></figure>
-      <figure><img src="{{c3_poly_done}}" alt="다각형 완성"><figcaption>통로 002 완성 · 「유효 폭 1.1m / 목표 1.2m 미달」 — 최소(1m)는 넘었지만 목표에 못 미친다는 안내</figcaption></figure>
+      <figure><img src="{{c3_poly_done}}" alt="다각형 완성"><figcaption>통로 002 완성 · 도면에 「1.1m / 최소 1m」(주황) — 최소(1m)는 넘었지만 목표(1.2m)에는 못 미침. 오른쪽 선택 정보와 검토 창에는 「유효 폭 1.1m / 목표 1.2m 미달」로 표시</figcaption></figure>
     </div>
     <div class="tip"><b>같은 종류 통로를 한꺼번에</b> 바꾸려면 왼쪽 「보호 통로 설정」에서 「통로 종류」를 고르고 「최소 폭 (m)」·「목표 폭 (m)」을 넣은 뒤 「같은 종류의 통로에 기준 적용」을 누릅니다.</div>
     <figure><img src="{{c3_aisle_rule}}" alt="보호 통로 설정"><figcaption>왼쪽 「v2.3.6 / 선택 · 통로 · 화면」 → 「보호 통로 설정」</figcaption></figure>
@@ -129,9 +129,9 @@
     <h3><span class="n">3-5</span> 위반이 생기는 방식 — 기본은 "아예 막기"</h3>
     {{SVG_POLICY}}
     <div class="warnbox"><b>기본 정책(차단)</b> R-05를 통로 안으로 끌자 이동 자체가 취소되었습니다.
-      <div class="quote">전체 취소: 통로 001 · 통로 폭 부족 0.89m / 최소 1m · 부족 0.11m</div></div>
+      <div class="quote">전체 취소: 통로 001 · 통로 폭 부족 0.85m / 최소 1m · 부족 0.11m</div></div>
     <p>검토용으로 일부러 겹쳐 보고 싶을 때만 왼쪽 「공간 위반을 경고 후 허용 (기본 차단)」을 켭니다. 그러면 이동은 되지만 <b>위반으로 기록</b>되고 빨간 표시가 남습니다.</p>
-    <figure><img src="{{c3_violation}}" alt="위반 표시"><figcaption>경고 후 허용으로 옮긴 R-05 · 통로 001이 빨간 점선, 「▲ 0.89m / 최소 1m」</figcaption></figure>
+    <figure><img src="{{c3_violation}}" alt="위반 표시"><figcaption>경고 후 허용으로 옮긴 R-05 · 통로 001이 빨간 점선, 「▲ 0.85m / 최소 1m」</figcaption></figure>
     <figure><img src="{{c3_status}}" alt="상태 줄"><figcaption>③ 「공간 경고」 2건, ④ 「기준 충족 4」 · 「통로 2건」으로 바뀜</figcaption></figure>
     <div class="warnbox"><b>통로를 랙 사이 빈 줄에 넣을 때</b> 빈 줄에 바로 클릭하면 기본 크기 통로가 랙과 겹쳐 만들어지지 않습니다. ① 빈 바닥에 놓고 ② 오른쪽에서 Y → 깊이 → 폭을 먼저 맞춘 뒤 ③ <b>X를 마지막에</b> 넣어 제자리로 옮깁니다. 중간 값이 랙·벽과 부딪히면 「전체 취소: 통로 … · 창고 경계 이탈」처럼 그 입력이 되돌아가므로, 끝나면 도면에서 위치를 꼭 눈으로 확인하세요.</div>
   </article>
@@ -144,7 +144,7 @@
       <li>④ 상태 줄이 「통로 0건」, 「기준 충족」 숫자가 전체 랙 수와 같아지면 해결입니다.</li>
       <li>검토가 끝나면 「공간 위반을 경고 후 허용 (기본 차단)」을 다시 끕니다.</li>
     </ol>
-    <figure><img src="{{c3_vlist}}" alt="배치 위반 목록"><figcaption>「배치 위반 목록 · 현재 계산」 · R-005 → 통로 001 보호 통로 침범(유효 폭 0.89m) · 상태 미해결</figcaption></figure>
+    <figure><img src="{{c3_vlist}}" alt="배치 위반 목록"><figcaption>「배치 위반 목록 · 현재 계산」 · R-005 → 통로 001 보호 통로 침범(유효 폭 0.85m) · 상태 미해결</figcaption></figure>
     <p>통로 전체를 한 번에 점검하려면 왼쪽 「현재 통로 폭 · 충돌 확인」을 누릅니다.</p>
     <figure><img src="{{c3_validate}}" alt="통로 폭 검토"><figcaption>「통로 폭 · 보호 구역 검토」 · 통로별 현재·최소·목표·부족 폭 · 「통로 검토 CSV」로 내보내기</figcaption></figure>
     <div class="tip">「검토 중으로 표시」는 <b>해결이 아닙니다</b>. 목록에서 "보고 있는 중"이라고 표시만 해 둡니다. 「랙 위치 잠금」을 켠 랙은 자동 배치·재최적화가 움직이지 않습니다.</div>

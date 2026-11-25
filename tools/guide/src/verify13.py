@@ -28,10 +28,27 @@ src=open(GUIDE,encoding='utf-8').read()
 src=re.sub(r'data:image[^"]+','',src)
 txt=H.unescape(re.sub('<[^>]+>','',src))
 labels=sorted(set(re.findall(r'「([^」]+)」',txt)))
-miss=[]
-for l in labels:
+import glob,os
+def dec(t):
+    t=re.sub(r'\\u([0-9a-fA-F]{4})',lambda m:chr(int(m.group(1),16)),t)
+    return re.sub(r'\\x([0-9a-fA-F]{2})',lambda m:chr(int(m.group(1),16)),t)
+appsrc=re.sub(r'\s+',' ',dec(open('@@W@@/dl/app.html',encoding='utf-8').read()))
+cap=''
+for f in glob.glob('@@W@@/work/*.json')+glob.glob('@@W@@/out/log_*.txt'):
+    if re.search(r'verify|ftest|cp_test|build|booklets|user_ed|quickcard|release',os.path.basename(f)): continue
+    cap+=open(f,encoding='utf-8',errors='ignore').read()
+cap=re.sub(r'\s+',' ',dec(cap).replace('\\n',' ').replace('\\t',' '))
+def parts(l):
     core=l.replace('…','').strip()
-    parts=[x.strip() for x in core.split('·') if x.strip()] if '…' in l else [core]
-    if not all(re.sub(r'\s+',' ',x) in app for x in parts): miss.append(l)
-print('labels',len(labels),'missing',len(miss)); print(json.dumps(miss,ensure_ascii=False,indent=0))
+    return [x.strip() for x in re.split(r'…|·',l) if x.strip()] if '…' in l else [core]
+tier={'dom':[],'source':[],'capture':[],'unverified':[]}
+for l in labels:
+    ps=[re.sub(r'\s+',' ',x) for x in parts(l)]
+    if all(x in app for x in ps): tier['dom'].append(l)
+    elif all(x in appsrc for x in ps): tier['source'].append(l)
+    elif all(x in cap for x in ps): tier['capture'].append(l)
+    else: tier['unverified'].append(l)
+miss=tier['unverified']
+print('labels',len(labels),'dom',len(tier['dom']),'source',len(tier['source']),'capture',len(tier['capture']),'unverified',len(miss))
+print(json.dumps(miss,ensure_ascii=False,indent=0))
 print('page height',gh,'broken imgs',broken,'console errs',errs[:5])

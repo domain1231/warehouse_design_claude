@@ -7,7 +7,7 @@ pnpm build
 python3 tools/guide/run.py --work /tmp/guide-work --app dist/warehouse_layout_designer_v2_5_0-alpha_13.html
 ```
 
-결과물은 `<work>/out/`에 생깁니다. 단계별 로그는 `<work>/out/log_<단계>.txt`입니다.
+결과물은 `<work>/out/`에, **배포용 이름으로 묶은 것은 `<work>/out/release/`**에 생깁니다(판 번호는 `GUIDE_VER=2.1 APP_TAG=a13` 환경변수). 단계별 로그는 `<work>/out/log_<단계>.txt`입니다.
 
 | 산출물 | 파일 |
 |---|---|
@@ -23,8 +23,15 @@ python3 tools/guide/run.py --work /tmp/guide-work --app dist/warehouse_layout_de
 | build | `src/*.html`(본문) + `src/*_inject.py`(그림·실습 파일 주입)로 단일 HTML 생성. 이미지는 WebP base64, 실습 파일은 gzip 내장 |
 | verify | 설명서에 적힌 화면 문구를 앱 원문과 대조(`verify13`), 검색·목차·라이트박스 동작(`ftest`), 내장 실습 파일을 앱에 실제로 불러오기(`cp_test`) |
 | publish | 빠른 카드, PDF 소책자, 사용자용 판 |
+| release | 사용자용 PDF 생성 + 배포용 이름으로 `out/release/`에 복사, 실사용 테스트 과제 3 시작 JSON 포함 |
 
 `capture`의 순서는 바꾸지 않습니다. 뒤 단계가 앞 단계가 남긴 상태 파일을 읽습니다.
+
+### 문구 검증 4단계 (`verify13`)
+설명서의 「」 문구를 ① 화면 DOM ② 앱 소스(유니코드 이스케이프 해제) ③ 촬영 로그 순서로 찾고, 어디에도 없으면 `unverified`로 보고합니다. unverified에는 Excel 머리글·시트 이름·사용자가 입력한 예시 값처럼 앱 문구가 아닌 것도 섞여 있으니 목록을 직접 확인하세요.
+
+### 재촬영 후 꼭 할 일
+그림 설명(figcaption)의 **숫자**는 촬영 값이 바뀌면 같이 고쳐야 합니다(예: 거리 0.727m → 0.75m). 재촬영마다 숫자가 든 캡션을 그림과 대조하세요.
 
 ## 준비물
 
@@ -51,4 +58,4 @@ python3 tools/guide/run.py --work /tmp/guide-work --app dist/warehouse_layout_de
 ## 한계
 
 - 실행 확인 환경: Linux · Chrome(Playwright). Windows Edge·Firefox NOT RUN.
-- 화면 문구 340개 중 86개는 실행 중에 만들어지는 문장이라 원문 대조(verify13)에서 "missing"으로 나옵니다. 촬영 중 화면에서 확인한 문장들입니다.
+- 문구 검증은 텍스트 일치만 봅니다. 그림 안의 숫자와 캡션 숫자의 일치는 자동 검사하지 않습니다(위 '재촬영 후 꼭 할 일').

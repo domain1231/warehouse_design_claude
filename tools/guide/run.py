@@ -21,7 +21,8 @@ CAPTURE = ['c1_probe', 'shoot_all', 'shoot_apply', 'c1_final', 'c1_map13', 'c3_p
 BUILD = ['build']
 VERIFY = ['verify13', 'ftest', 'cp_test']
 PUBLISH = ['quickcard', 'booklets', 'user_ed']
-STEPS = {'capture': CAPTURE, 'build': BUILD, 'verify': VERIFY, 'publish': PUBLISH}
+RELEASE = ['release']
+STEPS = {'capture': CAPTURE, 'build': BUILD, 'verify': VERIFY, 'publish': PUBLISH, 'release': RELEASE}
 
 
 def stage(work: Path, app: Path, chrome: str):
@@ -57,7 +58,7 @@ def main():
     ap.add_argument('--work', required=True, help='작업 폴더 (저장소 밖 권장)')
     ap.add_argument('--app', required=True, help='pnpm build 결과 단일 HTML')
     ap.add_argument('--chrome', default=os.environ.get('WAREHOUSE_BROWSER_PATH', '/usr/bin/google-chrome'))
-    ap.add_argument('--steps', default='capture,build,verify,publish')
+    ap.add_argument('--steps', default='capture,build,verify,publish,release')
     ap.add_argument('--timeout', type=int, default=600)
     a = ap.parse_args()
     work = Path(a.work).resolve()

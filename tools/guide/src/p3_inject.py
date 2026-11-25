@@ -18,7 +18,7 @@ body=body.replace('<div><span class="hw-k">빨간 테두리 <b class="hw-dot">1<
 body=body.replace('표기 약속 8가지','표기 약속 9가지',1)
 # ---- feedback box per course
 FB=('<div class="fb"><b>틀린 곳이나 바뀐 화면을 보셨나요?</b> 문의처 <span class="fill">[기입]</span>로 '
-    '① 설명서 버전(v2.0) ② 절 번호(예: {c}) ③ 화면 캡처 ④ 「프로그램 정보」의 버전을 보내 주세요. 확인되면 다음 개정에 반영합니다.</div>')
+    '① 설명서 버전(v2.1) ② 절 번호(예: {c}) ③ 화면 캡처 ④ 「프로그램 정보」의 버전을 보내 주세요. 확인되면 다음 개정에 반영합니다.</div>')
 for cid,ex_ in [('c0','0-3'),('c1','1-4'),('c2','2-5'),('c3','3-4'),('c4','4-4'),('c5','5-4'),('c6','6-2')]:
     _s=body.index(f'<section class="course" id="{cid}">'); _e=body.index('</section>',_s)
     body=body[:_e]+FB.format(c=ex_)+'\n'+body[_e:]

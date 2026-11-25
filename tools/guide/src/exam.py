@@ -37,6 +37,10 @@ with sync_playwright() as p:
         pg.click('#fit'); pg.wait_for_timeout(300)
         return pg.evaluate("()=>[document.querySelector('.r-toolbar').innerText.split('\\n')[0],document.querySelector('#wTop').innerText.split('\\n')[0]]")
     step('t2',t2)
+    def t2save():
+        with pg.expect_download() as d: pg.click('#jsonOut')
+        d.value.save_as('@@W@@/work/cp/실사용테스트_과제3_시작.json'); return d.value.suggested_filename
+    step('t2save',t2save)
     def t3():
         x0,y0,w,h=pg.evaluate(ROOM); at=lambda a,c:(x0+a*w/14,y0+c*h/8)
         rk=pg.evaluate("()=>[...document.querySelectorAll('#plan [data-id]')].map(e=>{const r=e.getBoundingClientRect();return [r.x,r.width,r.y,r.height,e.textContent]}).filter(x=>x[1]>15&&x[3]>15)")
