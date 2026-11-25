@@ -166,6 +166,34 @@ export function shelfFreeVolume(linkedRacks) {
   return { free, total, share: total > 0 ? free / total : null };
 }
 
+/**
+ * D1(D-078): 비교 화면 맨 위 결론 문장·경고·KPI 카드 4개. 개선 지표는 우선순위(평균 용적률 → 빈 랙 → 보관 가능 합계 → …)로 최대 3개.
+ * @returns { headline: string, warning: string|null, kpis: purposeCompare 행 4개(M3·M4·M8·M12) }
+ */
+export const HEADLINE_PRIORITY = ['M3', 'M8', 'M12', 'M4', 'M9', 'M11'];
+export function compareSummary(project, rows = purposeCompare(project)) {
+  const by = Object.fromEntries(rows.map((r) => [r.id, r]));
+  const kpis = ['M3', 'M4', 'M8', 'M12'].map((id) => by[id]);
+  const n = (v, f = (x) => String(x)) => f(Math.abs(v));
+  const phrase = (r) => ({
+    M3: () => `평균 용적률 ${r.delta}`,
+    M8: () => (r.num > 0 ? `빈 랙 ${n(r.num)}대 확보` : `빈 랙 ${n(r.num)}대 감소`),
+    M12: () => `보관 가능 공간 ${r.delta}`,
+    M4: () => `80% 미만 로케이션 ${n(r.num)}개 ${r.num < 0 ? '감소' : '증가'}`,
+    M9: () => `저활용 랙 ${n(r.num)}대 ${r.num < 0 ? '감소' : '증가'}`,
+    M11: () => `최소 통로 폭 ${r.delta}`,
+  })[r.id]();
+  if (!project.scenarios.before.objects.some((o) => o.kind === 'rack')) return { headline: '개선 전(BEFORE) 기준 도면이 없어 개선 효과를 계산할 수 없습니다.', warning: null, kpis };
+  if (!project.scenarios.after.objects.some((o) => o.kind === 'rack')) return { headline: 'AFTER 배치가 없어 개선 효과를 계산할 수 없습니다.', warning: null, kpis };
+  const pick = (t) => HEADLINE_PRIORITY.map((id) => by[id]).filter((r) => r.trend === t);
+  const good = pick('better').slice(0, 3).map(phrase), bad = pick('worse').map(phrase);
+  return {
+    headline: good.length ? good.join(', ') : bad.length ? '개선된 목적 지표가 없습니다.' : '목적 지표 변화 없음',
+    warning: bad.length ? `주의: ${bad.join(' · ')}` : null,
+    kpis,
+  };
+}
+
 // ── C1 2단계: 화면 연결용 보조 함수 ──
 
 /**
@@ -228,6 +256,21 @@ const MINUS = '−';
 const signed = (n, f = (x) => String(x), unit = '') => (n > 0 ? '+' : n < 0 ? MINUS : '±') + f(Math.abs(n)) + unit;
 const signedPp = (b, a) => (b === null || a === null ? '—' : signed(Math.round((a - b) * 1000) / 10, (x) => x.toFixed(1), '%p'));
 
+/**
+ * D1(D-078): 비교 지표마다 '좋아지는 방향'. higher = 클수록 개선, lower = 작을수록 개선, neutral = 색·화살표 없음.
+ * 통로 비중(M6)은 공간 확보/보관 효율 관점에 따라 반대라 사용자 결정 전까지 neutral(로드맵 7.3).
+ * 선반 여유 용적(M13)은 평균 용적률이 오르면 줄어드는 값이라 neutral. 공간 구성(M7)은 복합 값이라 neutral.
+ */
+export const METRIC_DIRECTION = Object.freeze({ M3: 'higher', M4: 'lower', M8: 'higher', M9: 'lower', M6: 'neutral', M7: 'neutral', M12: 'higher', M13: 'neutral', M11: 'higher' });
+/** 표시 반올림 기준으로 차이(num)를 판정: better | worse | same | neutral | none(계산 불가). */
+export function metricTrend(direction, num) {
+  if (num === null || !Number.isFinite(num)) return 'none';
+  if (direction === 'neutral') return 'neutral';
+  if (num === 0) return 'same';
+  return (direction === 'higher') === (num > 0) ? 'better' : 'worse';
+}
+const ppNum = (b, a) => (b === null || a === null ? null : Math.round((a - b) * 1000) / 10);
+
 export function purposeCompare(project) {
   const hasRack = (k) => project.scenarios[k].objects.some((o) => o.kind === 'rack');
   const ready = hasRack('before'), afterOk = hasRack('after');
@@ -243,16 +286,21 @@ export function purposeCompare(project) {
   const st = (m) => `${pctText(m.storable.share)} (${m.storable.area.toFixed(2)}㎡)`;
   const sf = (m) => (m.shelfFree.share === null ? '미확인' : `${m.shelfFree.free.toFixed(2)}m³ (${pctText(m.shelfFree.share)})`);
   const aw = (m) => (m.minAisle ? `${m.minAisle.width.toFixed(3)}m` + (m.minAisle.code ? ` (${m.minAisle.code})` : "") : '통로 없음');
-  const row = (id, label, before, after, delta, tip) => ({ id, label, before: ready ? before : NONE, after: afterOk ? after : NONE, delta, tip });
+  const row = (id, label, before, after, delta, tip, num = null) => {
+    const n = ready && afterOk ? num : null, direction = METRIC_DIRECTION[id];
+    return { id, label, before: ready ? before : NONE, after: afterOk ? after : NONE, delta, tip, num: n, direction, trend: metricTrend(direction, n) };
+  };
+  const shelfNum = b.shelfFree.share === null || a.shelfFree.share === null ? null : Math.round((a.shelfFree.free - b.shelfFree.free) * 100) / 100;
+  const aisleNum = b.minAisle && a.minAisle ? Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000 : null;
   return [
-    row('M3', '평균 용적률', pctText(b.avgVolume), pctText(a.avgVolume), dl(signedPp(b.avgVolume, a.avgVolume)), '로케이션 용적률 Q = 자재높이 ÷ 단 높이 → 랙 용적률 R = 같은 랙 Q 평균 → 평균 용적률 = R의 평균 (Excel Summary F4). 빈 랙(R = 0)은 빼고 빈 랙 행에 따로 셈'),
-    row('M4', '80% 미만 로케이션', loc(b), loc(a), dl(signed(a.lowLocations - b.lowLocations)), '로케이션 용적률 Q < 80%인 로케이션 수 / 적치 로케이션 수 (Excel Summary C열). 품목코드가 없는 빈 로케이션은 뺌'),
-    row('M8', '빈 랙', emp(b), emp(a), cnt(b.emptyRacks, a.emptyRacks), '연결 로케이션의 자재높이가 모두 0인 랙(평균 용적률·80% 미만에서 뺌). Excel 미연결 랙은 미확인으로 따로 셈'),
-    row('M9', '저활용 랙', `${b.lowRacks}`, `${a.lowRacks}`, cnt(b.lowRacks, a.lowRacks), `랙 용적률 R < ${b.lowRackThreshold * 100}%인 랙 (빈 랙 제외)`),
-    row('M6', '통로 비중', pctText(b.aisleShare.excel), pctText(a.aisleShare.excel), dl(signedPp(b.aisleShare.excel, a.aisleShare.excel)), `① Excel 방식 = 1 − 면적 사용률. ${compareBasisText(cb)} — 한쪽이라도 Excel 면적이 없으면 양쪽 모두 도면 전체로 맞춤. 도면 통로 기준 BEFORE ${pctText(b.aisleShare.drawing)} / AFTER ${pctText(a.aisleShare.drawing)}`),
-    row('M7', '공간 구성', cs(b), cs(a), dl('랙 ' + signedPp(rackAll(b), rackAll(a))), '랙(적치) > 빈 랙 > 보관 불가 > 통로 > 잔여 순으로 겹침을 한 번만 셈. 도면 전체 기준, 합계 100%. 차이의 랙은 빈 랙 포함'),
-    row('M12', '보관 가능 합계', st(b), st(a), dl(signedPp(b.storable.share, a.storable.share)), '빈 랙 바닥면적 + 보관 가능 잔여(바닥). 도면 전체 기준'),
-    row('M13', '선반 여유 용적', sf(b), sf(a), dl(b.shelfFree.share === null || a.shelfFree.share === null ? '—' : signed(Math.round((a.shelfFree.free - b.shelfFree.free) * 100) / 100, (x) => x.toFixed(2), 'm³')), '선반마다 (단 높이 − 그 선반 최대 자재높이) × 랙 가로 × 랙 세로, 빈 선반은 단 높이 전체. 괄호는 전체 선반 용적 대비. 가로 방향 여유는 데이터가 없어 넣지 않음'),
-    row('M11', '최소 통로 폭', aw(b), aw(a), dl(b.minAisle && a.minAisle ? signed(Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000, (x) => x.toFixed(3), 'm') : '—'), '통로 단면 기준 최소 폭' + (a.minAisle?.target || b.minAisle?.target ? ` · 목표 ${a.minAisle?.target ?? b.minAisle.target}m` : '') + (a.minAisle?.standard || b.minAisle?.standard ? ` · 기준 ${(a.minAisle ?? b.minAisle).standard}m(${(a.minAisle ?? b.minAisle).standardLabel})` : '')),
+    row('M3', '평균 용적률', pctText(b.avgVolume), pctText(a.avgVolume), dl(signedPp(b.avgVolume, a.avgVolume)), '로케이션 용적률 Q = 자재높이 ÷ 단 높이 → 랙 용적률 R = 같은 랙 Q 평균 → 평균 용적률 = R의 평균 (Excel Summary F4). 빈 랙(R = 0)은 빼고 빈 랙 행에 따로 셈', ppNum(b.avgVolume, a.avgVolume)),
+    row('M4', '80% 미만 로케이션', loc(b), loc(a), dl(signed(a.lowLocations - b.lowLocations)), '로케이션 용적률 Q < 80%인 로케이션 수 / 적치 로케이션 수 (Excel Summary C열). 품목코드가 없는 빈 로케이션은 뺌', b.locations || a.locations ? a.lowLocations - b.lowLocations : null),
+    row('M8', '빈 랙', emp(b), emp(a), cnt(b.emptyRacks, a.emptyRacks), '연결 로케이션의 자재높이가 모두 0인 랙(평균 용적률·80% 미만에서 뺌). Excel 미연결 랙은 미확인으로 따로 셈', a.emptyRacks - b.emptyRacks),
+    row('M9', '저활용 랙', `${b.lowRacks}`, `${a.lowRacks}`, cnt(b.lowRacks, a.lowRacks), `랙 용적률 R < ${b.lowRackThreshold * 100}%인 랙 (빈 랙 제외)`, a.lowRacks - b.lowRacks),
+    row('M6', '통로 비중', pctText(b.aisleShare.excel), pctText(a.aisleShare.excel), dl(signedPp(b.aisleShare.excel, a.aisleShare.excel)), `① Excel 방식 = 1 − 면적 사용률. ${compareBasisText(cb)} — 한쪽이라도 Excel 면적이 없으면 양쪽 모두 도면 전체로 맞춤. 도면 통로 기준 BEFORE ${pctText(b.aisleShare.drawing)} / AFTER ${pctText(a.aisleShare.drawing)}`, ppNum(b.aisleShare.excel, a.aisleShare.excel)),
+    row('M7', '공간 구성', cs(b), cs(a), dl('랙 ' + signedPp(rackAll(b), rackAll(a))), '랙(적치) > 빈 랙 > 보관 불가 > 통로 > 잔여 순으로 겹침을 한 번만 셈. 도면 전체 기준, 합계 100%. 차이의 랙은 빈 랙 포함', ppNum(rackAll(b), rackAll(a))),
+    row('M12', '보관 가능 합계', st(b), st(a), dl(signedPp(b.storable.share, a.storable.share)), '빈 랙 바닥면적 + 보관 가능 잔여(바닥). 도면 전체 기준', ppNum(b.storable.share, a.storable.share)),
+    row('M13', '선반 여유 용적', sf(b), sf(a), dl(b.shelfFree.share === null || a.shelfFree.share === null ? '—' : signed(Math.round((a.shelfFree.free - b.shelfFree.free) * 100) / 100, (x) => x.toFixed(2), 'm³')), '선반마다 (단 높이 − 그 선반 최대 자재높이) × 랙 가로 × 랙 세로, 빈 선반은 단 높이 전체. 괄호는 전체 선반 용적 대비. 가로 방향 여유는 데이터가 없어 넣지 않음', shelfNum),
+    row('M11', '최소 통로 폭', aw(b), aw(a), dl(b.minAisle && a.minAisle ? signed(Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000, (x) => x.toFixed(3), 'm') : '—'), '통로 단면 기준 최소 폭' + (a.minAisle?.target || b.minAisle?.target ? ` · 목표 ${a.minAisle?.target ?? b.minAisle.target}m` : '') + (a.minAisle?.standard || b.minAisle?.standard ? ` · 기준 ${(a.minAisle ?? b.minAisle).standard}m(${(a.minAisle ?? b.minAisle).standardLabel})` : ''), aisleNum),
   ];
 }

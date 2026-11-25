@@ -37,7 +37,7 @@ test('면적 기준: 한쪽만 Excel 총면적이면 양쪽 도면 기준 + 적�
   assert.equal((await btn.innerText()).trim(), 'AFTER Excel 총면적 130.5㎡를 BEFORE에도 적용');
   assert.equal(await page.evaluate(() => window.__warehouseSession.state.project.scenarioMeta.before.locked), true);
   assert.equal(await btn.isDisabled(), true, '새 도면은 BEFORE 잠금 → 비활성');
-  assert.equal(await page.locator('tr[data-metric=M6] td:nth-child(4)').innerText(), '±0.0%p');
+  assert.equal(await page.locator('tr[data-metric=M6] td:nth-child(4)').innerText(), '±0.0%p', '통로 비중은 neutral → 화살표 없음');
 
   await click(page, 'compare-close');
   await page.evaluate(() => { window.__warehouseSession.state.project.scenarioMeta.before.locked = false; });

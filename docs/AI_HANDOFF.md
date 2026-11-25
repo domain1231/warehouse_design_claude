@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track D D1 결론 문장·KPI 카드·방향 색(D-078) · feature/d1-compare-headline
+- `METRIC_DIRECTION`·`metricTrend`·`compareSummary`·`HEADLINE_PRIORITY`(space.js), purposeCompare 행에 num·direction·trend. 화면: `[data-headline]`·`[data-kpis]`·`.r-trend`.
+- E2E 공용 `tests/e2e/compare-helpers.js`(가상 GT-EMPTY 배치로 비교 화면 열기).
+- 로컬: unit 254, golden 298, build·verify, e2e compare-headline(신규)·compare-basis·compare-purpose·compare-delta·compare-change-list·ui-parity PASS.
+- 다음: D2(Δ 지도 발표 모드) → D3(2단 배치·발표용 내보내기).
 ### 2026-11-25 백업·가져오기 시각 한국 시각 표시(D-077, #106) · fix/backup-local-time
 - `formatTime`·`timeHtml`(core/format.js), storage-dialogs 백업 목록, scenario-dialogs 가져오기 이력·대상별 백업·복원 확인. 저장 값 불변.
 - 로컬: unit(신규 format-time 3, TZ=America/New_York에서도 PASS) · golden · build · verify, e2e storage2(시각 표시 단언 추가)·scenarios·storage·ui-parity PASS.
