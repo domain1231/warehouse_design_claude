@@ -38,6 +38,14 @@ jobs:
 
       - run: pnpm check
 
+      # E7(D-093): 프로젝트 크기 예산 보고서(가상 사용 시나리오 항목별 크기)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: size-budget-${{ matrix.os }}
+          path: test-results/size-budget.json
+          if-no-files-found: warn
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.os }}
