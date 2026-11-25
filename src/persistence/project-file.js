@@ -2,7 +2,10 @@
 // JSON 불러오기·압축 백업(쓰기·읽기)·JSON 저장 경고가 모두 PROJECT_MAX_BYTES를 쓴다(이전: 불러오기 12MB, 압축 백업 24MB로 서로 달랐음).
 import { PROJECT_MAX_BYTES, PACK_FORMAT, isZipBytes, unzipProject, unpackPacked } from './zip.js';
 import { sizeText, tooLargeText, SIZE_HINTS } from '../core/file-size.js';
-import { packProjectRefs, expandProjectRefs } from '../core/backup-refs.js';
+import { packProjectRefs, expandProjectRefs, countBackupRefs, countHistoryRefs } from '../core/backup-refs.js';
+import { countSnapshotDeltas } from '../core/snapshot-delta.js';
+
+const hasPackedParts = (p) => countBackupRefs(p) + countHistoryRefs(p) + countSnapshotDeltas(p) > 0;
 
 export { PROJECT_MAX_BYTES };
 export const PROJECT_WARN_BYTES = PROJECT_MAX_BYTES / 2;
@@ -21,7 +24,7 @@ export const jsonFormatOf = (v) => (JSON_FORMATS.includes(v) ? v : DEFAULT_JSON_
 /** 사용자가 내려받는 프로젝트 JSON 원문. */
 export function projectJsonText(project, format = DEFAULT_JSON_FORMAT) {
   const f = jsonFormatOf(format);
-  if (f === 'legacy') return JSON.stringify(expandProjectRefs(structuredClone(project)), null, 2);
+  if (f === 'legacy') return JSON.stringify(hasPackedParts(project) ? expandProjectRefs(structuredClone(project)) : project, null, 2); // 메모리 프로젝트는 펼친 상태라 보통 복사 없이 바로 쓴다
   return f === 'pretty' ? JSON.stringify(packProjectRefs(project), null, 2) : JSON.stringify(packProjectRefs(project));
 }
 

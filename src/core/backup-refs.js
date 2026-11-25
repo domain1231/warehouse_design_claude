@@ -6,6 +6,8 @@
 // 되돌림: 기준본·이전 앱은 백업 안 배열 형식만 검사하므로 파일은 열리고, 참조가 든 백업 복원만 검증 실패로 전체 취소된다.
 //         완전 호환 파일은 JSON 저장 형식 '기준본 호환 JSON'(참조를 펼친 들여쓰기 JSON)으로 저장한다.
 
+import { packSnapshotDeltas, expandSnapshotDeltas } from './snapshot-delta.js';
+
 export const REF_KEY = '$ref';
 export const REF_KINDS = Object.freeze(['excelSnapshots', 'layoutSnapshots']);
 
@@ -116,10 +118,13 @@ export function expandHistoryRefs(p) {
   return p;
 }
 
-/** 저장할 때 쓰는 참조 전체(백업 안 스냅샷 + 자동 배치 이력 배치). */
-export const packProjectRefs = (project) => packHistoryRefs(packBackupRefs(project));
-/** 읽을 때 펼침(자동 배치 이력 배치 + 백업 안 스냅샷). */
-export const expandProjectRefs = (p) => expandBackupRefs(expandHistoryRefs(p));
+/**
+ * 저장할 때 쓰는 줄임 전체: 백업 안 스냅샷 참조 → 자동 배치 이력 배치 참조 → 기준일 스냅샷 차분(D-094).
+ * 참조는 펼친 최상위 스냅샷과 비교해 만들므로 차분은 마지막에 한다.
+ */
+export const packProjectRefs = (project) => packSnapshotDeltas(packHistoryRefs(packBackupRefs(project)));
+/** 읽을 때 펼침: 차분 → 자동 배치 이력 배치 → 백업 안 스냅샷(저장의 역순). */
+export const expandProjectRefs = (p) => expandBackupRefs(expandHistoryRefs(expandSnapshotDeltas(p)));
 /** 펼치지 못하고 남은 이력 참조 개수(스냅샷이 사라진 경우). */
 export const countHistoryRefs = (p) => (p?.autoPlacement?.history ?? []).filter((h) => isLayoutRef(h?.layout)).length;
 

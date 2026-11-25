@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.17 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 기준일 스냅샷 차분 저장(D-094) · feature/e9-snapshot-delta
+- `src/core/snapshot-delta.js`(신규: `diff`·`patch`·`deepSame`·`packSnapshotDeltas`·`expandSnapshotDeltas`·`countSnapshotDeltas`, 기준점 10). backup-refs `packProjectRefs`/`expandProjectRefs`가 차분까지 포함(저장 지점 변경 없음). history-cleanup이 남긴 이력의 스냅샷 기준일 보존. size-budget 8MB 고정 검사.
+- 테스트 도우미 sizedProject 기본 형식 'legacy'(이전 앱 저장본과 같은 원문). E1 E2E는 '기준본 호환 JSON'으로 큰 파일 저장.
+- 로컬: unit 305(신규 snapshot-delta 6), golden 298, build·verify, 관련 e2e. v2.4.1 빌드: 작은 JSON 거부(현재 작업 유지)·기준본 호환 JSON 열림/복원(로컬 스크립트).
+
 ### 2026-11-25 Track E E7 크기 예산 검사(D-093) · test/e7-size-budget-2 (fix/backup-cap-stored-size 위에 쌓음)
 - `tests/unit/helpers/usage-scenario.js`(가상 사용 시나리오), `tests/unit/size-budget.test.js`(`sizeReport`·`checkBudget`, 보고서 test-results/size-budget.json), ci.yml에 보고서 업로드.
 - 결과: 작은 JSON 23.56MB(스냅샷 21.76 + 그 밖 1.80), 정리(10) 후 11.60MB. 전체 8MB는 todo.

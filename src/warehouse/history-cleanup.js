@@ -26,7 +26,7 @@ export function historySizes(project) {
   return { rows, total: bytesOf(p) };
 }
 
-/** 배치별로 보존할 기준일 집합: 최근 keep개 기준일 ∪ 최신 Excel 기준일. */
+/** 배치별로 보존할 기준일 집합: 최근 keep개 기준일 ∪ 최신 Excel 기준일(∪ 남긴 자동 배치 이력의 기준일은 호출부에서 추가). */
 function keptDates(list, scenario, keep, asOf) {
   const dates = [...new Set(list.filter((s) => s?.scenario === scenario && typeof s.date === 'string').map((s) => s.date))].sort().reverse();
   const set = new Set(dates.slice(0, keep));
@@ -42,10 +42,24 @@ export function planCleanup(project, { keep = DEFAULT_KEEP, clearCommands = fals
   if (!Number.isInteger(keep) || keep < 1) throw new Error('보존 개수는 1 이상의 정수여야 합니다.');
   const p = structuredClone(project);
   const removed = { layoutSnapshots: 0, excelSnapshots: 0, autoPlacementHistory: 0, backupSnapshots: 0, commandHistory: 0 };
+  // 자동 배치 확인 이력: 배치별 최근 keep건(시각 순). 남긴 이력과 같은 배치의 스냅샷 기준일은 함께 보존한다
+  // (지우면 저장 시 이력 배치가 참조를 잃고 펼쳐져 오히려 커짐, D-090·D-094 — 차분 저장이라 보존 비용은 작다).
+  const hist = Array.isArray(p.autoPlacement?.history) ? p.autoPlacement.history : null;
+  const keepHist = new Set();
+  if (hist) for (const k of SCENARIOS) hist.filter((h) => h?.scenario === k).slice(-keep).forEach((h) => keepHist.add(h));
+  const histDates = { before: new Set(), after: new Set() };
+  if (hist) {
+    const byLayout = new Map();
+    for (const s of p.layoutSnapshots ?? []) if (SCENARIOS.includes(s?.scenario) && s.layout) byLayout.set(s.scenario + '\u0000' + JSON.stringify(s.layout), s.date);
+    for (const h of keepHist) { const d = h?.layout && byLayout.get(h.scenario + '\u0000' + JSON.stringify(h.layout)); if (d) histDates[h.scenario].add(d); }
+  }
   const kept = {};
   for (const kind of SNAP_KINDS) {
     kept[kind] = {};
-    for (const k of SCENARIOS) kept[kind][k] = keptDates(p[kind] ?? [], k, keep, p.scenarioMeta?.[k]?.sourceInfo?.asOf);
+    for (const k of SCENARIOS) {
+      kept[kind][k] = keptDates(p[kind] ?? [], k, keep, p.scenarioMeta?.[k]?.sourceInfo?.asOf);
+      for (const d of histDates[k]) kept[kind][k].add(d);
+    }
     const next = (p[kind] ?? []).filter((s) => !SCENARIOS.includes(s?.scenario) || kept[kind][s.scenario].has(s.date));
     removed[kind] = (p[kind] ?? []).length - next.length;
     p[kind] = next;
@@ -59,12 +73,8 @@ export function planCleanup(project, { keep = DEFAULT_KEEP, clearCommands = fals
       b[kind] = next;
     }
   }
-  // 자동 배치 확인 이력: 배치별 최근 keep건(시각 순).
-  const hist = p.autoPlacement?.history;
-  if (Array.isArray(hist)) {
-    const keepIds = new Set();
-    for (const k of SCENARIOS) hist.filter((h) => h?.scenario === k).slice(-keep).forEach((h) => keepIds.add(h));
-    const next = hist.filter((h) => !SCENARIOS.includes(h?.scenario) || keepIds.has(h));
+  if (hist) {
+    const next = hist.filter((h) => !SCENARIOS.includes(h?.scenario) || keepHist.has(h));
     removed.autoPlacementHistory = hist.length - next.length;
     p.autoPlacement.history = next;
   }
