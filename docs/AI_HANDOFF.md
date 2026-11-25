@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.15 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track E E2 작은 JSON 저장(D-087) · feature/e2-compact-json (E1 위에 쌓음)
+- project-file `JSON_FORMATS`·`DEFAULT_JSON_FORMAT`('compact')·`jsonFormatOf`, `projectJsonText(project, format)`·`projectFile(project, format)`·`projectSizeNotice(bytes, format)`. storage-dialogs `jsonFormat`·`setJsonFormat`(localStorage `<접두사>:json-format`), 저장소 관리 `#vJsonFormat`.
+- 로컬: unit 274(신규 compact-json 3), golden 298, build·verify, e2e project-size(형식 선택·작은 JSON 왕복·새로고침 유지 추가)·storage·storage2·json-import-abort·ux-improvements·ui-parity(고정 목록 +1)·compare-present PASS.
+- 다음: 로드맵 순서 E5(백업 안 이력 중복 제거, 위험 높음 — 저장 구조 변경 승인 필요) → E3.
+
 ### 2026-11-25 Track E E1 프로젝트 크기 상한 단일화·ZIP 불러오기(D-086) · feature/e1-project-size-limit
 - `src/persistence/project-file.js`(신규: `PROJECT_WARN_BYTES`·`projectJsonText`·`projectSizeNotice`·`projectFile`·`readProjectFile`), zip.js `PROJECT_MAX_BYTES`·`unpackPacked`·`unzipProject`·`isZipBytes`. storage-dialogs `downloadProject`·`readFileBytes`, scenario-dialogs `downloadProject` 주입. `#jsonIn` accept에 ZIP.
 - 합성 크기 프로젝트 생성기 `tests/unit/size-fixture.js`(`sizedProject(bytes)` — 정확한 바이트, 배치 검사 결과 포함).

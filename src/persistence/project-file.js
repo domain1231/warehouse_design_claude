@@ -11,23 +11,29 @@ export const CLEANUP_HINT = '이력(배치·Excel 스냅샷, 자동 배치 이�
 
 const bytesOf = (s) => new TextEncoder().encode(s).length;
 
-/** 사용자가 내려받는 프로젝트 JSON 원문(들여쓰기 2칸, 기준본과 같음). */
-export function projectJsonText(project) {
-  return JSON.stringify(project, null, 2);
+// E2(D-087): 저장 형식. 'compact' 작은 JSON(들여쓰기 없음, 기본) / 'pretty' 읽기 쉬운 JSON(들여쓰기 2칸, 기준본과 같음). 내용은 같다.
+export const JSON_FORMATS = Object.freeze(['compact', 'pretty']);
+export const DEFAULT_JSON_FORMAT = 'compact';
+export const jsonFormatOf = (v) => (JSON_FORMATS.includes(v) ? v : DEFAULT_JSON_FORMAT);
+
+/** 사용자가 내려받는 프로젝트 JSON 원문. */
+export function projectJsonText(project, format = DEFAULT_JSON_FORMAT) {
+  return jsonFormatOf(format) === 'pretty' ? JSON.stringify(project, null, 2) : JSON.stringify(project);
 }
 
 /** 저장할 JSON 크기 안내. 상한의 50% 초과면 경고, 상한 초과면 다시 열 수 없음을 알린다(저장은 막지 않는다). 해당 없으면 null. */
-export function projectSizeNotice(bytes) {
-  if (bytes > PROJECT_MAX_BYTES) return `JSON 파일 ${mb(bytes)} · 불러오기 상한 ${LIMIT}를 넘어 앱에서 다시 열 수 없습니다. ${CLEANUP_HINT}`;
-  if (bytes > PROJECT_WARN_BYTES) return `JSON 파일 ${mb(bytes)} · 불러오기 상한 ${LIMIT}의 50%를 넘었습니다. ${CLEANUP_HINT}`;
+export function projectSizeNotice(bytes, format = DEFAULT_JSON_FORMAT) {
+  const tip = jsonFormatOf(format) === 'pretty' ? ' 저장소 관리의 JSON 저장 형식에서 작은 JSON을 고르면 크기가 약 절반으로 줄어듭니다.' : '';
+  if (bytes > PROJECT_MAX_BYTES) return `JSON 파일 ${mb(bytes)} · 불러오기 상한 ${LIMIT}를 넘어 앱에서 다시 열 수 없습니다. ${CLEANUP_HINT}${tip}`;
+  if (bytes > PROJECT_WARN_BYTES) return `JSON 파일 ${mb(bytes)} · 불러오기 상한 ${LIMIT}의 50%를 넘었습니다. ${CLEANUP_HINT}${tip}`;
   return null;
 }
 
 /** JSON 원문 크기와 안내를 함께 만든다. */
-export function projectFile(project) {
-  const text = projectJsonText(project);
+export function projectFile(project, format = DEFAULT_JSON_FORMAT) {
+  const text = projectJsonText(project, format);
   const bytes = bytesOf(text);
-  return { text, bytes, notice: projectSizeNotice(bytes) };
+  return { text, bytes, notice: projectSizeNotice(bytes, format) };
 }
 
 /**

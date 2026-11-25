@@ -28,7 +28,7 @@ test('저장 크기 안내: 12MB 이하 없음 · 12MB 초과 경고 · 24MB 초
 for (const target of [11.9e6, 12.1e6, 23.9e6]) {
   test(`왕복 ${target / 1e6}MB: 앱 JSON · 압축 백업 JSON · ZIP 모두 다시 열림(내용 동일)`, async () => {
     const { project, text } = sizedProject(target);
-    const file = projectFile(project);
+    const file = projectFile(project, 'pretty');
     assert.equal(file.text, text);
     assert.equal(file.bytes, target);
     assert.equal(!!file.notice, target > 12e6);

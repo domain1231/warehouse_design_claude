@@ -18,8 +18,8 @@ function baseProject(racks) {
 
 const day = (i) => new Date(Date.UTC(2024, 0, 1 + i)).toISOString().slice(0, 10);
 
-/** 앱이 내려받는 JSON(projectJsonText)이 정확히 target 바이트인 검증된 프로젝트와 그 원문. */
-export function sizedProject(target, { racks = 400 } = {}) {
+/** 앱이 내려받는 JSON(projectJsonText, 기본은 읽기 쉬운 JSON = 기준본·E1 이전 앱 저장본)이 정확히 target 바이트인 검증된 프로젝트와 그 원문. */
+export function sizedProject(target, { racks = 400, format = 'pretty' } = {}) {
   const p0 = baseProject(racks);
   const make = (n, pad = 0) => {
     const q = structuredClone(p0);
@@ -27,14 +27,14 @@ export function sizedProject(target, { racks = 400 } = {}) {
     // 앱 저장본처럼 BEFORE/AFTER 배치 검사 결과(autoPlacement.results)를 함께 기록한다(저장 시 session이 붙이는 값).
     return projectValidator(storeScanResults(projectValidator(q), { now: () => '2026-11-25T00:00:00.000Z' }));
   };
-  const size = (q) => bytes(projectJsonText(q));
+  const size = (q) => bytes(projectJsonText(q, format));
   const s1 = size(make(1)), per = size(make(2)) - s1;
   if (target < s1) throw new Error('목표 크기가 너무 작습니다');
   let n = 1 + Math.floor((target - s1) / per);
   let project = make(n);
   const pad = target - size(project);
   project = make(n, pad);
-  const text = projectJsonText(project);
+  const text = projectJsonText(project, format);
   if (bytes(text) !== target) throw new Error(`크기 맞춤 실패: ${bytes(text)} ≠ ${target}`);
   return { project, text };
 }

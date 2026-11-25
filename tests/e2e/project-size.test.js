@@ -1,5 +1,5 @@
 // E1(D-086) 실제 브라우저(file://, 오프라인): 상한 근처 합성 프로젝트(가상 시험값)를 JSON·ZIP으로 불러오고,
-// 앱이 내려받은 JSON을 다시 불러온다. 12MB 초과 JSON 저장 시 크기 경고.
+// 앱이 내려받은 JSON을 다시 불러온다. 12MB 초과 JSON 저장 시 크기 경고. E2(D-087) 작은 JSON 저장·형식 선택.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -31,7 +31,7 @@ async function importAndWait(page, file, label) {
   assert.equal(await page.evaluate(() => window.__warehouseSession.state.status), 'saved');
 }
 
-test('E1: 23.9MB JSON → 앱 JSON 저장(크기 경고) → 다시 불러오기, 12.1MB ZIP 불러오기', { timeout: 180000 }, async () => {
+test('E1·E2: 23.9MB JSON → 읽기 쉬운 JSON 저장(크기 경고)·작은 JSON 저장 → 12.1MB ZIP → 저장본 다시 불러오기 · 형식 선택 유지', { timeout: 180000 }, async () => {
   const ctx = await browser.newContext({ offline: true, viewport: { width: 1400, height: 900 }, acceptDownloads: true });
   const page = await ctx.newPage();
   const problems = [];
@@ -48,11 +48,26 @@ test('E1: 23.9MB JSON → 앱 JSON 저장(크기 경고) → 다시 불러오기
   await importAndWait(page, { name: 'syn-23_9.json', mimeType: 'application/json', buffer: Buffer.from(big.text) }, 'syn-23_9.json');
   assert.equal(await racksBefore(page), 400);
 
+  // E2(D-087): 기본은 작은 JSON. 이 검사는 E1 이전과 같은 읽기 쉬운 JSON으로 저장한다(저장소 관리에서 형식 선택).
+  await page.locator('[data-testid=storage-open]').click();
+  assert.equal(await page.locator('[data-testid=json-format]').inputValue(), 'compact');
+  await page.locator('[data-testid=json-format]').selectOption('pretty');
+  await page.locator('[data-testid=storage-close]').click();
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=export]').click()]);
   const exported = fs.readFileSync(await dl.path());
   assert.ok(exported.length > 12e6 && exported.length <= 24e6, String(exported.length));
   assert.ok(Math.abs(exported.length - Buffer.byteLength(big.text)) < 200, '불러온 뒤 다시 저장해도 크기가 거의 같음(저장 시각 등만 추가)');
-  assert.match(await toast(page), /^JSON 파일 2\d\.\dMB · 불러오기 상한 24MB의 50%를 넘었습니다\. 이력\(/);
+  assert.match(await toast(page), /^JSON 파일 2\d\.\dMB · 불러오기 상한 24MB의 50%를 넘었습니다\. 이력\(.*작은 JSON을 고르면 크기가 약 절반으로 줄어듭니다\.$/);
+
+  // 작은 JSON: 내용 동일, 크기 약 절반
+  await page.locator('[data-testid=storage-open]').click();
+  await page.locator('[data-testid=json-format]').selectOption('compact');
+  await page.locator('[data-testid=storage-close]').click();
+  const [dl2] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=export]').click()]);
+  const compact = fs.readFileSync(await dl2.path());
+  assert.ok(compact.length < exported.length * 0.6, `${compact.length} / ${exported.length}`);
+  assert.deepEqual(JSON.parse(compact), JSON.parse(exported));
+  assert.ok(!compact.includes('\n'));
 
   const small = sizedProject(12.1e6, { racks: 200 });
   const zip = Buffer.from(JSON.parse(await packProject(JSON.stringify(small.project))).data, 'base64');
@@ -61,6 +76,13 @@ test('E1: 23.9MB JSON → 앱 JSON 저장(크기 경고) → 다시 불러오기
 
   await importAndWait(page, { name: 'exported.json', mimeType: 'application/json', buffer: exported }, 'exported.json');
   assert.equal(await racksBefore(page), 400);
+  await page.locator('[data-testid=storage-open]').click();
+  await page.locator('[data-testid=json-format]').selectOption('pretty');
+  await page.locator('[data-testid=storage-close]').click();
+  await page.reload();
+  await page.waitForFunction(() => window.__warehouseView && window.__warehouseSession?.state.status === 'saved', null, { timeout: 60000 }); // 합성 AFTER는 비어 있어 도면 객체가 없을 수 있음
+  await page.locator('[data-testid=storage-open]').click();
+  assert.equal(await page.locator('[data-testid=json-format]').inputValue(), 'pretty', '형식 선택은 이 브라우저에 유지');
   assert.deepEqual(problems, []);
   await ctx.close();
 });
