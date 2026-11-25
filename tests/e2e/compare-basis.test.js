@@ -34,7 +34,7 @@ test('면적 기준: 한쪽만 Excel 총면적이면 양쪽 도면 기준 + 적�
   const basis = page.locator('[data-testid=compare-basis]');
   assert.match(await basis.innerText(), /면적 기준: 도면 전체 \(BEFORE에 Excel 면적 없음\)/);
   const btn = page.locator('[data-testid=compare-basis-apply]');
-  assert.equal((await btn.innerText()).trim(), 'AFTER Excel 총면적 130.5㎡를 BEFORE에도 적용');
+  assert.equal((await btn.innerText()).trim(), 'AFTER 면적 130.5㎡ 적용');
   assert.equal(await page.evaluate(() => window.__warehouseSession.state.project.scenarioMeta.before.locked), true);
   assert.equal(await btn.isDisabled(), true, '새 도면은 BEFORE 잠금 → 비활성');
   assert.equal(await page.locator('tr[data-metric=M6] td:nth-child(3)').innerText(), '±0.0%p', '통로 비중은 neutral → 화살표 없음');

@@ -70,7 +70,7 @@ test('D6: 출처 칩 3개 한 줄(파일명·시각은 툴팁), 면적 기준 �
     await page.locator('[data-testid=scenario-compare]').click();
     const r = await page.evaluate(() => {
       const S = document.querySelector('[data-sources]'), chips = [...S.querySelectorAll('.r-chip')];
-      return { h: S.getBoundingClientRect().height, n: chips.length, text: chips.map((c) => c.textContent), titles: chips.map((c) => c.title), mids: [...chips, ...S.querySelectorAll('button')].map((c) => { const b = c.getBoundingClientRect(); return (b.top + b.bottom) / 2; }), cls: S.querySelector('[data-testid=compare-basis]').className, btn: S.querySelector('[data-testid=compare-basis-apply]')?.textContent };
+      return { h: S.getBoundingClientRect().height, fill: S.querySelector('.r-chips').getBoundingClientRect().width / S.getBoundingClientRect().width, clipped: chips.slice(0, 2).filter((c) => c.scrollWidth > c.clientWidth + 1).length, n: chips.length, text: chips.map((c) => c.textContent), titles: chips.map((c) => c.title), mids: [...chips, ...S.querySelectorAll('button')].map((c) => { const b = c.getBoundingClientRect(); return (b.top + b.bottom) / 2; }), cls: S.querySelector('[data-testid=compare-basis]').className, btn: S.querySelector('[data-testid=compare-basis-apply]')?.textContent };
     });
     assert.equal(r.n, 3);
     assert.deepEqual(r.text.slice(0, 2), ['BEFORE 706호BE · 2026-11-01', 'AFTER 706호AF · 2026-11-20']);
@@ -78,8 +78,10 @@ test('D6: 출처 칩 3개 한 줄(파일명·시각은 툴팁), 면적 기준 �
     assert.ok(r.titles[0].includes('가상_BE.xlsx') && r.titles[0].includes('2026-11-02T09:00:00Z'), '파일명·가져온 시각은 툴팁');
     assert.ok(Math.max(...r.mids) - Math.min(...r.mids) <= 3, `한 줄(${width}px): ${r.mids}`);
     assert.ok(r.h <= 36, `헤더 높이 ${r.h}`);
+    assert.ok(r.fill > 0.98, `칩 줄이 출처 영역 전체 폭을 씀(${r.fill})`);
+    assert.equal(r.clipped, 0, `${width}px: BEFORE·AFTER 칩 잘림 없음`);
     assert.match(r.cls, /basis-partial/);
-    assert.equal(r.btn, 'AFTER Excel 총면적 130.5㎡를 BEFORE에도 적용');
+    assert.equal(r.btn, 'AFTER 면적 130.5㎡ 적용');
     await ctx.close();
   }
 });
