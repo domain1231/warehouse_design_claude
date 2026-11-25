@@ -178,13 +178,11 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 @media (max-width: 1500px) { #topStats .stat { padding: 10px 10px; } #topStats .stat small { font-size: 11px; } }
 .stat .stat-sub { display: block; margin-top: 2px; font-style: normal; font-size: 11px; color: var(--muted, #8fa3b8); }
 @media (max-width: 700px) { #topStats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.r-purpose { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.r-purpose th:first-child, .r-purpose td:first-child { width: 18%; }
-.r-purpose th:nth-child(2), .r-purpose td:nth-child(2), .r-purpose th:nth-child(3), .r-purpose td:nth-child(3) { width: 32%; }
-.r-purpose th:nth-child(4), .r-purpose td:nth-child(4) { width: 18%; }
-.r-purpose td { white-space: normal; overflow-wrap: anywhere; }
-.r-purpose th, .r-purpose td { padding: 3px 6px; text-align: right; }
-.r-purpose th:first-child, .r-purpose td:first-child { text-align: left; }
+.r-purpose { width: auto; max-width: 720px; border-collapse: collapse; }
+.r-purpose th, .r-purpose td { padding: 3px 10px; text-align: right; white-space: nowrap; }
+.r-purpose th:first-child, .r-purpose td:first-child { text-align: left; padding-left: 0; }
+.r-purpose .r-to { color: #8d99a6; }
+.r-purpose tr.r-zero td { opacity: 0.5; }
 .r-comp-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
 .r-comp-row > span { width: 56px; }
 .r-comp-bar { flex: 1; display: flex; height: 16px; border-radius: 3px; overflow: hidden; background: #222; font-size: 11px; color: var(--muted); align-items: center; }

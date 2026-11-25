@@ -87,7 +87,8 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   const kpiHtml = (r) => { const t = TREND[r.trend]; return `<div class="r-kpi" data-kpi="${r.id}" title="${esc(r.tip)}"><b>${esc(r.label)}</b><span class="r-kpi-v">${esc(r.before)} → ${esc(r.after)}</span><span class="r-trend ${r.trend}">${t ? `<span class="r-arrow" aria-hidden="true">${t[0]}</span> ` : ''}${esc(r.delta)}${t ? ` <small>${t[1]}</small>` : ''}</span></div>`; };
   const purposeHtml = (p, d, rows) => {
     const sum = layoutChangeSummary(d);
-    return '<table class="r-purpose"><tr>' + ['목적 지표', 'BEFORE', 'AFTER', '차이'].map((h) => `<th>${h}</th>`).join('') + '</tr>' + rows.map((r) => `<tr data-metric="${r.id}" data-trend="${r.trend}" title="${esc(r.tip)}"><td>${esc(r.label)}</td><td>${esc(r.before)}</td><td>${esc(r.after)}</td><td>${trendHtml(r)}</td></tr>`).join('') + '</table>'
+    // D4(D-081): BEFORE → AFTER를 한 칸에 붙여 쓰고 차이를 바로 옆에. 변화 0 행은 흐리게. 긴 원문은 툴팁.
+    return '<table class="r-purpose"><tr>' + ['목적 지표', 'BEFORE → AFTER', '차이'].map((h) => `<th>${h}</th>`).join('') + '</tr>' + rows.map((r) => `<tr data-metric="${r.id}" data-trend="${r.trend}"${r.num === 0 ? ' class="r-zero"' : ''} title="${esc(`${r.label}: BEFORE ${r.before} → AFTER ${r.after}\n${r.tip}`)}"><td>${esc(r.label)}</td><td class="r-ba">${esc(r.short.before)} <span class="r-to">→</span> ${esc(r.short.after)}</td><td>${trendHtml(r)}</td></tr>`).join('') + '</table>'
       + `<div class="r-comp" data-testid="compare-composition">${compBar(p, 'before')}${compBar(p, 'after')}<div class="r-legend">${SEG.map(([, cls, t]) => `<span><i class="seg ${cls}"></i>${t === '잔여' ? '보관 가능 잔여' : t}</span>`).join('')}</div></div>`
       + (sum ? `<p class="r-changes" data-testid="compare-changes">배치 변경: ${esc(sum)}</p>` : '');
   };
@@ -213,7 +214,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
       const mapSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${Math.round(vw * k)}" height="${Math.round(vh * k)}" font-family="Malgun Gothic,Segoe UI,sans-serif">${parts.inner}</svg>`;
       const rows = purposeCompare(p), sm = compareSummary(p, rows), cb = compareBasis(p);
       const bars = ['before', 'after'].map((key) => ({ name: key.toUpperCase(), segs: p.scenarios[key].objects.length ? SEG.map(([n, , t]) => ({ label: t === '잔여' ? '보관 가능 잔여' : t, share: scenarioSpace(p, key).composition[n].share, color: SEG_COLOR[n], hatch: n === 'emptyRack' })) : [] }));
-      const plan = presentationLayout({ title: 'BEFORE / AFTER 개선 효과', headline: sm.headline, warning: sm.warning, kpis: sm.kpis, rows: rows.filter((r) => r.id !== 'M7'), bars, legendItems: parts.legendItems,
+      const plan = presentationLayout({ title: 'BEFORE / AFTER 개선 효과', headline: sm.headline, warning: sm.warning, kpis: sm.kpis, rows: rows.filter((r) => r.id !== 'M7').map((r) => ({ ...r, before: r.short.before, after: r.short.after })), bars, legendItems: parts.legendItems,
         footnotes: [`BEFORE · ${sourceText(p, 'before')}`, `AFTER · ${sourceText(p, 'after')}`, `${compareBasisText(cb)} · Δ 지도 ${cv.unit === 'column' ? '열 단위 요약' : '랙 단위'}(정수 %p) · 지표 산식은 앱 도움말 참고 · 경로·하중·안전 적합성은 별도 검증`] });
       const canvas = await renderPresentation(plan, mapSvg);
       const blob = (type, qy) => new Promise((ok, bad) => canvas.toBlob((b) => (b ? ok(b) : bad(new Error('이미지 생성 실패'))), type, qy));
