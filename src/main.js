@@ -179,7 +179,7 @@ async function start() {
   const backups = createBackupRing({ storage: window.localStorage, validate: projectValidator, fingerprint: (p) => JSON.stringify({ ...p, persistence: undefined }), nextId: ids });
   const session = createSession({ store, nextId: ids, backups });
   const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-  const storageDialogs = createStorageDialogs({ session, store, backups, storage: window.localStorage, validate: projectValidator, schemaVersion: SCHEMA_VERSION, today, toast: (t) => showToast(t), download });
+  const storageDialogs = createStorageDialogs({ session, store, backups, storage: window.localStorage, validate: projectValidator, schemaVersion: SCHEMA_VERSION, today, toast: (t) => showToast(t), download, apply: (label, compute) => historyBlocked() || session.apply(label, compute) });
 
   // ── 화면 상태(세션 밖) ──
   let tool = 'select';
