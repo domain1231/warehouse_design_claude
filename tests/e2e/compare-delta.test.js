@@ -78,8 +78,8 @@ test('AFTER 배치가 비면: 목적 지표 AFTER 칸 배치 없음·Δ 범례 �
   const rows = page.locator('[data-testid=compare-purpose] tr[data-metric]');
   for (let i = 0; i < await rows.count(); i++) {
     const c = await rows.nth(i).locator('td').allTextContents();
-    assert.equal(c[2], '배치 없음');
-    assert.equal(c[3], '—');
+    assert.match(c[1], /→ 배치 없음$/, 'D4: BEFORE → AFTER 한 칸');
+    assert.equal(c[2], '—');
   }
   assert.equal(await page.locator('[data-testid=compare-delta-legend]').textContent(), 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.');
   assert.deepEqual(problems, []);

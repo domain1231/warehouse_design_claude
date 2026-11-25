@@ -292,7 +292,7 @@ export function purposeCompare(project) {
   };
   const shelfNum = b.shelfFree.share === null || a.shelfFree.share === null ? null : Math.round((a.shelfFree.free - b.shelfFree.free) * 100) / 100;
   const aisleNum = b.minAisle && a.minAisle ? Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000 : null;
-  return [
+  const rows = [
     row('M3', '평균 용적률', pctText(b.avgVolume), pctText(a.avgVolume), dl(signedPp(b.avgVolume, a.avgVolume)), '로케이션 용적률 Q = 자재높이 ÷ 단 높이 → 랙 용적률 R = 같은 랙 Q 평균 → 평균 용적률 = R의 평균 (Excel Summary F4). 빈 랙(R = 0)은 빼고 빈 랙 행에 따로 셈', ppNum(b.avgVolume, a.avgVolume)),
     row('M4', '80% 미만 로케이션', loc(b), loc(a), dl(signed(a.lowLocations - b.lowLocations)), '로케이션 용적률 Q < 80%인 로케이션 수 / 적치 로케이션 수 (Excel Summary C열). 품목코드가 없는 빈 로케이션은 뺌', b.locations || a.locations ? a.lowLocations - b.lowLocations : null),
     row('M8', '빈 랙', emp(b), emp(a), cnt(b.emptyRacks, a.emptyRacks), '연결 로케이션의 자재높이가 모두 0인 랙(평균 용적률·80% 미만에서 뺌). Excel 미연결 랙은 미확인으로 따로 셈', a.emptyRacks - b.emptyRacks),
@@ -303,4 +303,13 @@ export function purposeCompare(project) {
     row('M13', '선반 여유 용적', sf(b), sf(a), dl(b.shelfFree.share === null || a.shelfFree.share === null ? '—' : signed(Math.round((a.shelfFree.free - b.shelfFree.free) * 100) / 100, (x) => x.toFixed(2), 'm³')), '선반마다 (단 높이 − 그 선반 최대 자재높이) × 랙 가로 × 랙 세로, 빈 선반은 단 높이 전체. 괄호는 전체 선반 용적 대비. 가로 방향 여유는 데이터가 없어 넣지 않음', shelfNum),
     row('M11', '최소 통로 폭', aw(b), aw(a), dl(b.minAisle && a.minAisle ? signed(Math.round((a.minAisle.width - b.minAisle.width) * 1000) / 1000, (x) => x.toFixed(3), 'm') : '—'), '통로 단면 기준 최소 폭' + (a.minAisle?.target || b.minAisle?.target ? ` · 목표 ${a.minAisle?.target ?? b.minAisle.target}m` : '') + (a.minAisle?.standard || b.minAisle?.standard ? ` · 기준 ${(a.minAisle ?? b.minAisle).standard}m(${(a.minAisle ?? b.minAisle).standardLabel})` : ''), aisleNum),
   ];
+  // D4(D-081): 비교표용 짧은 값(BEFORE → AFTER 한 줄). 긴 값은 줄이고 원문은 툴팁·CSV에 남는다. %는 1자리, 개수 정수, m 3자리, m³ 2자리.
+  const C = {
+    M7: [`랙 ${pctText(rackAll(b))}`, `랙 ${pctText(rackAll(a))}`],
+    M12: [pctText(b.storable.share), pctText(a.storable.share)],
+    M13: [b.shelfFree.share === null ? '미확인' : `${b.shelfFree.free.toFixed(2)}m³`, a.shelfFree.share === null ? '미확인' : `${a.shelfFree.free.toFixed(2)}m³`],
+    M11: [b.minAisle ? `${b.minAisle.width.toFixed(3)}m` : '통로 없음', a.minAisle ? `${a.minAisle.width.toFixed(3)}m` : '통로 없음'],
+  };
+  for (const r of rows) r.short = { before: ready && C[r.id] ? C[r.id][0] : r.before, after: afterOk && C[r.id] ? C[r.id][1] : r.after };
+  return rows;
 }

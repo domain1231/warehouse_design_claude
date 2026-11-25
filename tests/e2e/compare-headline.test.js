@@ -19,9 +19,9 @@ test('결론 문장·KPI 카드 4개·표의 개선 ▲/중립 표시', async ()
   assert.deepEqual(await kpis.evaluateAll((els) => els.map((e) => e.dataset.kpi)), ['M3', 'M4', 'M8', 'M12']);
   assert.match(await kpis.nth(0).innerText(), /평균 용적률[\s\S]*→[\s\S]*▲ \+\d+\.\d%p 개선/);
   assert.equal(await page.locator('tr[data-metric=M3]').getAttribute('data-trend'), 'better');
-  assert.match(await page.locator('tr[data-metric=M3] td:nth-child(4)').innerText(), /^▲ \+/);
+  assert.match(await page.locator('tr[data-metric=M3] td:nth-child(3)').innerText(), /^▲ \+/);
   assert.equal(await page.locator('tr[data-metric=M6]').getAttribute('data-trend'), 'neutral');
-  assert.doesNotMatch(await page.locator('tr[data-metric=M6] td:nth-child(4)').innerText(), /[▲▼]/);
+  assert.doesNotMatch(await page.locator('tr[data-metric=M6] td:nth-child(3)').innerText(), /[▲▼]/);
   const green = await page.locator('tr[data-metric=M3] .r-trend').evaluate((e) => getComputedStyle(e).color);
   assert.equal(green, 'rgb(79, 209, 139)');
   assert.deepEqual(problems, []);

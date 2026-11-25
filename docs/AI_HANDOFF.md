@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track D D4 비교표 열 재배치(D-081) · feature/d4-compare-table
+- purposeCompare 행에 `short {before, after}`. 표 3열·`.r-zero` 흐림·nowrap·max-width 720px. E2E 3개(compare-basis·compare-headline·compare-delta)의 열 위치 갱신.
+- 로컬: unit 263, golden 298, build·verify, e2e compare-table(신규)·compare-headline·compare-basis·compare-delta·compare-purpose·compare-layout·ui-parity PASS.
+- 다음: D5(공간 구성 막대 숫자·변화) → D6(출처 칩) → D7(표·지도 연동).
+
 ### 2026-11-25 Track D D3 2단 배치·발표용 내보내기(D-080) · feature/d3-layout-export (D2 위에 쌓음)
 - 비교 대화상자 마크업을 `.r-cmp-grid > .r-cmp-left / .r-cmp-right`로 재배치. `deltaParts`(지도 내용·범례 분리) → 화면·내보내기 공용. 새 모듈 `src/ui/compare-export.js`(presentationLayout·renderPresentation·jpegToPdf).
 - UI 차이 고정 목록 27 → 29(발표용 PNG·PDF 버튼).

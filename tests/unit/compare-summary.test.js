@@ -54,3 +54,14 @@ test('악화 지표는 따로 경고 문장 · 개선이 없으면 그렇게 표
   assert.match(none.headline, /기준 도면이 없어/);
   assert.ok(purposeCompare(proj({ warehouse: be.warehouse, objects: [] }, af)).every((r) => r.trend === 'none'));
 });
+
+test('D4: 비교표용 짧은 값 — 공간 구성은 랙 비율, 보관 가능 합계는 %, 선반 여유는 m³ 2자리, 나머지는 원문', () => {
+  const rows = purposeCompare(proj(layoutOf(syntheticEmpty({ before: true })), layoutOf(syntheticEmpty())));
+  const by = Object.fromEntries(rows.map((r) => [r.id, r]));
+  assert.match(by.M7.short.after, /^랙 \d+\.\d%$/);
+  assert.match(by.M12.short.after, /^\d+\.\d%$/);
+  assert.match(by.M13.short.after, /^\d+\.\d\dm³$/);
+  assert.equal(by.M11.short.after, '통로 없음');
+  for (const id of ['M3', 'M4', 'M8', 'M9', 'M6']) assert.deepEqual(by[id].short, { before: by[id].before, after: by[id].after });
+  assert.ok(rows.every((r) => `${r.short.before} → ${r.short.after}`.length <= 32), '한 줄 길이');
+});
