@@ -65,3 +65,16 @@ test('D4: 비교표용 짧은 값 — 공간 구성은 랙 비율, 보관 가능
   for (const id of ['M3', 'M4', 'M8', 'M9', 'M6']) assert.deepEqual(by[id].short, { before: by[id].before, after: by[id].after });
   assert.ok(rows.every((r) => `${r.short.before} → ${r.short.after}`.length <= 32), '한 줄 길이');
 });
+
+test('D7: 지표 행 → 강조할 AFTER 랙(집계 규칙과 같은 수), 랙으로 나타낼 수 없는 지표는 null', async () => {
+  const { metricRackIds, spaceMetrics } = await import('../../src/metrics/space.js');
+  const p = proj(layoutOf(syntheticEmpty({ before: true })), layoutOf(syntheticEmpty()));
+  const m = spaceMetrics(p.scenarios.after);
+  assert.equal(metricRackIds(p, 'M8').length, m.emptyRacks);
+  assert.equal(metricRackIds(p, 'M9').length, m.lowRacks);
+  assert.equal(metricRackIds(p, 'M3').length, m.volumeRacks);
+  assert.equal(metricRackIds(p, 'M4').length, 33, '낮은 로케이션이 있는 랙(랙마다 1행)');
+  assert.deepEqual(metricRackIds(p, 'M12'), metricRackIds(p, 'M8'));
+  assert.ok(metricRackIds(p, 'M8').every((id) => /^R-[IJK]\d$/.test(id)));
+  for (const id of ['M6', 'M7', 'M11', 'M13']) assert.equal(metricRackIds(p, id), null);
+});
