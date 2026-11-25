@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track D D3 2단 배치·발표용 내보내기(D-080) · feature/d3-layout-export (D2 위에 쌓음)
+- 비교 대화상자 마크업을 `.r-cmp-grid > .r-cmp-left / .r-cmp-right`로 재배치. `deltaParts`(지도 내용·범례 분리) → 화면·내보내기 공용. 새 모듈 `src/ui/compare-export.js`(presentationLayout·renderPresentation·jpegToPdf).
+- UI 차이 고정 목록 27 → 29(발표용 PNG·PDF 버튼).
+- 로컬: unit 259, golden 298, build·verify, e2e compare-layout(신규: 1366×768 한 화면, PNG 1754×1240·PDF 1쪽 오프라인)·compare-present·compare-headline·compare-delta·compare-basis·compare-purpose·compare-change-list·scenarios·ui-parity PASS.
+- Track D 1단계 완료. 다음: 2단계 D4~D7(표 열 재배치·막대 숫자·출처 칩·표/지도 연동).
+
 ### 2026-11-25 Track D D2 Δ 지도 발표 모드(D-079) · feature/d2-delta-presentation (D1 위에 쌓음)
 - `columnKeyOf`·`columnDeltaMap`(delta.js), session.setView `compareView`, 검증기 `settings.compareView`, main.js `setCompareView` 주입. 화면: `[data-delta-head]`(도구+범례 sticky), `[data-present]`, `[data-unit]`.
 - E2E 공용 헬퍼를 검증기 규칙에 맞게 수정(building·선반 번호). UI 차이 고정 목록 25 → 27.

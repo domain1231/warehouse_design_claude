@@ -3,6 +3,7 @@ import { buildScene, esc } from '../cad/scene.js';
 import { polygon } from '../geometry/polygons.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
 import { purposeCompare, scenarioSpace, compareBasis, compareBasisText, compareSummary } from '../metrics/space.js';
+import { presentationLayout, renderPresentation, jpegToPdf } from './compare-export.js';
 import { rackDeltaMap, rackChangeList, changeListCsvRows, CHANGE_TYPE_NAMES, DELTA_BINS, columnDeltaMap } from '../metrics/delta.js';
 import { legend } from '../warehouse/racklist.js';
 import { formatTime, timeHtml } from '../core/format.js';
@@ -70,7 +71,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   };
 
   // ── 비교 ──
-  const md = dlg('compare-dialog scenario-dialog', 'compare-dialog', '<button type="button" class="close" data-close data-testid="compare-close">닫기 ×</button><h2>Before / After 배치 비교</h2><div class="r-compare-tools"><select id="rCompareMode" data-mode data-testid="compare-mode" aria-label="배치 비교 모드"><option value="delta">Δ 용적률 지도</option><option value="sides">BEFORE/AFTER 좌우 차이</option><option value="before">BEFORE 단독</option><option value="after">AFTER 단독</option><option value="overlay">반투명 중첩 차이</option></select><button type="button" id="rCompareSave" data-save data-testid="compare-json">비교 중 JSON 저장</button><button type="button" id="rDiffCsv" data-csv data-testid="compare-csv">랙 변경 CSV</button><button type="button" data-change-csv data-testid="compare-change-csv">랙 변화 목록 CSV</button></div><div class="r-headline" data-headline data-testid="compare-headline" aria-live="polite"></div><div class="r-kpis" data-kpis data-testid="compare-kpis"></div><div id="rCompareSources" data-sources></div><div id="rComparePurpose" data-purpose data-testid="compare-purpose"></div><svg id="rOverlayPlan" class="group-preview" data-overlay hidden role="img" aria-label="중첩"></svg><div class="r-delta-head" data-delta-head hidden><div class="r-delta-tools"><label><input type="checkbox" data-present data-testid="compare-present"> 발표 모드</label><select data-unit data-testid="compare-unit" aria-label="Δ 지도 단위"><option value="rack">랙 단위</option><option value="column">열 단위 요약</option></select></div><div class="r-legend" data-delta-legend data-testid="compare-delta-legend"></div></div><svg id="rDeltaPlan" class="group-preview" data-delta data-testid="compare-delta" hidden role="img" aria-label="Δ 용적률 지도"></svg><p class="muted">현재 편집 중인 두 배치를 비교합니다. 날짜 조회 화면과 별개입니다. 수량은 동일 단위별로 계산합니다.</p><div class="compare-plans" data-plans><div data-box="before"><h3>BEFORE · 현재안</h3><svg id="beforePlan" class="mini-plan" data-before role="img" aria-label="BEFORE"></svg></div><div data-box="after"><h3>AFTER · 개선안</h3><svg id="afterPlan" class="mini-plan" data-after role="img" aria-label="AFTER"></svg></div></div><div id="compareTable" class="records-table" data-metrics data-testid="compare-metrics"></div><div id="rCompareRows" class="r-scroll records-table" data-testid="compare-rows" data-rows></div><button type="button" id="mCompareSvg" data-compare-svg data-testid="compare-svg">전후 비교 SVG</button> <button type="button" id="mComparePng" data-compare-png data-testid="compare-png">전후 비교 PNG</button> <button type="button" id="compareCsv" data-compare-csv data-testid="export-compare-csv" style="margin-top:14px">비교 요약 CSV</button>', 'compareDialog');
+  const md = dlg('compare-dialog scenario-dialog', 'compare-dialog', '<button type="button" class="close" data-close data-testid="compare-close">닫기 ×</button><h2>Before / After 배치 비교</h2><div class="r-compare-tools"><select id="rCompareMode" data-mode data-testid="compare-mode" aria-label="배치 비교 모드"><option value="delta">Δ 용적률 지도</option><option value="sides">BEFORE/AFTER 좌우 차이</option><option value="before">BEFORE 단독</option><option value="after">AFTER 단독</option><option value="overlay">반투명 중첩 차이</option></select><button type="button" id="rCompareSave" data-save data-testid="compare-json">비교 중 JSON 저장</button><button type="button" id="rDiffCsv" data-csv data-testid="compare-csv">랙 변경 CSV</button><button type="button" data-change-csv data-testid="compare-change-csv">랙 변화 목록 CSV</button><button type="button" data-present-png data-testid="compare-present-png">발표용 PNG</button><button type="button" data-present-pdf data-testid="compare-present-pdf">발표용 PDF</button></div><div class="r-headline" data-headline data-testid="compare-headline" aria-live="polite"></div><div class="r-kpis" data-kpis data-testid="compare-kpis"></div><div class="r-cmp-grid"><div class="r-cmp-left"><div id="rCompareSources" data-sources></div><div id="rComparePurpose" data-purpose data-testid="compare-purpose"></div><p class="muted">현재 편집 중인 두 배치를 비교합니다. 날짜 조회 화면과 별개입니다. 수량은 동일 단위별로 계산합니다.</p><div id="compareTable" class="records-table" data-metrics data-testid="compare-metrics"></div><div id="rCompareRows" class="r-scroll records-table" data-testid="compare-rows" data-rows></div><button type="button" id="mCompareSvg" data-compare-svg data-testid="compare-svg">전후 비교 SVG</button> <button type="button" id="mComparePng" data-compare-png data-testid="compare-png">전후 비교 PNG</button> <button type="button" id="compareCsv" data-compare-csv data-testid="export-compare-csv" style="margin-top:14px">비교 요약 CSV</button></div><div class="r-cmp-right" data-testid="compare-right"><div class="r-delta-head" data-delta-head hidden><div class="r-delta-tools"><label><input type="checkbox" data-present data-testid="compare-present"> 발표 모드</label><select data-unit data-testid="compare-unit" aria-label="Δ 지도 단위"><option value="rack">랙 단위</option><option value="column">열 단위 요약</option></select></div><div class="r-legend" data-delta-legend data-testid="compare-delta-legend"></div></div><svg id="rDeltaPlan" class="group-preview" data-delta data-testid="compare-delta" hidden role="img" aria-label="Δ 용적률 지도"></svg><svg id="rOverlayPlan" class="group-preview" data-overlay hidden role="img" aria-label="중첩"></svg><div class="compare-plans" data-plans><div data-box="before"><h3>BEFORE · 현재안</h3><svg id="beforePlan" class="mini-plan" data-before role="img" aria-label="BEFORE"></svg></div><div data-box="after"><h3>AFTER · 개선안</h3><svg id="afterPlan" class="mini-plan" data-after role="img" aria-label="AFTER"></svg></div></div></div></div>', 'compareDialog');
   const DROP = ['신규 랙', '제거 랙', '이동 랙', '회전 랙', '설계 규격 변경 랙', '데이터 기준일'];
   const detailRows = (p) => compareRows(p).filter((r, i) => !i || (!DROP.includes(r[0]) && !(String(r[0]).startsWith('최대 보관 수량') && r[1] === '미확인' && r[2] === '미확인')));
   const SEG = [['rack', 'seg-rack', '랙'], ['emptyRack', 'seg-rack seg-empty', '빈 랙'], ['unavailable', 'seg-blocked', '보관 불가'], ['aisle', 'seg-aisle', '통로'], ['remaining', 'seg-remain', '잔여']];
@@ -96,23 +97,22 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   const cview = (p) => ({ presentation: false, unit: 'rack', ...(p.settings.compareView ?? {}) });
   const textW = (t) => [...t].reduce((a, c) => a + (c.charCodeAt(0) < 128 ? 0.6 : 1), 0);
   const bbox = (pts) => { const xs = pts.map((x) => x[0]), ys = pts.map((x) => x[1]); return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) }; };
-  const fitFs = (b, label, cap) => Math.min((b.y1 - b.y0) * 0.6, ((b.x1 - b.x0) * 0.9) / Math.max(textW(label), 1), cap);
+  const fitFs = (b, label, cap) => Math.min((b.y1 - b.y0) * 0.7, ((b.x1 - b.x0) * 0.9) / Math.max(textW(label), 1), cap);
   const deltaText = (d) => (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d).toFixed(1);
   // 발표 모드 랙 라벨은 정수 %p(1%p 미만만 소수 1자리)로 줄여 칸 안에서 크게 쓴다. 정확한 값은 툴팁.
   const presentText = (d) => (d > 0 ? '+' : d < 0 ? '−' : '±') + (Math.abs(d) < 1 ? Math.abs(d).toFixed(1) : String(Math.round(Math.abs(d))));
-  const drawDelta = (p, d, vb, sc) => {
+  const deltaParts = (p, d, sc, cv) => {
     const m = rackDeltaMap(p), after = new Map(racksOf(p.scenarios.after).map((o) => [o.id, o]));
-    const svg = q(md, '[data-delta]'), pct = (v) => (v === null ? '미확인' : (v * 100).toFixed(1) + '%');
-    const cv = cview(p), present = cv.presentation, cols = cv.unit === 'column' ? columnDeltaMap(p, m) : [];
+    const pct = (v) => (v === null ? '미확인' : (v * 100).toFixed(1) + '%');
+    const present = cv.presentation, cols = cv.unit === 'column' ? columnDeltaMap(p, m) : [];
     const colOf = new Map(cols.flatMap((c) => c.rackIds.map((id) => [id, c])));
     const base = present ? sc('after').replace(/<text\b[\s\S]*?<\/text>/g, '') : sc('after');
-    svg.classList.toggle('present', present);
     let s = '<defs><pattern id="rDeltaHatch" width=".12" height=".12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0,0 L0,.12" stroke="#111821" stroke-width=".05"/></pattern></defs>' + `<g opacity="${present ? '.22' : '.3'}">${base}</g>`;
     for (const r0 of m.racks) {
       const col = colOf.get(r0.id), r = col ? { ...r0, bin: col.bin, delta: col.delta } : r0;
       const o = after.get(r.id), b = BIN[r.bin], pts = polygon(o), pp = pts.map((x) => x.join(',')).join(' ');
       const cx = pts.reduce((a, x) => a + x[0], 0) / pts.length, cy = pts.reduce((a, x) => a + x[1], 0) / pts.length;
-      const label = col ? '' : r.bin === 'new' ? 'NEW' : r.bin === 'unknown' ? '?' : r.bin === 'emptied' ? `${b.icon} 비움` : r.bin === 'same' ? '' : present ? presentText(r.delta) : deltaText(r.delta);
+      const label = col ? '' : r.bin === 'new' ? 'NEW' : r.bin === 'unknown' ? '?' : r.bin === 'emptied' ? (present ? '비움' : `${b.icon} 비움`) : r.bin === 'same' ? '' : present ? presentText(r.delta) : deltaText(r.delta);
       const fs = present ? fitFs(bbox(pts), label, 0.9) : Math.min(Math.min(o.width, o.depth) * 0.35, 0.3), op = r.bin === 'same' ? ' opacity=".35"' : '';
       s += `<g data-bin="${r.bin}" data-rack="${esc(r.id)}"><polygon points="${pp}" fill="${b.color}"${op} stroke="${b.dash ? '#c9d1da' : 'none'}"${b.dash ? ' stroke-dasharray=".08 .06" vector-effect="non-scaling-stroke" style="stroke-width:1px"' : ''}><title>${esc(`${r.code} · BEFORE ${pct(r.rB)} → AFTER ${pct(r.rA)} (${r.bin === 'emptied' ? '비움 · 이전 완료' : r.delta === null ? '—' : (r.delta > 0 ? '+' : r.delta < 0 ? '−' : '') + Math.abs(r.delta).toFixed(1) + '%p'})`)}</title></polygon>`
         + (b.pattern ? `<polygon points="${pp}" fill="url(#rDeltaHatch)" pointer-events="none"/>` : '')
@@ -125,9 +125,16 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
       s += `<text data-col="${esc(c.key)}" x="${(b.x0 + b.x1) / 2}" y="${(b.y0 + b.y1) / 2}" text-anchor="middle" dominant-baseline="central" font-size="${fs.toFixed(3)}" font-weight="700" fill="${bin.text}" stroke="${bin.halo || bin.color}" stroke-width="${(fs * 0.3).toFixed(3)}" paint-order="stroke" pointer-events="none"><title>${esc(`${c.key} 열 · BEFORE ${pct(c.rB)} → AFTER ${pct(c.rA)} · 랙 ${c.rackIds.length}대 평균`)}</title>${esc(label)}</text>`;
     }
     for (const o of d.removed) s += outline(o, '#ff7180', '.08 .06', 1).replace('<polygon', '<polygon data-removed');
+    const legend = m.ready && !p.scenarios.after.objects.some((o) => o.kind === 'rack') ? 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.' : m.ready ? DELTA_BINS.filter((b) => m.counts[b.id] || ALWAYS.includes(b.id)).map((b) => `<span data-bin="${b.id}"><i class="seg" style="background:${b.color}${b.dash ? ';outline:1px dashed #c9d1da' : ''}"></i>${b.id === 'unknown' ? '? Excel 미연결' : b.label} ${m.counts[b.id]}</span>`).join('') + (cols.length ? '<span>열 단위: 열 안 랙 용적률 R의 평균으로 색칠</span>' : '') + '<span>노랑 점선: 이동·회전·규격 변경 / 빨강 점선: 제거</span>' : '개선 전 기준 도면이 없어 Δ를 계산할 수 없습니다.';
+    const legendItems = m.ready ? DELTA_BINS.filter((b) => m.counts[b.id] || ALWAYS.includes(b.id)).map((b) => ({ label: b.id === 'unknown' ? '? Excel 미연결' : b.label, color: b.color, count: m.counts[b.id] })) : [];
+    return { inner: s, legend, legendItems, m };
+  };
+  const drawDelta = (p, d, vb, sc) => {
+    const cv = cview(p), r = deltaParts(p, d, sc, cv), svg = q(md, '[data-delta]');
+    svg.classList.toggle('present', cv.presentation);
     svg.setAttribute('viewBox', vb);
-    svg.innerHTML = s;
-    q(md, '[data-delta-legend]').innerHTML = m.ready && !p.scenarios.after.objects.some((o) => o.kind === 'rack') ? 'AFTER 배치가 없어 Δ를 계산할 수 없습니다.' : m.ready ? DELTA_BINS.filter((b) => m.counts[b.id] || ALWAYS.includes(b.id)).map((b) => `<span data-bin="${b.id}"><i class="seg" style="background:${b.color}${b.dash ? ';outline:1px dashed #c9d1da' : ''}"></i>${b.id === 'unknown' ? '? Excel 미연결' : b.label} ${m.counts[b.id]}</span>`).join('') + (cols.length ? '<span>열 단위: 열 안 랙 용적률 R의 평균으로 색칠</span>' : '') + '<span>노랑 점선: 이동·회전·규격 변경 / 빨강 점선: 제거</span>' : '개선 전 기준 도면이 없어 Δ를 계산할 수 없습니다.';
+    svg.innerHTML = r.inner;
+    q(md, '[data-delta-legend]').innerHTML = r.legend;
   };
   const chg = { filter: 'all', sort: 'delta-desc' };
   const signed = (v) => (v === null ? '—' : (v < 0 ? '−' : v > 0 ? '+' : '') + Math.abs(v).toFixed(1));
@@ -196,6 +203,26 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   q(md, '[data-compare-png]').addEventListener('click', async () => {
     try { download('warehouse_before_after.png', await pngBlob(compareSvg(getProject()))); } catch (e) { toast('비교 PNG 생성 실패: ' + e.message); }
   });
+  // D3(D-080): 발표용 1장 내보내기(A4 가로 PNG/PDF). Δ 지도는 항상 발표 모드, 단위는 현재 설정.
+  const SEG_COLOR = { rack: '#4a90d9', emptyRack: '#4a90d9', unavailable: '#c0504d', aisle: '#8a96a3', remaining: '#5fae5f' };
+  const presentExport = async (kind) => {
+    try {
+      const p = getProject(), d = rackDiff(p.scenarios.before, p.scenarios.after), vb = common(p), cv = { ...cview(p), presentation: true };
+      const parts = deltaParts(p, d, (k) => buildScene(p.scenarios[k], p, { report: true }).svg, cv);
+      const [, , vw, vh] = vb.split(' ').map(Number), k = 1600 / Math.max(vw, vh);
+      const mapSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${Math.round(vw * k)}" height="${Math.round(vh * k)}" font-family="Malgun Gothic,Segoe UI,sans-serif">${parts.inner}</svg>`;
+      const rows = purposeCompare(p), sm = compareSummary(p, rows), cb = compareBasis(p);
+      const bars = ['before', 'after'].map((key) => ({ name: key.toUpperCase(), segs: p.scenarios[key].objects.length ? SEG.map(([n, , t]) => ({ label: t === '잔여' ? '보관 가능 잔여' : t, share: scenarioSpace(p, key).composition[n].share, color: SEG_COLOR[n], hatch: n === 'emptyRack' })) : [] }));
+      const plan = presentationLayout({ title: 'BEFORE / AFTER 개선 효과', headline: sm.headline, warning: sm.warning, kpis: sm.kpis, rows: rows.filter((r) => r.id !== 'M7'), bars, legendItems: parts.legendItems,
+        footnotes: [`BEFORE · ${sourceText(p, 'before')}`, `AFTER · ${sourceText(p, 'after')}`, `${compareBasisText(cb)} · Δ 지도 ${cv.unit === 'column' ? '열 단위 요약' : '랙 단위'}(정수 %p) · 지표 산식은 앱 도움말 참고 · 경로·하중·안전 적합성은 별도 검증`] });
+      const canvas = await renderPresentation(plan, mapSvg);
+      const blob = (type, qy) => new Promise((ok, bad) => canvas.toBlob((b) => (b ? ok(b) : bad(new Error('이미지 생성 실패'))), type, qy));
+      if (kind === 'png') download('warehouse_compare_presentation.png', await blob('image/png'));
+      else download('warehouse_compare_presentation.pdf', new Blob([jpegToPdf(new Uint8Array(await (await blob('image/jpeg', 0.92)).arrayBuffer()), canvas.width, canvas.height)], { type: 'application/pdf' }));
+    } catch (e) { toast('발표용 내보내기 실패: ' + e.message); }
+  };
+  q(md, '[data-present-png]').addEventListener('click', () => presentExport('png'));
+  q(md, '[data-present-pdf]').addEventListener('click', () => presentExport('pdf'));
   const openCompare = () => { chg.filter = 'all'; chg.sort = 'delta-desc'; q(md, '[data-mode]').value = 'delta'; drawCompare(); if (!md.open) md.showModal(); };
 
   // ── 가져오기 이력·백업(기준본 70 #rImportHistory: 배치이력 구역 안의 details) ──

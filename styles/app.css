@@ -208,6 +208,18 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-delta-tools { display: flex; align-items: center; gap: 10px; }
 .r-delta-tools label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .r-delta-tools select { width: auto; }
+/* D3(D-080): 1280px 이상은 왼쪽 KPI·표·막대, 오른쪽 지도 고정. 좁으면 지도를 표 위로 쌓는다. */
+.r-cmp-grid { display: flex; flex-direction: column; gap: 10px; }
+.r-cmp-right { order: -1; min-width: 0; }
+.r-cmp-left { min-width: 0; }
+@media (min-width: 1280px) {
+  .r-cmp-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px; align-items: start; }
+  .r-cmp-right { order: 0; position: sticky; top: -14px; }
+  .r-cmp-right .r-delta-head { position: static; }
+  .r-cmp-right svg[data-delta], .r-cmp-right svg[data-overlay] { width: 100%; height: calc(100vh - 380px); min-height: 280px; }
+  .r-cmp-right .compare-plans { grid-template-columns: 1fr; }
+  .r-cmp-right .compare-plans svg { height: calc((100vh - 420px) / 2); }
+}
 .r-basis button { margin-left: 8px; }
 .seg-empty { background: repeating-linear-gradient(45deg, #4a90d9 0 3px, #1c3b5c 3px 6px); }
 .r-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
