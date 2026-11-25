@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import { sizedProject } from '../unit/size-fixture.js';
 import { packProject } from '../../src/persistence/zip.js';
+import { expandProjectRefs } from '../../src/core/backup-refs.js';
 
 const root = path.resolve(import.meta.dirname, '../..');
 const meta = JSON.parse(fs.readFileSync(path.join(root, 'dist/build-metadata.json'), 'utf8'));
@@ -48,10 +49,10 @@ test('E1·E2: 23.9MB JSON → 읽기 쉬운 JSON 저장(크기 경고)·작은 J
   await importAndWait(page, { name: 'syn-23_9.json', mimeType: 'application/json', buffer: Buffer.from(big.text) }, 'syn-23_9.json');
   assert.equal(await racksBefore(page), 400);
 
-  // E2(D-087): 기본은 작은 JSON. 이 검사는 E1 이전과 같은 읽기 쉬운 JSON으로 저장한다(저장소 관리에서 형식 선택).
+  // E2(D-087): 기본은 작은 JSON. 이 검사는 E1 이전과 같은 원문(기준본 호환 JSON)으로 저장한다(저장소 관리에서 형식 선택).
   await page.locator('[data-testid=storage-open]').click();
   assert.equal(await page.locator('[data-testid=json-format]').inputValue(), 'compact');
-  await page.locator('[data-testid=json-format]').selectOption('pretty');
+  await page.locator('[data-testid=json-format]').selectOption('legacy'); // D-094: 이전 앱과 같은 원문(차분·참조 없음)
   await page.locator('[data-testid=storage-close]').click();
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=export]').click()]);
   const exported = fs.readFileSync(await dl.path());
@@ -66,7 +67,7 @@ test('E1·E2: 23.9MB JSON → 읽기 쉬운 JSON 저장(크기 경고)·작은 J
   const [dl2] = await Promise.all([page.waitForEvent('download'), page.locator('[data-testid=export]').click()]);
   const compact = fs.readFileSync(await dl2.path());
   assert.ok(compact.length < exported.length * 0.6, `${compact.length} / ${exported.length}`);
-  assert.deepEqual(JSON.parse(compact), JSON.parse(exported));
+  assert.ok(JSON.stringify(expandProjectRefs(JSON.parse(compact))) === JSON.stringify(JSON.parse(exported)), '작은 JSON(참조·차분)을 펼치면 기준본 호환 JSON과 같은 내용'); // 큰 객체는 문자열로 비교(차이 출력 폭증 방지)
   assert.ok(!compact.includes('\n'));
 
   const small = sizedProject(12.1e6, { racks: 200 });

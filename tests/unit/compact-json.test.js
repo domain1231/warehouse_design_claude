@@ -21,10 +21,10 @@ test('형식: 기본 작은 JSON, 알 수 없는 값은 작은 JSON', () => {
 
 test('앱 저장본 형태(배치·배치 이력·검사 결과) 2MB: 작은 JSON이 40% 이상 작고, 두 형식 왕복 결과 동일(정규화 후 깊은 비교)', async () => {
   const { project, text } = sizedProject(2e6, { racks: 150 });
-  const pretty = projectFile(project, 'pretty'), compact = projectFile(project, 'compact');
+  const pretty = projectFile(project, 'legacy'), compact = projectFile(project, 'compact'); // 기준본 호환(들여쓰기·펼침) 대비
   assert.equal(pretty.text, text);
   const cut = 1 - compact.bytes / pretty.bytes;
-  assert.ok(cut >= 0.4 && cut <= 0.65, `감소율 ${(cut * 100).toFixed(1)}%`);
+  assert.ok(cut >= 0.4, `감소율 ${(cut * 100).toFixed(1)}%`); // D-094 차분 저장 후에는 더 줄어든다
   const a = norm(await readProjectFile(new Blob([pretty.text]), io)), b = norm(await readProjectFile(new Blob([compact.text]), io));
   assert.deepEqual(a, b);
   assert.deepEqual(b, norm(project));

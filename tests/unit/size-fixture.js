@@ -20,8 +20,8 @@ function baseProject(racks) {
 
 const day = (i) => new Date(Date.UTC(2024, 0, 1 + i)).toISOString().slice(0, 10);
 
-/** 앱이 내려받는 JSON(projectJsonText, 기본은 읽기 쉬운 JSON = 기준본·E1 이전 앱 저장본)이 정확히 target 바이트인 검증된 프로젝트와 그 원문. */
-export function sizedProject(target, { racks = 400, format = 'pretty' } = {}) {
+/** 앱이 내려받는 JSON(projectJsonText, 기본은 기준본 호환 JSON = 기준본·이전 앱 저장본과 같은 원문 — 차분·참조 없음)이 정확히 target 바이트인 검증된 프로젝트와 그 원문. */
+export function sizedProject(target, { racks = 400, format = 'legacy' } = {}) {
   const p0 = baseProject(racks);
   const make = (n, pad = 0) => {
     const q = structuredClone(p0);

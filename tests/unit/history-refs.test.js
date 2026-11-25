@@ -5,7 +5,7 @@ import { historyProject } from './size-fixture.js';
 import { projectValidator } from '../../src/core/session.js';
 import { validateLayout } from '../../src/core/project.js';
 import { scanLayout } from '../../src/warehouse/constraints.js';
-import { packHistoryRefs, packProjectRefs, countHistoryRefs, LAYOUT_REF_KEY } from '../../src/core/backup-refs.js';
+import { packHistoryRefs, packBackupRefs, packProjectRefs, countHistoryRefs, LAYOUT_REF_KEY } from '../../src/core/backup-refs.js';
 import { projectJsonText } from '../../src/persistence/project-file.js';
 
 const bytes = (v) => Buffer.byteLength(JSON.stringify(v));
@@ -49,7 +49,8 @@ test('참조하지 않는 경우: 이력 뒤에 바뀐 스냅샷 · 겹치는 �
 
 test('참조 스냅샷이 사라진 파일(이전 앱에서 지우고 저장): 열리고, 그 이력은 객체 없는 배치로 남음', () => {
   const { p } = historyProject({ racks: 20, imports: 2 });
-  const packed = JSON.parse(JSON.stringify(packProjectRefs(p)));
+  // 이전 앱(차분 저장 이전)이 쓴 파일: 참조만 있고 차분은 없다
+  const packed = JSON.parse(JSON.stringify(packHistoryRefs(packBackupRefs(p))));
   const gone = packed.autoPlacement.history[0].layout[LAYOUT_REF_KEY];
   packed.layoutSnapshots = packed.layoutSnapshots.filter((s) => s.id !== gone);
   for (const b of packed.layoutBackups) b.layoutSnapshots = b.layoutSnapshots.filter((s) => s.$ref !== gone);

@@ -1,7 +1,7 @@
 // E7(D-093): 프로젝트 크기 예산(CI) — 가상 사용 시나리오(Excel 가져오기 30회 + 배치 저장 30회 + 자동 배치 10회)의
 // 작은 JSON 크기를 항목별로 재고 test-results/size-budget.json으로 남긴다(CI 산출물).
 // 고정 검사: 기준일 스냅샷 밖의 크기(백업·자동 배치 이력·명령 이력·현재 배치 등)가 예산 이하 — E5·E6·D-092 회귀 방지.
-// 전체 8MB 예산: 기준일마다 배치·Excel 스냅샷 전체가 남아 시나리오가 예산을 넘는다(아래 todo). 차분 저장(후속 과제) 전까지 보고만 한다.
+// 전체 8MB 예산: D-094 스냅샷 차분 저장 후 고정 검사(이전에는 23.56MB로 todo였음).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -53,7 +53,7 @@ test('시나리오 보고서 작성 + 기준일 스냅샷 밖 크기 예산(2.5M
   assert.ok(cleaned.total < report.total);
 });
 
-test('전체 작은 JSON 8MB 예산', { todo: '기준일마다 배치·Excel 스냅샷 전체가 남아 시나리오가 예산을 넘음 — 스냅샷 차분 저장 후 고정 검사로 전환' }, () => {
+test('전체 작은 JSON 8MB 예산(D-094 스냅샷 차분 저장 후 고정 검사)', () => {
   const report = sizeReport(scenario());
   const r = checkBudget(report, { overhead: false });
   assert.ok(r.ok, r.errors.join('; '));
