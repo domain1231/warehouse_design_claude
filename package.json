@@ -1,6 +1,6 @@
 {
   "name": "warehouse-layout-designer",
-  "version": "2.5.0-alpha.16",
+  "version": "2.5.0-alpha.17",
   "private": true,
   "type": "module",
   "description": "Greenfield rebuild of the offline SVG warehouse layout designer (baseline v2.4.1)",
