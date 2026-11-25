@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.14 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track D D8 Δ 지도 크게 보기·전체 화면(D-085) · feature/d8-delta-zoom
+- scenario-dialogs `zoom`·`setZoom`·`applyZoom`·`applyBig`·`fitHead`·`enterFull`(document.documentElement 전체 화면), 대화상자 cancel에서 전체 화면 → 최대화 → 강조 순 복귀. 랙 그룹 `data-box`, `.r-dl`(data-fs)·`.r-code`. CSS `.compare-dialog.r-max`.
+- 로컬: unit 264, golden 298, build·verify, e2e compare-zoom(신규 3)·compare-*(전체)·scenarios·ui-parity(고정 목록 +2) PASS.
+- 다음: (선택) D9 확대 상태 휠 줌·드래그.
+
 ### 2026-11-25 Track D D7 표·지도 연동(D-084) · feature/d7-table-map-link (D6 위에 쌓음)
 - `metricRackIds`(space.js), scenario-dialogs `focus`·`applyFocus`·`toggleFocus`, 대화상자 `cancel`에서 강조 먼저 해제. CSS `svg.focus`·`tr[data-link]`·`.r-focus-note`.
 - 로컬: unit 264, golden 298, build·verify, e2e compare-link(신규)·compare-*(전체)·scenarios·ui-parity PASS.
