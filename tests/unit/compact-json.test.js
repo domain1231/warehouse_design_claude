@@ -10,7 +10,7 @@ const io = { readText: (f) => f.text(), readBytes: async (f) => new Uint8Array(a
 const norm = (v) => JSON.parse(JSON.stringify(projectValidator(v)));
 
 test('형식: 기본 작은 JSON, 알 수 없는 값은 작은 JSON', () => {
-  assert.deepEqual(JSON_FORMATS, ['compact', 'pretty']);
+  assert.deepEqual(JSON_FORMATS, ['compact', 'pretty', 'legacy']);
   assert.equal(DEFAULT_JSON_FORMAT, 'compact');
   assert.equal(jsonFormatOf('pretty'), 'pretty');
   for (const v of [null, undefined, '', 'PRETTY', 2]) assert.equal(jsonFormatOf(v), 'compact');

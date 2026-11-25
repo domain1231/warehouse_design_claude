@@ -11,6 +11,7 @@
 import { parseLocationCode } from './location.js';
 import { createIdGenerator } from './ids.js';
 import { isSimplePolygon } from '../geometry/polygons.js';
+import { expandBackupRefs } from './backup-refs.js';
 
 export const SCHEMA_VERSION = '2.3.6';
 export const SUPPORTED_VERSIONS = Object.freeze([1, '2.0', '2.2', '2.3.1', '2.3.2', '2.3.3', '2.3.4', '2.3.5', '2.3.6']);
@@ -335,6 +336,8 @@ function checkColumnSettings(s) { // 92 C.checkSettings
  */
 export function validateProject(p) {
   if (!p || typeof p !== 'object') fail('지원되지 않는 프로젝트 형식/버전입니다.');
+  // E5(D-089): 저장 파일의 백업 안 스냅샷 참조({"$ref"})를 먼저 펼친다. 메모리 프로젝트에는 참조가 없다.
+  try { expandBackupRefs(p); } catch (e) { fail(e.message); }
   try {
     // [70r] S.ensure → [65b] S.ensure → [60] S.ensure → [50] M.ensure → [40] EX.ensure (모두 멱등, 한 번으로 충분)
     if (p.scenarios && p.metadata && p.settings) {
