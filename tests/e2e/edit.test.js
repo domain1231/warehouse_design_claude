@@ -199,3 +199,27 @@ test('BEFORE 잠금: 편집 단추·속성 칸이 잠기고 추가는 거부된�
   assert.deepEqual(page.problems, []);
   await ctx.close();
 });
+
+test('D-076: 정밀 입력이 공간 검증으로 전체 취소되면 그 칸을 표시하고 칸 이름·입력값을 알린다', async () => {
+  const { ctx, page } = await open();
+  const racks = (await after_(page)).filter((o) => o.kind === 'rack');
+  const rack = racks.find((r) => racks.some((o) => o.id !== r.id && Math.abs(o.y - r.y) < 0.01 && Math.abs(o.x - r.x) > 0.5));
+  const other = racks.find((o) => o.id !== rack.id && Math.abs(o.y - rack.y) < 0.01 && Math.abs(o.x - rack.x) > 0.5);
+  assert.ok(rack && other, '같은 줄 랙 두 개');
+  await page.locator('[data-testid=allow-warnings]').uncheck();
+  const c = await screen(page, rack.x + rack.width / 2, rack.y + rack.depth / 2);
+  await page.mouse.click(c.x, c.y);
+  const field = (k) => page.locator(`[data-testid=inspector] [data-field="${k}"]`);
+  await field('x').fill(String(other.x));
+  await field('x').press('Enter');
+  await page.waitForFunction(() => /입력을 되돌렸습니다/.test(document.querySelector('[data-testid=toast]').textContent));
+  const toast = await page.locator('[data-testid=toast]').textContent();
+  assert.match(toast, new RegExp(`^전체 취소: .+ · X ${other.x.toString().replace('.', '\\.')} 입력을 되돌렸습니다\\(현재 ${rack.x.toString().replace('.', '\\.')}\\)$`));
+  assert.equal((await after_(page)).find((x) => x.id === rack.id).x, rack.x);
+  assert.equal(await field('x').inputValue(), String(rack.x));
+  assert.equal(await field('x').evaluate((el) => el.classList.contains('field-reverted') && el.getAttribute('aria-invalid') === 'true'), true);
+  await field('x').type('1');
+  assert.equal(await field('x').evaluate((el) => el.classList.contains('field-reverted')), false);
+  assert.deepEqual(page.problems, []);
+  await ctx.close();
+});

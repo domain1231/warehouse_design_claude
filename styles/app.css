@@ -208,3 +208,6 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .ex-sumcmp { margin: 8px 0; font-size: 12px; } .ex-sumcmp.warn { border: 1px solid #e0a100; border-radius: 6px; padding: 8px 10px; } .ex-sumcmp.warn b { color: #ffc23d; }
 .ex-sumcmp table { border-collapse: collapse; margin: 6px 0; } .ex-sumcmp th, .ex-sumcmp td { padding: 2px 10px; text-align: right; border-bottom: 1px solid var(--line, #444); } .ex-sumcmp th:first-child, .ex-sumcmp td:first-child { text-align: left; }
 .ex-sumcmp ul { margin: 4px 0 8px 18px; padding: 0; }
+
+/* D-076: 공간 검증으로 전체 취소된 정밀 입력 칸 */
+[data-field].field-reverted{outline:2px solid #e46775;outline-offset:1px;background:rgba(228,103,117,.14)}

@@ -262,6 +262,8 @@ export const MM_INPUT_FIELDS = new Set(['x', 'y', 'width', 'depth']);
 const MM_FIELD_NAMES = { x: 'X', y: 'Y', width: '폭', depth: '깊이' };
 /** D-040: 칸 이름을 붙인 정밀 입력 오류 문구. */
 export const mmInputMessage = (field) => `${MM_FIELD_NAMES[field] || field} 값을 입력하세요 · 0.001m 단위. 기존 위치·규격을 유지합니다.`;
+/** D-076: 정밀 입력(X·Y·폭·깊이) 하나가 공간 검증으로 전체 취소됐을 때, 어느 칸의 어떤 값이 되돌아갔는지 붙인 문구. 앞부분('전체 취소: 이유')은 기존 문구 그대로. */
+export const revertedFieldMessage = (field, raw, reason, current) => `전체 취소: ${reason} · ${MM_FIELD_NAMES[field] || field} ${raw} 입력을 되돌렸습니다(현재 ${current})`;
 export function isMmInput(raw) {
   const n = Number(raw);
   return raw !== '' && Number.isFinite(n) && Math.abs(n * 1e3 - Math.round(n * 1e3)) <= 1e-6;
