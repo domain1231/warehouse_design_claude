@@ -1,0 +1,159 @@
+<!-- ================= COURSE 6 ================= -->
+<section class="course" id="c6">
+  <div class="course-head">
+    <div class="badge b6c">코스 6</div>
+    <div>
+      <h2>랙 속 자재와 재고 보기 — 선반·색·이름·날짜별 기록</h2>
+      <p class="goal"><b>목표</b> 이 코스를 마치면 ① 랙 하나의 선반별 자재를 열어 보고 ② 재고 수량을 넣어 도면 색으로 상태를 읽고 ③ 표시 이름을 현장 용어로 바꾸고 ④ 날짜별 재고를 기록하고 지난 날짜를 조회할 수 있습니다.</p>
+    </div>
+    <div class="time">약 20분</div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-h">30초 요약</div>
+    <ol>
+      <li>랙을 <b>더블클릭</b>하면 「선반별 자재」 창이 열립니다. 막대는 <b>자재 높이 ÷ 선반 높이</b>입니다.</li>
+      <li>⑫ 오른쪽에서 「최대 수량」과 「현재 수량」을 넣으면 도면 색이 바뀝니다. Excel의 ROP·MAX Stock은 현재 재고로 들어가지 않습니다. 합계는 「비교」 창 「세부 지표」에서 봅니다.</li>
+      <li>「현재 재고·배치 저장」으로 날짜별 기록을 남기면, 날짜를 골라 <b>읽기 전용</b>으로 지난 상태를 볼 수 있습니다.</li>
+    </ol>
+  </div>
+
+  <article id="c6-1" class="step">
+    <h3><span class="n">6-1</span> 랙 상세 — 선반별 자재 열기</h3>
+    <ol class="do">
+      <li>Excel로 만든 랙(코스 2)을 도면에서 <b>더블클릭</b>합니다. 「7F-A-1 · 선반별 자재」 창이 열립니다.</li>
+      <li>위쪽에 위치·설계/원본 규격·등록 선반·자재 위치·품목 수·출처·기준일이 나옵니다.</li>
+      <li>「전체 선반」 목록에서 선반 하나만 고를 수 있고, 카드를 누르면 원본 자재 정보가 오른쪽에 나옵니다.</li>
+    </ol>
+    <figure><img src="{{c6_detail}}" alt="선반별 자재"><figcaption>「선반별 자재」 창 · 3번 선반이 위, 1번이 아래 · 카드마다 「높이 36.7%」 같은 막대</figcaption></figure>
+    <table class="plain">
+      <thead><tr><th>설정·버튼</th><th>뜻</th></tr></thead>
+      <tbody>
+        <tr><td>「1번 선반이 아래 (사용자 설정)」 / 「1번 선반이 위 (사용자 설정)」</td><td>Excel에는 선반 방향이 없어 사용자가 현장에 맞게 고름</td></tr>
+        <tr><td>「논리적 위치」 / 「실측 위치 (미지원)」</td><td>지금은 로케이션 순서대로 보여 주는 <b>논리적 그림</b>만 지원. 카드 폭은 실제 크기가 아님</td></tr>
+        <tr><td>높이 막대 색</td><td>미확인 회색 / 90% 미만 청록 / 90~100% 주황 / 100% 초과 빨강 · 실제 적재율과 별개</td></tr>
+        <tr><td>「선반 SVG」 · 「선반 PNG」 · 「자재 CSV」</td><td>이 랙의 그림·자재 목록 내보내기</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">원본에 현재고가 없으면 상단 「현재 적재율」은 「미확인」입니다. 랙 상세에서 현재고를 추정하지 않습니다.</div>
+  </article>
+
+  <article id="c6-2" class="step">
+    <h3><span class="n">6-2</span> 재고 수량 넣고 색으로 읽기</h3>
+    <ol class="do">
+      <li>랙을 클릭하고 ⑫ 오른쪽 「최대 수량」·「현재 수량」·「적재 단위」(BOX 등)를 넣습니다.</li>
+      <li>⑤ 왼쪽 「Excel / 로케이션 자동 생성」의 「도면 색상 기준」이 「실제 재고 적재율」이면 색이 바로 바뀝니다.</li>
+      <li>⑦ 「랙 텍스트」를 「랙 번호 + 실제 적재율」로 바꾸면 랙에 %가 함께 표시됩니다.</li>
+    </ol>
+    <figure><img src="{{c6_qty_colors}}" alt="적재율 색"><figcaption>교육용 수량 · A01 95%(주황 · 적재 주의) / A02 40%(여유) / A03 120%(빨강 · 허용량 초과) / A04 0%(빈 랙) / B01 70%(보통) · 나머지는 정보 없음</figcaption></figure>
+    <div class="tip"><b>합계는 어디서 보나요?</b> 예전 버전의 상단 「수량 기준 적재율 · 단위별」 칸은 이번 버전에서 빠졌습니다. 랙별 값은 ⑫ 선택 정보와 도면 색으로, 배치 전체의 합계는 「비교」 창 「세부 지표」의 「최대 보관 수량 BOX」처럼 단위가 붙은 줄에서 확인합니다(수량을 넣은 랙 수가 「3/3랙 확인」처럼 함께 표시).</div>
+    <table class="plain">
+      <thead><tr><th>「도면 색상 기준」</th><th>무엇으로 색칠하나</th></tr></thead>
+      <tbody>
+        <tr><td>실제 재고 적재율 (기본)</td><td>현재 수량 ÷ 최대 수량</td></tr>
+        <tr><td>높이 활용률</td><td>선반 위 자재 높이 비율 = 비교 창의 「용적률」과 같은 개념 (6-4의 집계 정책으로 랙 하나의 값으로 묶음)</td></tr>
+        <tr><td>위치 등록 현황</td><td>Excel 로케이션이 등록된 랙인지</td></tr>
+        <tr><td>품목별 관리 지표</td><td>ROP·MAX Stock 같은 품목 관리 기준</td></tr>
+      </tbody>
+    </table>
+    <figure><img src="{{c6_viz_height}}" alt="높이 활용률 색"><figcaption>「높이 활용률」로 바꾼 도면 · 범례도 높이 기준으로 바뀜</figcaption></figure>
+    <div class="warnbox">BOX·EA·PLT처럼 <b>단위가 다르면 따로 합산</b>합니다. 단위를 비워 두면 「미설정」으로 묶이니 같은 단위로 맞춰 넣으세요.</div>
+  </article>
+
+  <article id="c6-3" class="step">
+    <h3><span class="n">6-3</span> 도면 표시 바꾸기 — 랙 텍스트·ZONE 이름</h3>
+    <table class="plain">
+      <thead><tr><th>⑦ 표시 설정</th><th>고를 수 있는 값</th></tr></thead>
+      <tbody>
+        <tr><td>「랙 텍스트」</td><td>랙 번호만 / 랙 번호 + 실제 적재율 / 랙 번호 + 높이 활용률 / 상세 정보 / 최소 표시 · 선택 랙</td></tr>
+        <tr><td>「ZONE·번호 배치」</td><td>자동 · 좁으면 두 줄 / 항상 두 줄 / 한 줄 / 최소 · 선택 랙</td></tr>
+        <tr><td>「랙 번호 형식」</td><td>5 / 05 / 005 (자리수 맞춤)</td></tr>
+      </tbody>
+    </table>
+    <h4>ZONE 이름을 현장 용어로</h4>
+    <ol class="do">
+      <li>A열 랙 하나를 클릭합니다. ⑫ 아래쪽 「ZONE 표시 이름」에 원본 ZONE(A)이 보입니다.</li>
+      <li>「현재 배치의 표시 이름」에 <b>원자재</b>를 넣고 「ZONE 이름 적용」을 누릅니다.</li>
+      <li>같은 배치·건물·층의 A열 전체가 「원자재 01」, 「원자재 02」…로 표시됩니다. 되돌리려면 「원본 이름 표시」.</li>
+    </ol>
+    <figure><img src="{{c6_zone}}" alt="ZONE 이름"><figcaption>A열을 「원자재」로 표시 · 「항상 두 줄」 배치</figcaption></figure>
+    <div class="tip">표시 이름만 바뀝니다. <b>Excel 식별자와 로케이션은 바뀌지 않으므로</b> 다시 불러와도 같은 랙으로 연결됩니다.</div>
+  </article>
+
+  <article id="c6-4" class="step">
+    <h3><span class="n">6-4</span> 랙 하나의 높이 값 정하기 — 「랙 높이 집계 정책」</h3>
+    <p>한 랙에는 선반이 여러 개라서 "이 랙의 높이 활용률"을 하나로 묶는 방법을 정해야 합니다. ⑤ 「Excel / 로케이션 자동 생성」에서 고릅니다.</p>
+    {{SVG_HPOL}}
+    <table class="plain">
+      <thead><tr><th>정책</th><th>계산</th><th>쓰는 때</th></tr></thead>
+      <tbody>
+        <tr><td>선반별 최대 높이 / 높이 가중평균 (기본)</td><td>선반마다 가장 높은 자재 비율을 구해 <b>선반 높이로 가중</b>해 평균</td><td>선반 높이가 서로 다를 때</td></tr>
+        <tr><td>선반별 최대 높이 비율 / 단순평균</td><td>선반마다 최대 비율을 구해 그냥 평균</td><td>선반 높이가 같을 때 · 설명이 쉬움</td></tr>
+        <tr><td>등록 자재 중 최대 높이 비율</td><td>랙 안에서 가장 높은 하나</td><td>"넘치는 선반이 하나라도 있나" 점검</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">교육용 7F-A-1은 선반별 최대가 50% · 63.3% · 50%입니다. 단순평균이면 약 54%, 최대값이면 63.3%가 됩니다. 보고할 때는 <b>어떤 정책인지 함께 적으세요</b>.</div>
+  <div class="tip"><b>비교 창의 평균 용적률과는 계산이 다릅니다.</b> 이 정책은 도면 표시(색·「랙 번호 + 높이 활용률」)용입니다. 「비교」 창의 「평균 용적률」은 정책과 관계없이 Excel Summary F4 방식(로케이션 평균 → 랙 평균, 빈 랙 제외)으로 계산합니다(<a href="#m4">M-4</a>).</div>
+  </article>
+
+  <article id="c6-5" class="step">
+    <h3><span class="n">6-5</span> 색상 설정·기본색 복원</h3>
+    <ol class="do">
+      <li>⑦ 줄의 「색상 설정·기본색 복원」을 누릅니다.</li>
+      <li>위쪽에서 화면 색(메인 배경·패널·카드·글자 등 12가지)을 바꾸고 「입력한 UI 색상 적용」.</li>
+      <li>원래대로 하려면 「복원 범위」를 고르고 「미리본 기본 색상 복원」.</li>
+    </ol>
+    <figure><img src="{{c6_theme}}" alt="색상 설정"><figcaption>「색상 설정 · 기본 색상 복원」 · 색만 바뀌고 랙 좌표·규격·재고·이력은 그대로</figcaption></figure>
+    <table class="plain">
+      <tbody>
+        <tr><td>UI 기본 테마만 복원</td><td>화면 색만</td></tr>
+        <tr><td>적재율 기본 색상·기준만 복원</td><td>⑩ 범례 색과 50%·90% 경계</td></tr>
+        <tr><td>모든 색상 설정 복원 (양쪽 객체 지정색 포함)</td><td>전부. 랙마다 따로 칠한 색도 지워짐</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">적재율 색 경계(기본 50%·90%)와 색은 ⑤ 「05 / 적재율 색상」에서 바꿉니다.</div>
+  </article>
+
+  <article id="c6-6" class="step">
+    <h3><span class="n">6-6</span> 날짜별 재고 기록과 지난 날짜 조회</h3>
+    <ol class="do">
+      <li>⑧ 「하단 전체 펼치기」 → 「▸ 재고기록」을 펼칩니다.</li>
+      <li>저장 날짜·데이터 출처를 확인하고 「현재 재고·배치 저장」을 누릅니다. 「배치 이력 함께 저장」을 켜 두면 그날 배치도 같이 남습니다.
+        <div class="quote light">2026-11-16 기록을 저장했습니다. 미입력 재고는 미확인으로 유지됩니다.</div></li>
+      <li>지난 날짜를 보려면 위쪽 날짜를 고릅니다. 화면이 <b>읽기 전용</b>으로 바뀝니다.
+        <div class="quote light">2026-11-16 · 읽기 전용 · 기록 없음 · 해당 날짜 저장 배치</div></li>
+      <li>다 봤으면 「현재 편집으로」를 눌러 돌아옵니다.</li>
+    </ol>
+    <div class="two">
+      <figure><img src="{{c6_inv_panel}}" alt="재고 배치 조회"><figcaption>하단 「재고·배치 조회」 · 「해당 날짜 배치 우선」 / 「현재 배치 + 과거 재고」</figcaption></figure>
+      <figure><img src="{{c6_layout_panel}}" alt="배치 이력"><figcaption>「▾ 배치이력」 · 「현재 배치만 기록」, 「Before/After 비교」</figcaption></figure>
+    </div>
+    <table class="plain">
+      <thead><tr><th>조회 방식</th><th>보이는 것</th></tr></thead>
+      <tbody>
+        <tr><td>「해당 날짜 배치 우선」</td><td>그날 저장한 배치와 그날 재고</td></tr>
+        <tr><td>「현재 배치 + 과거 재고」</td><td>지금 배치에 그날 재고 숫자만 얹어 봄</td></tr>
+      </tbody>
+    </table>
+    <div class="tip"><b>재고를 한꺼번에 넣을 때</b>는 「재고 CSV 가져오기」를 씁니다. 「CSV 양식」을 받아 <code>date, rackId, capacity, quantity, unit, source</code>(한국어 머리글 날짜/랙ID/최대수량/현재수량/단위/출처도 가능)를 채웁니다. rackId는 바뀌지 않는 내부 ID이므로 <b>양식에 있는 ID를 그대로</b> 쓰세요. 가져오기는 이력에만 들어가고 현재 수량은 자동으로 바꾸지 않습니다.</div>
+  </article>
+
+  <div class="check" id="c6-x">
+    <div class="check-h">코스 6 확인 포인트</div>
+    <label><input type="checkbox"> 랙을 더블클릭해 선반별 자재와 높이 막대를 봤다</label>
+    <label><input type="checkbox"> 랙 3개 이상에 최대·현재 수량과 단위를 넣고 색이 바뀌는 것을 봤다</label>
+    <label><input type="checkbox"> ZONE 표시 이름을 바꿨다가 「원본 이름 표시」로 되돌렸다</label>
+    <label><input type="checkbox"> 보고서에 쓸 「랙 높이 집계 정책」을 정했다</label>
+    <label><input type="checkbox"> 오늘 날짜로 재고 기록을 저장하고, 지난 날짜 조회 후 「현재 편집으로」 돌아왔다</label>
+  </div>
+  <table class="mistake">
+    <thead><tr><th>흔한 실수</th><th>왜 생기나</th><th>바로잡기</th></tr></thead>
+    <tbody>
+      <tr><td>Excel을 불러왔는데 적재율이 전부 「미확인」</td><td>Excel의 MAX Stock·평균 입고는 현재 재고가 아님</td><td>최대·현재 수량을 직접 넣거나 재고 CSV로 이력 입력</td></tr>
+      <tr><td>선반 그림이 현장과 위아래가 반대</td><td>선반 방향은 사용자 설정</td><td>「1번 선반이 위」/「아래」를 현장에 맞게</td></tr>
+      <tr><td>적재율과 높이 활용률을 같은 숫자로 보고</td><td>둘 다 %라서 혼동</td><td>보고서에 지표 이름과 집계 정책을 함께 적기 (<a href="#m4">M-4</a>)</td></tr>
+      <tr><td>지난 날짜를 보다가 고치려는데 안 됨</td><td>과거 조회는 읽기 전용</td><td>「현재 편집으로」 누른 뒤 편집</td></tr>
+      <tr><td>재고 CSV가 다른 랙에 들어감</td><td>랙 번호를 rackId로 씀</td><td>「CSV 양식」의 ID를 그대로 사용</td></tr>
+    </tbody>
+  </table>
+</section>

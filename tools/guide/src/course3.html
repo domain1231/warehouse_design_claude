@@ -1,0 +1,172 @@
+<!-- ================= COURSE 3 ================= -->
+<section class="course" id="c3">
+  <div class="course-head">
+    <div class="badge b3">코스 3</div>
+    <div>
+      <h2>다듬기 — 줄 맞추고, 통로 지키고, 위반 없애기</h2>
+      <p class="goal"><b>목표</b> 이 코스를 마치면 ① 여러 랙을 한 번에 골라 줄·간격을 맞추고 ② 원하는 단위로 정확히 옮기고 ③ 보호 통로를 만들어 폭을 지키고 ④ 위반이 생기면 찾아서 없앨 수 있습니다.</p>
+    </div>
+    <div class="time">약 20분</div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-h">30초 요약</div>
+    <ol>
+      <li>여러 개는 <b>빈 곳에서 끌어 상자로</b> 고릅니다. 오른쪽이 「다중 랙 편집 패널」로 바뀝니다.</li>
+      <li>정렬·간격은 <b>미리보기 창에서 먼저 보고</b> 「그룹 전체에 적용」을 눌러야 바뀝니다.</li>
+      <li>기본 정책은 「새 공간 위반 차단」입니다. 통로를 침범하거나 창고 밖으로 나가는 이동은 <b>아예 취소</b>되고, 화면 아래에 이유가 뜹니다.</li>
+    </ol>
+  </div>
+
+  <article id="c3-1" class="step">
+    <h3><span class="n">3-1</span> 여러 개 한 번에 고르기</h3>
+    <div class="two">
+      <figure><img src="{{c3_scatter}}" alt="흩어진 랙"><figcaption>시작 · 높이가 제각각인 랙 4개</figcaption></figure>
+      <figure><img src="{{c3_boxing}}" alt="상자 선택"><figcaption>빈 곳에서 끌어 상자 그리기 → 놓으면 4개 선택 · 「4개 랙 · 면적 2.4㎡」</figcaption></figure>
+    </div>
+    <table class="plain">
+      <thead><tr><th>방법</th><th>쓰는 때</th></tr></thead>
+      <tbody>
+        <tr><td>빈 곳에서 끌어 상자</td><td>모여 있는 랙을 한꺼번에</td></tr>
+        <tr><td>Shift+클릭</td><td>떨어진 랙을 하나씩 추가</td></tr>
+        <tr><td>Ctrl+클릭</td><td>고른 것 중 하나를 빼거나 다시 넣기(토글)</td></tr>
+        <tr><td>「전체 랙 선택」 / 「선택 해제」</td><td>왼쪽 「v2.3.6 / 선택 · 통로 · 화면」 패널</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">「영역 선택 기준」이 「일부 겹침」(기본)이면 상자에 조금만 걸려도 선택되고, 「완전 포함」이면 상자 안에 다 들어온 것만 선택됩니다. 기본은 <b>랙만</b> 고릅니다. 통로·구조물까지 함께 고르려면 「일부 겹침 · 모든 객체」나 「완전 포함 · 모든 객체」를 고릅니다. 종류가 섞이면 이동·삭제는 전체에, 회전·복제·그룹 편집은 랙에만 적용됩니다.</div>
+    <div class="side">
+      <figure><img src="{{c3_multi_panel}}" alt="다중 랙 편집 패널"><figcaption>오른쪽 「다중 랙 편집 패널」 · 선택 4개 · 외곽 크기 · 정렬·간격 버튼</figcaption></figure>
+      <div>
+        <p>고른 랙들은 <b>끌면 함께 움직입니다</b>(그룹 이동). 오른쪽 패널에서 할 수 있는 일:</p>
+        <table class="plain">
+          <tbody>
+            <tr><td>줄 맞추기</td><td>왼쪽·오른쪽·위쪽·아래쪽 정렬, 가로·세로 가운데</td></tr>
+            <tr><td>한 줄로 세우기</td><td>가로 일렬, 세로 일렬</td></tr>
+            <tr><td>간격 맞추기</td><td>가로 간격, 세로 간격</td></tr>
+            <tr><td>그 밖에</td><td>그룹 이동, 그룹 중심 회전, 그룹 복제, 그룹 삭제, 현재 좌표 CSV</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </article>
+
+  <article id="c3-2" class="step">
+    <h3><span class="n">3-2</span> 줄과 간격 맞추기 — 미리 보고 적용</h3>
+    <ol class="do">
+      <li>4개를 고른 상태에서 오른쪽 「위쪽 정렬」을 누릅니다. 「다중 랙 편집 / 적용 전 미리보기」 창이 열립니다.</li>
+      <li>오른쪽 미리보기에서 <b>회색 점선 = 바뀌기 전 위치</b>를 확인하고 「그룹 전체에 적용」을 누릅니다.</li>
+      <li>이어서 「가로 간격」을 누르고 「외곽 사이 간격 (m)」에 <b>0.3</b>을 넣은 뒤 「미리보기 갱신」 → 「그룹 전체에 적용」.</li>
+    </ol>
+    <figure><img src="{{c3_dlg_gap}}" alt="다중 랙 편집 미리보기"><figcaption>미리보기 창 · 「필요 5.7m / 현재 기준점에서 확보 5.7m / 부족 0m」, 「이 변경으로 평가된 공간 위반 없음」</figcaption></figure>
+    <div class="two">
+      <figure><img src="{{c3_after_top}}" alt="위쪽 정렬 후"><figcaption>① 위쪽 정렬 후 · 높이는 맞았지만 간격이 제각각</figcaption></figure>
+      <figure><img src="{{c3_after_gap}}" alt="가로 간격 후"><figcaption>② 가로 간격 0.3m 후 · 외곽 사이가 모두 0.3m</figcaption></figure>
+    </div>
+    <table class="plain">
+      <thead><tr><th>창의 설정</th><th>고를 수 있는 값</th><th>쉽게 말하면</th></tr></thead>
+      <tbody>
+        <tr><td>정렬 기준</td><td>선택 그룹 전체 경계 / 처음 선택한 기준 랙 / 직접 입력한 기준선 / 창고 외벽</td><td>무엇에 맞춰 줄을 세울지</td></tr>
+        <tr><td>간격 방식</td><td>고정 간격 / 시작·끝 사이 균등 분배</td><td>간격을 숫자로 정할지, 양 끝을 고정하고 고르게 나눌지</td></tr>
+        <tr><td>고정할 위치</td><td>현재 첫 랙 / 현재 마지막 랙 / 그룹 중심 / 처음 선택한 기준 랙</td><td>간격을 맞출 때 움직이지 않을 기준</td></tr>
+        <tr><td>순서</td><td>현재 X·Y 좌표 / 로케이션 오름·내림차순 / 선택한 순서 / 직접 지정 순서</td><td>어떤 순서로 나란히 놓을지</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">정렬·간격은 랙의 <b>회전 외곽 경계</b>(돌린 상태의 바깥 테두리) 기준입니다. 로케이션·선반·자재 정보는 바뀌지 않습니다. 적용 결과는 오른쪽 패널의 「실행 취소」나 Ctrl+Z로 되돌립니다.</div>
+  </article>
+
+  <article id="c3-3" class="step">
+    <h3><span class="n">3-3</span> 원하는 단위로 정확히 옮기기</h3>
+    <p>옮기는 방법은 세 가지이고, <b>각각 다른 설정</b>을 따릅니다. 왼쪽 맨 위 「정밀 배치 설정」에서 바꿉니다.</p>
+    {{SVG_MOVE}}
+    <table class="plain">
+      <thead><tr><th>설정</th><th>기본값</th><th>영향</th></tr></thead>
+      <tbody>
+        <tr><td>「배치 스냅 ON」 + 「스냅 간격 (m)」</td><td>켜짐 · 0.01</td><td>마우스로 끌어 놓을 때만</td></tr>
+        <tr><td>「방향키 이동 (m)」</td><td>0.01</td><td>방향키 한 번</td></tr>
+        <tr><td>「Shift 고속 이동 (m)」</td><td>0.1</td><td>Shift+방향키 한 번</td></tr>
+        <tr><td>「정렬 가이드 표시」 · 「가이드 흡착 (스냅 ON일 때)」</td><td>표시 켜짐 · 흡착 꺼짐</td><td>끌 때 다른 랙과 줄이 맞으면 안내선 / 안내선에 달라붙기</td></tr>
+        <tr><td>「표시 격자 (m)」 (03 / 정밀 배치)</td><td>0.5</td><td>화면에 보이는 격자만. 스냅과 별개</td></tr>
+      </tbody>
+    </table>
+    <div class="read">
+      <div class="read-h">실제로 해 본 결과 (R-01, 처음 X = 0.6m)</div>
+      <div class="rrow ok"><span>→ 방향키 1번</span><b>0.61m</b><em>+0.01m</em></div>
+      <div class="rrow ok"><span>Shift + → 1번</span><b>0.71m</b><em>+0.1m</em></div>
+      <div class="rrow ng"><span>Ctrl+Z</span><b>0.61m</b><em>마지막 한 번만 되돌림</em></div>
+    </div>
+    <div class="tip">방향키는 <b>객체를 골랐을 때만</b> 객체를 옮깁니다. 아무것도 고르지 않고 누르면 <b>화면이 움직입니다</b>(랙은 그대로). 입력칸에 커서가 있으면 방향키는 입력칸에서 쓰입니다.</div>
+  </article>
+
+  <article id="c3-4" class="step">
+    <h3><span class="n">3-4</span> 보호 통로 만들기</h3>
+    <p>통로를 그려 두면 프로그램이 <b>그 폭을 지키도록</b> 랙 배치를 검사합니다. 직사각형은 「↔ 통로」, ㄱ자처럼 꺾인 통로는 「다각형 통로 그리기」로 만듭니다.</p>
+    <h4>직사각형 통로</h4>
+    <ol class="do">
+      <li>「02 / 배치 도구」 → 「↔ 통로」 → 도면 클릭. 처음 크기는 4 × 1.5m입니다.</li>
+      <li>오른쪽에서 X·Y·폭·깊이를 숫자로 맞추고, 「최소 확보 폭 (m)」(기본 1)과 「목표 폭 (m)」(기본 1.2), 「통로 종류」를 정합니다.</li>
+      <li>오른쪽 「유효 통로 폭」에 「확보 1.5m / 최소 1m」처럼 지금 폭이 나옵니다.</li>
+    </ol>
+    <div class="side">
+      <figure><img src="{{c3_aisle_right}}" alt="통로 선택 정보"><figcaption>통로를 고른 오른쪽 패널 · 최소 확보 폭 · 목표 폭 · 통로 종류 · 유효 통로 폭</figcaption></figure>
+      <figure><img src="{{c3_aisle_set}}" alt="가로 통로"><figcaption>창고를 가로지르는 통로 001 · 「1.5m / 최소 1m」</figcaption></figure>
+    </div>
+    <div class="warnbox"><b>통로를 최소 폭보다 좁게 만들 수 없습니다.</b> 깊이를 0.9m로 줄이자 아래처럼 취소되었습니다. 정말 좁혀야 한다면 「최소 확보 폭 (m)」을 먼저 낮추세요.
+      <div class="quote">전체 취소: 통로 001 · 통로 폭 부족 0.9m / 최소 1m · 부족 0.1m</div></div>
+    <h4>꺾인 통로 (다각형)</h4>
+    <ol class="do">
+      <li>왼쪽 「보호 통로 설정」의 「다각형 통로 그리기」를 누릅니다. 화면 아래에 「통로 꼭짓점을 순서대로 클릭한 뒤 다각형 완성을 누르세요. Esc 취소.」가 뜹니다.</li>
+      <li>모서리를 차례로 클릭하고 「다각형 완성」을 누릅니다.</li>
+    </ol>
+    <div class="two">
+      <figure><img src="{{c3_poly_drawing}}" alt="다각형 그리는 중"><figcaption>꼭짓점 6개를 찍는 중 (파란 점선)</figcaption></figure>
+      <figure><img src="{{c3_poly_done}}" alt="다각형 완성"><figcaption>통로 002 완성 · 도면에 「1.1m / 최소 1m」(주황) — 최소(1m)는 넘었지만 목표(1.2m)에는 못 미침. 오른쪽 선택 정보와 검토 창에는 「유효 폭 1.1m / 목표 1.2m 미달」로 표시</figcaption></figure>
+    </div>
+    <div class="tip"><b>같은 종류 통로를 한꺼번에</b> 바꾸려면 왼쪽 「보호 통로 설정」에서 「통로 종류」를 고르고 「최소 폭 (m)」·「목표 폭 (m)」을 넣은 뒤 「같은 종류의 통로에 기준 적용」을 누릅니다.</div>
+    <figure><img src="{{c3_aisle_rule}}" alt="보호 통로 설정"><figcaption>왼쪽 「v2.3.6 / 선택 · 통로 · 화면」 → 「보호 통로 설정」</figcaption></figure>
+  </article>
+
+  <article id="c3-5" class="step">
+    <h3><span class="n">3-5</span> 위반이 생기는 방식 — 기본은 "아예 막기"</h3>
+    {{SVG_POLICY}}
+    <div class="warnbox"><b>기본 정책(차단)</b> R-05를 통로 안으로 끌자 이동 자체가 취소되었습니다.
+      <div class="quote">전체 취소: 통로 001 · 통로 폭 부족 0.85m / 최소 1m · 부족 0.11m</div></div>
+    <p>검토용으로 일부러 겹쳐 보고 싶을 때만 왼쪽 「공간 위반을 경고 후 허용 (기본 차단)」을 켭니다. 그러면 이동은 되지만 <b>위반으로 기록</b>되고 빨간 표시가 남습니다.</p>
+    <figure><img src="{{c3_violation}}" alt="위반 표시"><figcaption>경고 후 허용으로 옮긴 R-05 · 통로 001이 빨간 점선, 「▲ 0.85m / 최소 1m」</figcaption></figure>
+    <figure><img src="{{c3_status}}" alt="상태 줄"><figcaption>③ 「공간 경고」 2건, ④ 「기준 충족 4」 · 「통로 2건」으로 바뀜</figcaption></figure>
+    <div class="warnbox"><b>통로를 랙 사이 빈 줄에 넣을 때</b> 빈 줄에 바로 클릭하면 기본 크기 통로가 랙과 겹쳐 만들어지지 않습니다. ① 빈 바닥에 놓고 ② 오른쪽에서 Y → 깊이 → 폭을 먼저 맞춘 뒤 ③ <b>X를 마지막에</b> 넣어 제자리로 옮깁니다. 중간 값이 랙·벽과 부딪히면 「전체 취소: 통로 … · 창고 경계 이탈」처럼 그 입력이 되돌아가므로, 끝나면 도면에서 위치를 꼭 눈으로 확인하세요.</div>
+  </article>
+
+  <article id="c3-6" class="step">
+    <h3><span class="n">3-6</span> 위반 찾아서 없애기</h3>
+    <ol class="do">
+      <li>④ 상태 줄의 「위반 목록」을 누릅니다. 어떤 랙이, 무엇 때문에, 얼마나 넘었는지 나옵니다.</li>
+      <li>그 랙을 도면에서 골라 통로 밖으로 옮기거나 Ctrl+Z로 되돌립니다.</li>
+      <li>④ 상태 줄이 「통로 0건」, 「기준 충족」 숫자가 전체 랙 수와 같아지면 해결입니다.</li>
+      <li>검토가 끝나면 「공간 위반을 경고 후 허용 (기본 차단)」을 다시 끕니다.</li>
+    </ol>
+    <figure><img src="{{c3_vlist}}" alt="배치 위반 목록"><figcaption>「배치 위반 목록 · 현재 계산」 · R-005 → 통로 001 보호 통로 침범(유효 폭 0.85m) · 상태 미해결</figcaption></figure>
+    <p>통로 전체를 한 번에 점검하려면 왼쪽 「현재 통로 폭 · 충돌 확인」을 누릅니다.</p>
+    <figure><img src="{{c3_validate}}" alt="통로 폭 검토"><figcaption>「통로 폭 · 보호 구역 검토」 · 통로별 현재·최소·목표·부족 폭 · 「통로 검토 CSV」로 내보내기</figcaption></figure>
+    <div class="tip">「검토 중으로 표시」는 <b>해결이 아닙니다</b>. 목록에서 "보고 있는 중"이라고 표시만 해 둡니다. 「랙 위치 잠금」을 켠 랙은 자동 배치·재최적화가 움직이지 않습니다.</div>
+    <div class="warnbox">이 검토는 <b>사용자가 정한 폭 기준</b>만 봅니다. 경로 연결, 지게차 회전, 피난 적합성은 판정하지 않으므로 실제 설치 전에는 별도 안전 검토가 필요합니다.</div>
+  </article>
+
+  <div class="check" id="c3-x">
+    <div class="check-h">코스 3 확인 포인트</div>
+    <label><input type="checkbox"> 상자 선택으로 4개를 골라 위쪽 정렬과 가로 간격 0.3m를 적용했다</label>
+    <label><input type="checkbox"> 방향키 0.01m, Shift+방향키 0.1m로 옮겨 봤다</label>
+    <label><input type="checkbox"> 직사각형 통로의 최소·목표 폭을 정했다</label>
+    <label><input type="checkbox"> 「위반 목록」을 열어 보고 위반을 없앴다 (④ 「통로 0건」)</label>
+    <label><input type="checkbox"> 「공간 위반을 경고 후 허용」이 꺼져 있다</label>
+  </div>
+  <table class="mistake">
+    <thead><tr><th>흔한 실수</th><th>왜 생기나</th><th>바로잡기</th></tr></thead>
+    <tbody>
+      <tr><td>정렬 버튼을 눌렀는데 랙이 안 움직임</td><td>미리보기 창만 열리고 아직 적용 전</td><td>「그룹 전체에 적용」 누르기</td></tr>
+      <tr><td>상자로 골랐더니 옆 랙까지 같이 잡힘</td><td>「영역 선택 기준」이 「일부 겹침」</td><td>「완전 포함」으로 바꾸거나 Ctrl+클릭으로 빼기</td></tr>
+      <tr><td>마우스로는 0.005m 단위가 안 맞음</td><td>스냅 간격 0.01m</td><td>방향키 간격 0.005 또는 숫자 입력</td></tr>
+      <tr><td>랙이 통로 쪽으로 안 끌림</td><td>기본 정책이 보호 통로 침범을 막음(정상)</td><td>통로 위치·폭을 먼저 조정, 검토용이면 경고 후 허용</td></tr>
+      <tr><td>경고 후 허용을 켜 둔 채 계속 작업</td><td>위반이 막히지 않고 쌓임</td><td>검토 후 바로 끄고 「위반 목록」 0건 확인</td></tr>
+    </tbody>
+  </table>
+</section>

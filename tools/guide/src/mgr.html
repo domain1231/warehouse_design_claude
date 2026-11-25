@@ -1,0 +1,227 @@
+<section class="doccontrol" id="dc">
+  <table class="plain dct">
+    <tbody>
+      <tr><td>문서명</td><td>Warehouse Studio 사용자 설명서</td><td>문서 번호</td><td class="fill">[기입]</td></tr>
+      <tr><td>문서 버전</td><td>v2.1 (2026-11-25)</td><td>대상 프로그램</td><td>v2.5.0-alpha.13 · 프로젝트 데이터 2.3.6</td></tr>
+      <tr><td>작성</td><td class="fill">[기입]</td><td>검토 / 승인</td><td class="fill">[기입] / [기입]</td></tr>
+      <tr><td>배포 범위</td><td>사내 한정 · 외부 반출 금지</td><td>문의처</td><td class="fill">[기입]</td></tr>
+    </tbody>
+  </table>
+  <details class="hist"><summary>변경 이력</summary>
+    <table class="plain"><thead><tr><th>버전</th><th>날짜</th><th>대상 프로그램</th><th>주요 변경</th></tr></thead><tbody>
+      <tr><td>v1.4</td><td>2026-10-31</td><td>v2.3.6</td><td>기능별 12 PART · 95절, PART 12에 v2.3.6 자동 배치 추가</td></tr>
+      <tr><td>v2.1</td><td>2026-11-25</td><td>v2.5.0-alpha.13</td><td>alpha.13 재촬영·재측정 · 비교 창(목적 지표·Δ 용적률 지도·랙 변화 목록) 새로 씀 · 지표 사전(면적 사용률·평균 용적률) · 저장 위치 설명 정정(브라우저 단위) · 로케이션 열 고정 추천 규칙·통로 최대 폭 · 실기 3·4번 재설계</td></tr><tr><td>v2.0</td><td>2026-11-16</td><td>v2.5.0-alpha.2</td><td>작업 순서 코스로 전면 개편, 실제 화면으로 재촬영, 관리자 편 신설, 코스 6(자재·재고) 추가, 배치 방식 5종 실측 비교, 검색·목차·그림 확대 기능</td></tr>
+    </tbody></table>
+  </details>
+  <details class="hist vscope"><summary>검증 범위 — 무엇을 직접 확인했고 무엇이 남았나</summary>
+    <p><b>직접 실행해 확인함</b> (Linux Chromium, 2026-11-16, 교육용 가상 데이터)</p>
+    <ul><li>설명서의 모든 단계와 화면 문구, 오류·확인 창 문구</li><li>배치 방식 5종의 결과(14×8m·7×5m), 누락 번호 처리, 축척 보정</li><li>저장·백업·복원(이전 버전·대상별 백업·JSON), 재고 기록 저장·과거 조회</li></ul>
+    <p><b>아직 확인하지 못함</b> — 배포 전 실제 PC에서 확인 권장</p>
+    <ul><li>Windows Edge·실제 마우스·터치패드의 끌기·휠 느낌, 모바일(이번 버전에서 보류)</li><li>「위반 목록」에서 줄을 누를 때의 동작, 「비교」 창 「반투명 중첩 차이」 그림</li><li>「위치 등록 현황」·「품목별 관리 지표」 색 기준의 세부 계산식</li><li>실제 운영 JSON·업무 Excel</li></ul>
+  </details>
+</section>
+
+<section class="readers" id="rd">
+  <div class="rd-h">누가 어디를 읽나요?</div>
+  <div class="rd-grid">
+    <a class="rd" href="#m1"><b>본부장</b><span>"무엇이 좋아지고 위험은 무엇인가"</span><em>M-1 한 장 요약 · 3분</em></a>
+    <a class="rd" href="#m2"><b>그룹장</b><span>"이 안을 승인해도 되나"</span><em>M-1 ~ M-4 · 20분</em></a>
+    <a class="rd" href="#c0"><b>실무자</b><span>"어떻게 하나"</span><em>코스 0 ~ 5 · 약 2시간</em></a>
+    <a class="rd" href="#ax-5"><b>교육 담당</b><span>"어떻게 가르치나"</span><em>A-5 교육 운영안</em></a>
+  </div>
+</section>
+
+
+<section class="howto" id="hw">
+  <div class="rd-h">이 설명서 읽는 법 — 표기 약속 8가지</div>
+  <div class="hw-grid">
+    <div><span class="hw-k">「프로젝트 저장」</span><span>화면에 적힌 버튼·항목 이름 그대로</span></div>
+    <div><span class="hw-k hw-num">⑤ ⑨ ⑫</span><span>화면 지도(1-1)의 칸 번호</span></div>
+    <div><div class="tip mini">초록 상자</div><span>알아 두면 편한 팁</span></div>
+    <div><div class="warnbox mini">빨간 상자</div><span>실수하면 자료가 틀어지거나 사라지는 곳</span></div>
+    <div><div class="quote mini">회색·검은 상자</div><span>프로그램에 뜨는 문장 그대로 (검색에 그대로 입력 가능)</span></div>
+    <div><span class="hw-k"><kbd>Ctrl</kbd>+<kbd>Z</kbd></span><span>누를 키</span></div>
+    <div><span class="hw-k"><a href="#c1-4">1-4</a></span><span>누르면 그 절로 이동</span></div>
+    <div><span class="hw-k">빨간 테두리 <b class="hw-dot">1</b></span><span>그림에서 누를 곳과 순서</span></div>
+  </div>
+  <p class="small">찾기: 왼쪽 위 검색창 또는 <kbd>/</kbd> 키 · 그림은 누르면 크게 보입니다 · 체크리스트는 이 PC 브라우저에 기억됩니다.</p>
+</section>
+
+<!-- ================= MANAGER PART ================= -->
+<section class="course mgr" id="mg">
+  <div class="course-head">
+    <div class="badge bm">관리자 편</div>
+    <div>
+      <h2>그룹장·본부장을 위한 검토와 의사결정 안내</h2>
+      <p class="goal">프로그램을 직접 다루지 않아도 <b>결과를 바르게 읽고, 확인하고, 결정</b>할 수 있도록 정리했습니다. 조작 방법은 코스 0~5에 있습니다.</p>
+    </div>
+  </div>
+
+  <!-- M-1 -->
+  <article id="m1" class="step page">
+    <h3><span class="n">M-1</span> 본부장용 한 장 요약</h3>
+    <div class="exec">
+      <div class="ex-lead"><b>Warehouse Studio</b>는 창고 평면에 랙·통로·구조물을 배치하고, <b>현재안(BEFORE)</b>과 <b>개선안(AFTER)</b>을 같은 기준으로 비교하는 사내 오프라인 도구입니다. Excel 로케이션 목록에서 배치도 초안을 자동으로 만들 수 있습니다.</div>
+      {{SVG_SCOPE}}
+      <div class="ex-two">
+        <div>
+          <h4>보고서 숫자를 믿을 수 있는 정도</h4>
+          <table class="plain trust">
+            <tbody>
+              <tr><td><span class="lv l3">높음</span></td><td>「사용자 실측」</td><td>현장에서 잰 치수·위치</td></tr>
+              <tr><td><span class="lv l2">보통</span></td><td>「사용자 입력」 · 「도면 참고 샘플」</td><td>도면·자료를 보고 입력</td></tr>
+              <tr><td><span class="lv l1">낮음</span></td><td>「자동 배치 · 위치 실측 미확인」</td><td>규칙으로 만든 초기 설계안</td></tr>
+              <tr><td><span class="lv l0">없음</span></td><td>「미확인」 · 「미판정」</td><td>자료가 없어 계산하지 않음 (0이 아님)</td></tr>
+            </tbody>
+          </table>
+          <p class="small">각 랙의 「치수·위치 근거」에 기록됩니다. 보고서에는 "실측 비율"을 함께 적도록 했습니다(M-3).</p>
+        </div>
+        <div>
+          <h4>운영 위험과 통제</h4>
+          <table class="plain">
+            <thead><tr><th>위험</th><th>통제</th></tr></thead>
+            <tbody>
+              <tr><td>시험 버전(alpha)이다</td><td>업무 결정 전 JSON 원본 보관, 결과는 실측으로 재확인</td></tr>
+              <tr><td>자료가 개인 PC 브라우저 안에만 있다</td><td>JSON 원본을 사내 드라이브 지정 경로에 보관(M-5)</td></tr>
+              <tr><td>숫자가 실제보다 좋아 보일 수 있다</td><td>그룹장 검토 체크리스트(M-2) 통과분만 보고</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ex-ask">
+        <h4>보고받을 때 이 세 가지만 물어보세요</h4>
+        <ol>
+          <li>"BEFORE와 AFTER의 <b>창고 치수와 기준일</b>이 같습니까?"</li>
+          <li>"숫자 중 <b>「미확인」</b>인 것은 무엇이고, 실측 비율은 얼마입니까?"</li>
+          <li>"통로·피난·하중 <b>안전 검토</b>는 누가 언제 합니까?"</li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <!-- M-2 -->
+  <article id="m2" class="step page">
+    <h3><span class="n">M-2</span> 그룹장 검토 체크리스트 — 결재 전 10가지</h3>
+    <p>담당자가 이 표를 채워 보고서에 붙이고, 그룹장은 <b>"아니오"가 있는지</b>만 봅니다. 확인 위치는 프로그램 화면 기준이며, 번호 ①~⑫는 <a href="#c1-1">화면 지도</a>와 같습니다.</p>
+    <table class="plain chk">
+      <thead><tr><th>#</th><th>확인 항목</th><th>어디서 보나</th><th>예</th><th>아니오</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>프로그램 버전이 표준 버전과 같다</td><td>「프로그램 정보」</td><td>□</td><td>□</td></tr>
+        <tr><td>2</td><td>BEFORE가 잠겨 있다 (기준안이 바뀌지 않음)</td><td>⑥ 「BEFORE · 조회 / 원본 잠금」</td><td>□</td><td>□</td></tr>
+        <tr><td>3</td><td>BEFORE와 AFTER의 면적 기준이 같다</td><td>「비교」 창 맨 위 「면적 기준: …」</td><td>□</td><td>□</td></tr>
+        <tr><td>4</td><td>공간 경고·통로 위반이 0건이다</td><td>③ 「공간 경고」, ④ 「위반 목록」</td><td>□</td><td>□</td></tr>
+        <tr><td>5</td><td>「공간 위반을 경고 후 허용」이 꺼져 있다</td><td>⑤ 「v2.3.6 / 선택 · 통로 · 화면」</td><td>□</td><td>□</td></tr>
+        <tr><td>6</td><td>「미확인」을 0으로, 「비움」을 악화로 쓰지 않았다 · 악화 랙의 원인을 적었다</td><td>「비교」 창 목적 지표 · 「랙 변화 목록」 「악화」 필터</td><td>□</td><td>□</td></tr>
+        <tr><td>7</td><td>데이터 기준일과 출처가 적혀 있다</td><td>「비교」 창 상단 · 보고서 양식</td><td>□</td><td>□</td></tr>
+        <tr><td>8</td><td>주요 랙의 「치수·위치 근거」 실측 비율을 적었다</td><td>⑫ 선택 정보</td><td>□</td><td>□</td></tr>
+        <tr><td>9</td><td>JSON 원본이 지정 경로에 있고 파일명이 보고서에 있다</td><td>사내 드라이브 · <code>warehouse_project_v2_3_6_날짜.json</code></td><td>□</td><td>□</td></tr>
+        <tr><td>10</td><td>설치 전 안전 검토 담당과 일정이 정해져 있다</td><td>M-5 운영 책임표</td><td>□</td><td>□</td></tr>
+      </tbody>
+    </table>
+    <div class="sign"><span>작성 ____________ (인)</span><span>검토 그룹장 ____________ (인)</span><span>일자 ______ . ____ . ____</span></div>
+    <div class="tip">1~6번에서 하나라도 "아니오"면 <b>숫자 자체가 틀릴 수 있으니</b> 반려합니다. 7~10번은 보완 조건부 승인이 가능합니다.</div>
+  </article>
+
+  <!-- M-3 -->
+  <article id="m3" class="step page">
+    <h3><span class="n">M-3</span> 표준 보고서 양식 — 배치 개선안 1장 보고</h3>
+    <p>「비교」 창의 숫자를 그대로 옮겨 적습니다. 회색 글씨는 교육용 예시입니다.</p>
+    <div class="form">
+      <div class="f-title">창고 배치 개선안 보고</div>
+      <table class="plain fm">
+        <tbody>
+          <tr><td>대상 창고</td><td><i>B동 7F 자재창고</i></td><td>보고일 / 작성</td><td><i>2026-11-16 / 홍길동</i></td></tr>
+          <tr><td>데이터 기준일 · 출처</td><td><i>2026-11-15 · 사용자 제공 Excel</i></td><td>근거 JSON</td><td><i>warehouse_project_v2_3_6_2026-11-16.json</i></td></tr>
+          <tr><td>개선 목적</td><td colspan="3"><i>윗줄 정렬로 통로 확보, 랙 2개 추가</i></td></tr>
+        </tbody>
+      </table>
+      <table class="plain fm kpi">
+        <thead><tr><th>목적 지표 (「비교」 창 그대로)</th><th>BEFORE</th><th>AFTER</th><th>차이</th><th>근거 수준</th></tr></thead>
+        <tbody>
+          <tr><td>면적 기준</td><td colspan="3"><i>도면 전체 (양쪽 모두 Excel 면적 없음)</i></td><td><i>—</i></td></tr>
+          <tr><td>평균 용적률</td><td><i>43.7%</i></td><td><i>57.1%</i></td><td><i>+13.4%p</i></td><td><i>Excel</i></td></tr>
+          <tr><td>80% 미만 로케이션</td><td><i>66 / 66</i></td><td><i>54 / 66</i></td><td><i>−12</i></td><td><i>Excel</i></td></tr>
+          <tr><td>빈 랙 · 저활용 랙</td><td><i>0 · 11</i></td><td><i>1 · 6</i></td><td><i>+1 · −5</i></td><td><i>Excel</i></td></tr>
+          <tr><td>보관 가능 합계</td><td><i>91.2%</i></td><td><i>92.0%</i></td><td><i>+0.8%p</i></td><td><i>도면</i></td></tr>
+          <tr><td>선반 여유 용적</td><td><i>7.76m³</i></td><td><i>7.36m³</i></td><td><i>−0.40m³</i></td><td><i>Excel</i></td></tr>
+          <tr><td>최소 통로 폭 · 공간 경고</td><td><i>통로 없음 · 0</i></td><td><i>통로 없음 · 1</i></td><td><i>경고 1 해결 필요</i></td><td><i>사용자 기준</i></td></tr>
+          <tr><td>배치 변경 (이동·회전·신규·제거)</td><td colspan="3"><i>이동 0 · 회전 0 · 신규 1 · 제거 0</i></td><td>—</td></tr>
+          <tr><td>최대 보관 수량 (세부 지표)</td><td><i>미확인</i></td><td><i>미확인</i></td><td><i>비교 불가</i></td><td><i>자료 없음</i></td></tr>
+          <tr><td>실측 비율 (실측 랙 / 전체)</td><td><i>0 / 11</i></td><td><i>0 / 12</i></td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div class="fm-img"><img src="{{c4_cmp_top}}" alt="전후 비교 그림"><div class="small">Δ 용적률 지도 (「비교」 창 화면 캡처) · 좌우 비교 그림이 필요하면 「전후 비교 PNG」</div></div>
+      <table class="plain fm">
+        <tbody>
+          <tr><td>악화·경고 랙 조치</td><td colspan="3"><i>B03 용적률 −19.2%p — 원인: 자재 높이 축소 입력 확인 중 · C03 충돌 경고 1건 — 위치 조정 예정</i></td></tr><tr><td>요청 사항</td><td colspan="3"><i>AFTER안 기준 현장 실측 및 설비 안전 검토 진행 승인</i></td></tr>
+          <tr><td>첨부</td><td colspan="3">□ 검토 체크리스트(M-2) □ Δ 지도 캡처 또는 전후 비교 PNG □ 비교 요약 CSV □ 랙 변화 목록 CSV □ JSON 원본 경로</td></tr>
+        </tbody>
+      </table>
+      <div class="f-note">본 배치안은 사용자 입력 기준의 설계안이며, 설치 승인이 아닙니다. 「미확인」은 0이 아니라 자료 없음입니다. 경로 연결·지게차 회전·피난·하중은 별도 검토 대상입니다.</div>
+    </div>
+  </article>
+
+  <!-- M-4 -->
+  <article id="m4" class="step">
+    <h3><span class="n">M-4</span> 지표 사전 — 같은 "%"라도 묻는 질문이 다릅니다</h3>
+    {{SVG_METRIC}}
+    <h4>상단 지표 바 (③, 8칸)</h4>
+    <table class="plain">
+      <thead><tr><th>지표</th><th>계산</th><th>답하는 질문</th></tr></thead>
+      <tbody>
+        <tr><td><b>면적 사용률</b> (비교 창 「세부 지표」에서는 아직 「랙 면적 점유율 %」로 표시)</td><td>랙 바닥 면적 합계 ÷ 총면적 (총면적 = Excel 총면적, 없으면 도면 전체)</td><td>바닥을 랙이 얼마나 차지하나</td></tr>
+        <tr><td>통로 비중</td><td>1 − 면적 사용률 (도면에 그린 통로 비율은 보조로 함께 표시)</td><td>랙 아닌 바닥이 얼마나 되나</td></tr>
+        <tr><td>보관 불가 구역 비중</td><td>벽·기둥·보관 금지·문 안전 구역 ÷ 전체 창고 면적</td><td>못 쓰는 바닥이 얼마나 되나</td></tr>
+        <tr><td>보관 가능 잔여 비중</td><td>어떤 객체도 없는 바닥 ÷ 전체</td><td>아직 빈 바닥이 얼마나 되나</td></tr>
+        <tr><td>최소 통로 폭</td><td>보호 통로마다 잰 유효 폭 중 가장 좁은 값 (기준 미달이면 ⚠)</td><td>가장 좁은 통로가 기준을 지키나</td></tr>
+      </tbody>
+    </table>
+    <h4>「비교」 창 목적 지표 (Excel 자료가 연결된 랙 기준)</h4>
+    <table class="plain">
+      <thead><tr><th>지표</th><th>계산</th><th>답하는 질문</th></tr></thead>
+      <tbody>
+        <tr><td><b>용적률</b> (= 화면 일부의 「높이 활용률」)</td><td>자재 높이 ÷ 선반 단 높이 · Excel 「용적률(%)」과 같은 뜻 · 현재 재고 수량 아님</td><td>선반 높이를 얼마나 채웠나</td></tr>
+        <tr><td><b>평균 용적률</b></td><td>랙마다 로케이션 용적률을 평균(R) → 랙 평균을 다시 평균 (Excel Summary F4 방식) · R = 0인 빈 랙은 제외</td><td>창고 전체로 얼마나 채웠나</td></tr>
+        <tr><td>80% 미만 로케이션</td><td>용적률 0.8 미만인 로케이션 수 ÷ 자재가 있는 로케이션 수 (품목코드 없는 곳 제외)</td><td>덜 채운 자리가 몇 개인가</td></tr>
+        <tr><td>빈 랙 / 저활용 랙</td><td>연결됐는데 자재 높이가 모두 0 / R &lt; 50% (빈 랙 제외)</td><td>비운 랙 · 덜 쓰는 랙이 몇 개인가</td></tr>
+        <tr><td>공간 구성</td><td>바닥을 랙 &gt; 빈 랙 &gt; 보관 불가 &gt; 통로 &gt; 잔여 순으로 겹침 없이 나눈 100%</td><td>바닥이 무엇으로 이루어졌나</td></tr>
+        <tr><td>보관 가능 합계</td><td>빈 랙 바닥 + 보관 가능 잔여 바닥 (도면 전체 대비)</td><td>새로 쓸 수 있는 바닥이 얼마인가</td></tr>
+        <tr><td>선반 여유 용적</td><td>Σ (단 높이 − 그 선반 최대 자재 높이) × 랙 가로 × 랙 세로 · 가로 방향 여유는 제외</td><td>선반 위쪽에 남은 공간이 얼마인가</td></tr>
+        <tr><td>Δ 용적률 (지도)</td><td>(AFTER R − BEFORE R) × 100, %p</td><td>랙마다 얼마나 좋아졌나</td></tr>
+      </tbody>
+    </table>
+    <h4>랙별 재고 지표</h4>
+    <table class="plain">
+      <tbody>
+        <tr><td><b>실제 재고 적재율</b></td><td>현재 수량 ÷ 최대 수량 (단위별 따로) · 도면 색(⑩ 범례)과 ⑫ 선택 정보, 비교 창 「세부 지표」의 「최대 보관 수량」에서 확인 · 상단 지표 바에서는 빠짐</td></tr>
+      </tbody>
+    </table>
+    <div class="read">
+      <div class="read-h">실제 재고 적재율 색 구간 (기본값)</div>
+      <div class="legend">
+        <span><i style="background:#344052"></i>빈 랙 0%</span><span><i style="background:#315780"></i>여유 0~50% 미만</span><span><i style="background:#80b3f1"></i>보통 50~90% 미만</span><span><i style="background:#e5a052"></i>적재 주의 90~100%</span><span><i style="background:#e46775"></i>허용량 초과 100% 초과</span><span><i style="background:#575568"></i>정보 없음</span>
+      </div>
+    </div>
+    <div class="warnbox"><b>자주 생기는 오해</b> ① "면적 사용률 8.8%니까 창고가 여유롭다" — 바닥만 봅니다. ② "용적률 = 재고가 찬 정도" — 아닙니다. 높이 기준이며 수량은 실제 재고 적재율입니다. ③ "선반 여유 용적이 줄었다 = 나빠졌다" — 위쪽 빈 공간을 더 쓴 것입니다. ④ 같은 개념을 화면 일부는 「높이 활용률」, 비교 창은 「용적률」이라고 부릅니다.</div>
+  </article>
+
+  <!-- M-5 -->
+  <article id="m5" class="step">
+    <h3><span class="n">M-5</span> 운영 책임표 (RACI)</h3>
+    <p><b>R</b> 실행 · <b>A</b> 최종 책임(승인) · <b>C</b> 협의 · <b>I</b> 통보. 대괄호는 조직에 맞게 채워 주세요.</p>
+    <table class="plain raci">
+      <thead><tr><th>업무</th><th>실무 담당</th><th>그룹장</th><th>본부장</th><th>프로그램 관리자</th><th>안전·설비 담당</th></tr></thead>
+      <tbody>
+        <tr><td>창고 치수·현재 배치(BEFORE) 입력·갱신</td><td>R</td><td>A</td><td></td><td>C</td><td>C</td></tr>
+        <tr><td>BEFORE 잠금 해제 (기준안 변경)</td><td>R</td><td>A</td><td>I</td><td></td><td></td></tr>
+        <tr><td>개선안(AFTER) 작성·비교</td><td>R</td><td>C</td><td></td><td></td><td></td></tr>
+        <tr><td>검토 체크리스트 확인·결재</td><td>C</td><td>R</td><td>A (투자 수반 시)</td><td></td><td>C</td></tr>
+        <tr><td>JSON 원본 보관 <span class="fill">[사내 드라이브 경로]</span></td><td>R</td><td>A</td><td></td><td>C</td><td></td></tr>
+        <tr><td>설치 전 실측·안전 검토 (통로·피난·하중)</td><td>C</td><td>A</td><td>I</td><td></td><td>R</td></tr>
+        <tr><td>프로그램 버전 업데이트·설명서 개정·배포</td><td>I</td><td>I</td><td></td><td>R / A</td><td></td></tr>
+        <tr><td>문의·장애 접수 <span class="fill">[연락처]</span></td><td>C</td><td>I</td><td></td><td>R</td><td></td></tr>
+      </tbody>
+    </table>
+    <div class="tip"><b>왜 필요한가요?</b> 이 프로그램은 자료를 각자의 PC 브라우저에 저장합니다. 담당자가 바뀌거나 PC를 교체하면 <b>JSON 원본이 지정 경로에 없을 경우 자료가 사라집니다</b>. 보관 책임(R)과 확인 책임(A)을 이름으로 정해 두세요.</div>
+  </article>
+</section>
