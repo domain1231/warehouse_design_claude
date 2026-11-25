@@ -2,7 +2,7 @@
 import { buildScene, esc } from '../cad/scene.js';
 import { polygon } from '../geometry/polygons.js';
 import { csvEncode } from '../warehouse/rackinfo.js';
-import { purposeCompare, scenarioSpace, compareBasis, compareBasisText, compareSummary } from '../metrics/space.js';
+import { purposeCompare, scenarioSpace, compareBasis, compareBasisText, compareSummary, metricRackIds } from '../metrics/space.js';
 import { presentationLayout, renderPresentation, jpegToPdf } from './compare-export.js';
 import { rackDeltaMap, rackChangeList, changeListCsvRows, CHANGE_TYPE_NAMES, DELTA_BINS, columnDeltaMap } from '../metrics/delta.js';
 import { legend } from '../warehouse/racklist.js';
@@ -71,7 +71,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   };
 
   // ── 비교 ──
-  const md = dlg('compare-dialog scenario-dialog', 'compare-dialog', '<button type="button" class="close" data-close data-testid="compare-close">닫기 ×</button><h2>Before / After 배치 비교</h2><div class="r-compare-tools"><select id="rCompareMode" data-mode data-testid="compare-mode" aria-label="배치 비교 모드"><option value="delta">Δ 용적률 지도</option><option value="sides">BEFORE/AFTER 좌우 차이</option><option value="before">BEFORE 단독</option><option value="after">AFTER 단독</option><option value="overlay">반투명 중첩 차이</option></select><button type="button" id="rCompareSave" data-save data-testid="compare-json">비교 중 JSON 저장</button><button type="button" id="rDiffCsv" data-csv data-testid="compare-csv">랙 변경 CSV</button><button type="button" data-change-csv data-testid="compare-change-csv">랙 변화 목록 CSV</button><button type="button" data-present-png data-testid="compare-present-png">발표용 PNG</button><button type="button" data-present-pdf data-testid="compare-present-pdf">발표용 PDF</button></div><div class="r-headline" data-headline data-testid="compare-headline" aria-live="polite"></div><div class="r-kpis" data-kpis data-testid="compare-kpis"></div><div class="r-cmp-grid"><div class="r-cmp-left"><div id="rCompareSources" data-sources></div><div id="rComparePurpose" data-purpose data-testid="compare-purpose"></div><p class="muted">현재 편집 중인 두 배치를 비교합니다. 날짜 조회 화면과 별개입니다. 수량은 동일 단위별로 계산합니다.</p><div id="compareTable" class="records-table" data-metrics data-testid="compare-metrics"></div><div id="rCompareRows" class="r-scroll records-table" data-testid="compare-rows" data-rows></div><button type="button" id="mCompareSvg" data-compare-svg data-testid="compare-svg">전후 비교 SVG</button> <button type="button" id="mComparePng" data-compare-png data-testid="compare-png">전후 비교 PNG</button> <button type="button" id="compareCsv" data-compare-csv data-testid="export-compare-csv" style="margin-top:14px">비교 요약 CSV</button></div><div class="r-cmp-right" data-testid="compare-right"><div class="r-delta-head" data-delta-head hidden><div class="r-delta-tools"><label><input type="checkbox" data-present data-testid="compare-present"> 발표 모드</label><select data-unit data-testid="compare-unit" aria-label="Δ 지도 단위"><option value="rack">랙 단위</option><option value="column">열 단위 요약</option></select></div><div class="r-legend" data-delta-legend data-testid="compare-delta-legend"></div></div><svg id="rDeltaPlan" class="group-preview" data-delta data-testid="compare-delta" hidden role="img" aria-label="Δ 용적률 지도"></svg><svg id="rOverlayPlan" class="group-preview" data-overlay hidden role="img" aria-label="중첩"></svg><div class="compare-plans" data-plans><div data-box="before"><h3>BEFORE · 현재안</h3><svg id="beforePlan" class="mini-plan" data-before role="img" aria-label="BEFORE"></svg></div><div data-box="after"><h3>AFTER · 개선안</h3><svg id="afterPlan" class="mini-plan" data-after role="img" aria-label="AFTER"></svg></div></div></div></div>', 'compareDialog');
+  const md = dlg('compare-dialog scenario-dialog', 'compare-dialog', '<button type="button" class="close" data-close data-testid="compare-close">닫기 ×</button><h2>Before / After 배치 비교</h2><div class="r-compare-tools"><select id="rCompareMode" data-mode data-testid="compare-mode" aria-label="배치 비교 모드"><option value="delta">Δ 용적률 지도</option><option value="sides">BEFORE/AFTER 좌우 차이</option><option value="before">BEFORE 단독</option><option value="after">AFTER 단독</option><option value="overlay">반투명 중첩 차이</option></select><button type="button" id="rCompareSave" data-save data-testid="compare-json">비교 중 JSON 저장</button><button type="button" id="rDiffCsv" data-csv data-testid="compare-csv">랙 변경 CSV</button><button type="button" data-change-csv data-testid="compare-change-csv">랙 변화 목록 CSV</button><button type="button" data-present-png data-testid="compare-present-png">발표용 PNG</button><button type="button" data-present-pdf data-testid="compare-present-pdf">발표용 PDF</button></div><div class="r-headline" data-headline data-testid="compare-headline" aria-live="polite"></div><div class="r-kpis" data-kpis data-testid="compare-kpis"></div><div class="r-cmp-grid"><div class="r-cmp-left"><div id="rCompareSources" data-sources></div><div id="rComparePurpose" data-purpose data-testid="compare-purpose"></div><p class="muted">현재 편집 중인 두 배치를 비교합니다. 날짜 조회 화면과 별개입니다. 수량은 동일 단위별로 계산합니다.</p><div id="compareTable" class="records-table" data-metrics data-testid="compare-metrics"></div><div id="rCompareRows" class="r-scroll records-table" data-testid="compare-rows" data-rows></div><button type="button" id="mCompareSvg" data-compare-svg data-testid="compare-svg">전후 비교 SVG</button> <button type="button" id="mComparePng" data-compare-png data-testid="compare-png">전후 비교 PNG</button> <button type="button" id="compareCsv" data-compare-csv data-testid="export-compare-csv" style="margin-top:14px">비교 요약 CSV</button></div><div class="r-cmp-right" data-testid="compare-right"><div class="r-delta-head" data-delta-head hidden><div class="r-delta-tools"><label><input type="checkbox" data-present data-testid="compare-present"> 발표 모드</label><select data-unit data-testid="compare-unit" aria-label="Δ 지도 단위"><option value="rack">랙 단위</option><option value="column">열 단위 요약</option></select></div><div class="r-legend" data-delta-legend data-testid="compare-delta-legend"></div><p class="r-focus-note" data-focus-note data-testid="compare-focus-note" hidden></p></div><svg id="rDeltaPlan" class="group-preview" data-delta data-testid="compare-delta" hidden role="img" aria-label="Δ 용적률 지도"></svg><svg id="rOverlayPlan" class="group-preview" data-overlay hidden role="img" aria-label="중첩"></svg><div class="compare-plans" data-plans><div data-box="before"><h3>BEFORE · 현재안</h3><svg id="beforePlan" class="mini-plan" data-before role="img" aria-label="BEFORE"></svg></div><div data-box="after"><h3>AFTER · 개선안</h3><svg id="afterPlan" class="mini-plan" data-after role="img" aria-label="AFTER"></svg></div></div></div></div>', 'compareDialog');
   const DROP = ['신규 랙', '제거 랙', '이동 랙', '회전 랙', '설계 규격 변경 랙', '데이터 기준일'];
   const detailRows = (p) => compareRows(p).filter((r, i) => !i || (!DROP.includes(r[0]) && !(String(r[0]).startsWith('최대 보관 수량') && r[1] === '미확인' && r[2] === '미확인')));
   const SEG = [['rack', 'seg-rack', '랙'], ['emptyRack', 'seg-rack seg-empty', '빈 랙'], ['unavailable', 'seg-blocked', '보관 불가'], ['aisle', 'seg-aisle', '통로'], ['remaining', 'seg-remain', '잔여']];
@@ -93,11 +93,30 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   const purposeHtml = (p, d, rows) => {
     const sum = layoutChangeSummary(d);
     // D4(D-081): BEFORE → AFTER를 한 칸에 붙여 쓰고 차이를 바로 옆에. 변화 0 행은 흐리게. 긴 원문은 툴팁.
-    return '<table class="r-purpose"><tr>' + ['목적 지표', 'BEFORE → AFTER', '차이'].map((h) => `<th>${h}</th>`).join('') + '</tr>' + rows.map((r) => `<tr data-metric="${r.id}" data-trend="${r.trend}"${r.num === 0 ? ' class="r-zero"' : ''} title="${esc(`${r.label}: BEFORE ${r.before} → AFTER ${r.after}\n${r.tip}`)}"><td>${esc(r.label)}</td><td class="r-ba">${esc(r.short.before)} <span class="r-to">→</span> ${esc(r.short.after)}</td><td>${trendHtml(r)}</td></tr>`).join('') + '</table>'
+    return '<table class="r-purpose"><tr>' + ['목적 지표', 'BEFORE → AFTER', '차이'].map((h) => `<th>${h}</th>`).join('') + '</tr>' + rows.map((r) => `<tr data-metric="${r.id}" data-trend="${r.trend}"${r.num === 0 ? ' class="r-zero"' : ''}${LINKABLE.has(r.id) ? ' tabindex="0" role="button" aria-pressed="false" data-link' : ''} title="${esc(`${r.label}: BEFORE ${r.before} → AFTER ${r.after}\n${r.tip}`)}"><td>${esc(r.label)}</td><td class="r-ba">${esc(r.short.before)} <span class="r-to">→</span> ${esc(r.short.after)}</td><td>${trendHtml(r)}</td></tr>`).join('') + '</table>'
       + `<div class="r-comp" data-testid="compare-composition">${compHtml(p)}<div class="r-legend">${SEG.map(([, cls, t]) => `<span><i class="seg ${cls}"></i>${t === '잔여' ? '보관 가능 잔여' : t}</span>`).join('')}</div></div>`
       + (sum ? `<p class="r-changes" data-testid="compare-changes">배치 변경: ${esc(sum)}</p>` : '');
   };
   const BIN = Object.fromEntries(DELTA_BINS.map((b) => [b.id, b]));
+  // D7(D-084): 표·지도 연동 — 지표 행(랙으로 나타낼 수 있는 지표)·랙 변화 목록 행을 누르면 Δ 지도에서 그 랙만 강조. 다시 누르거나 Esc로 해제.
+  const LINKABLE = new Set(['M3', 'M4', 'M8', 'M9', 'M12']);
+  let focus = null; // { kind: 'metric'|'rack', key, label, ids }
+  const applyFocus = () => {
+    const svg = q(md, '[data-delta]'), ids = focus ? new Set(focus.ids) : null;
+    svg.classList.toggle('focus', !!ids);
+    for (const g of svg.querySelectorAll('g[data-rack]')) g.classList.toggle('on', !!ids && ids.has(g.dataset.rack));
+    for (const tr of md.querySelectorAll('tr[data-link]')) { const on = !!focus && (focus.kind === 'metric' ? tr.dataset.metric === focus.key : tr.dataset.rackId === focus.key); tr.classList.toggle('r-active', on); tr.setAttribute('aria-pressed', String(on)); }
+    const note = q(md, '[data-focus-note]');
+    note.textContent = focus ? `지도 강조: ${focus.label} ${focus.ids.length}대 · 다시 누르거나 Esc로 해제` : '';
+    note.hidden = !focus;
+  };
+  const toggleFocus = (tr) => {
+    const p = getProject(), metric = tr.dataset.metric, rackId = tr.dataset.rackId;
+    const key = metric ?? rackId, kind = metric ? 'metric' : 'rack';
+    if (focus && focus.kind === kind && focus.key === key) focus = null;
+    else focus = { kind, key, label: metric ? tr.cells[0].textContent : `랙 ${tr.cells[0].textContent}`, ids: metric ? metricRackIds(p, metric) : [rackId] };
+    if (q(md, '[data-mode]').value !== 'delta') { q(md, '[data-mode]').value = 'delta'; drawCompare(); } else applyFocus();
+  };
   const ALWAYS = ['up40', 'up20', 'up1', 'same', 'worse', 'emptied', 'unknown'];
   // D2(D-079): 발표 모드 — 바탕 도면의 글자(통로 이름·치수·구조물 이름·랙 태그)를 숨기고 Δ 값을 랙 칸에 맞춰 크게.
   const cview = (p) => ({ presentation: false, unit: 'rack', ...(p.settings.compareView ?? {}) });
@@ -141,6 +160,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     svg.setAttribute('viewBox', vb);
     svg.innerHTML = r.inner;
     q(md, '[data-delta-legend]').innerHTML = r.legend;
+    applyFocus();
   };
   const chg = { filter: 'all', sort: 'delta-desc' };
   const signed = (v) => (v === null ? '—' : (v < 0 ? '−' : v > 0 ? '+' : '') + Math.abs(v).toFixed(1));
@@ -148,7 +168,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     const p = getProject(), all = rackChangeList(p), rows = rackChangeList(p, chg), pc = (v) => (v === null ? '미확인' : (v * 100).toFixed(1) + '%');
     q(md, '[data-change-count]').textContent = `${rows.length} / ${all.length}랙`;
     q(md, '[data-change-table]').innerHTML = '<table><tr>' + ['랙', '로케이션 수 (BE → AF)', 'BEFORE R', 'AFTER R', 'Δ %p', '배치 변경'].map((h) => `<th>${h}</th>`).join('') + '</tr>'
-      + rows.map((r) => { const b = BIN[r.bin] ?? BIN.worse; return `<tr data-group="${r.group}" data-bin="${r.bin}"><td>${esc(r.code)}</td><td>${r.locB ?? '—'} → ${r.locA ?? '—'}</td><td>${pc(r.rB)}</td><td>${pc(r.rA)}</td><td><i class="r-swatch" style="background:${r.bin === 'removed' ? 'transparent' : b.color};border-color:${b.color}"></i>${r.bin === 'emptied' ? '비움' : signed(r.delta)}</td><td>${r.types.length ? r.types.map((t) => CHANGE_TYPE_NAMES[t]).join('·') : '—'}</td></tr>`; }).join('') + '</table>';
+      + rows.map((r) => { const b = BIN[r.bin] ?? BIN.worse; return `<tr data-group="${r.group}" data-bin="${r.bin}"${r.bin !== 'removed' ? ` data-rack-id="${esc(r.id)}" data-link tabindex="0" role="button" aria-pressed="false"` : ''}><td>${esc(r.code)}</td><td>${r.locB ?? '—'} → ${r.locA ?? '—'}</td><td>${pc(r.rB)}</td><td>${pc(r.rA)}</td><td><i class="r-swatch" style="background:${r.bin === 'removed' ? 'transparent' : b.color};border-color:${b.color}"></i>${r.bin === 'emptied' ? '비움' : signed(r.delta)}</td><td>${r.types.length ? r.types.map((t) => CHANGE_TYPE_NAMES[t]).join('·') : '—'}</td></tr>`; }).join('') + '</table>';
   };
   const drawCompare = () => {
     const p = getProject(), d = rackDiff(p.scenarios.before, p.scenarios.after), vb = common(p), mode = q(md, '[data-mode]').value;
@@ -184,9 +204,15 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     q(md, '[data-metrics]').innerHTML = '<h3>세부 지표</h3>' + table(detailRows(p));
     const noBefore = !racksOf(p.scenarios.before).length;
     q(md, '[data-rows]').innerHTML = `<p class="info">${noBefore ? '개선 전 기준 도면이 없어 배치 개선 효과를 비교할 수 없습니다.' : p.scenarios.before.referenceSample ? 'BEFORE는 참고 샘플입니다. 실제 기준 도면으로 확정하지 마세요.' : '공통 원점·동일 배율 비교입니다. 위치·치수 근거와 창고/층의 동일성을 확인하세요.'}</p><p class="muted">녹색: 신규 / 빨강 점선: 제거 / 파랑·화살표: 이동 / R: 회전 / 주황: 설계 규격 · 내부 채움은 기존 재고 색상</p>` + `<div class="r-change-tools"><select data-change-filter data-testid="change-filter" aria-label="랙 변화 필터">${[['all', '전체'], ['better', '개선'], ['worse', '악화'], ['same', '변화 없음'], ['emptied', '비움'], ['other', '기타(미확인·신규·제거)']].map(([v, t]) => `<option value="${v}"${v === chg.filter ? ' selected' : ''}>${t}</option>`).join('')}</select><select data-change-sort data-testid="change-sort" aria-label="랙 변화 정렬">${[['delta-desc', 'Δ 큰 순'], ['delta-asc', '악화 큰 순'], ['code', '랙 코드 순']].map(([v, t]) => `<option value="${v}"${v === chg.sort ? ' selected' : ''}>${t}</option>`).join('')}</select><span data-change-count></span></div><div data-change-table></div>`;
-    drawChangeTable();
+    drawChangeTable(); applyFocus();
   };
   q(md, '[data-mode]').addEventListener('change', drawCompare);
+  md.addEventListener('click', (e) => { const tr = e.target.closest('tr[data-link]'); if (tr && md.contains(tr)) toggleFocus(tr); });
+  md.addEventListener('keydown', (e) => {
+    const tr = e.target.closest?.('tr[data-link]');
+    if (tr && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleFocus(tr); }
+  });
+  md.addEventListener('cancel', (e) => { if (focus) { e.preventDefault(); focus = null; applyFocus(); } }); // Esc: 강조가 있으면 먼저 해제(대화상자는 유지)
   q(md, '[data-delta-head]').addEventListener('change', (e) => {
     if (!e.target.closest('[data-present],[data-unit]')) return;
     setCompareView({ presentation: q(md, '[data-present]').checked, unit: q(md, '[data-unit]').value });
@@ -202,7 +228,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   q(md, '[data-rows]').addEventListener('change', (e) => {
     const f = e.target.closest('[data-change-filter]'), o = e.target.closest('[data-change-sort]');
     if (f) chg.filter = f.value; else if (o) chg.sort = o.value; else return;
-    drawChangeTable();
+    drawChangeTable(); applyFocus();
   });
   q(md, '[data-change-csv]').addEventListener('click', () => download('warehouse_rack_delta.csv', csvEncode(changeListCsvRows(rackChangeList(getProject(), chg))), 'text/csv;charset=utf-8'));
   q(md, '[data-save]').addEventListener('click', () => download(jsonName(), JSON.stringify(getProject(), null, 2), 'application/json'));
@@ -232,7 +258,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   };
   q(md, '[data-present-png]').addEventListener('click', () => presentExport('png'));
   q(md, '[data-present-pdf]').addEventListener('click', () => presentExport('pdf'));
-  const openCompare = () => { chg.filter = 'all'; chg.sort = 'delta-desc'; q(md, '[data-mode]').value = 'delta'; drawCompare(); if (!md.open) md.showModal(); };
+  const openCompare = () => { chg.filter = 'all'; chg.sort = 'delta-desc'; focus = null; q(md, '[data-mode]').value = 'delta'; drawCompare(); if (!md.open) md.showModal(); };
 
   // ── 가져오기 이력·백업(기준본 70 #rImportHistory: 배치이력 구역 안의 details) ──
   const hd = document.createElement('details');

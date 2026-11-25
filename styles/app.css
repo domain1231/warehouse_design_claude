@@ -242,6 +242,14 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-chip.basis-partial { border-color: #a07a1c; color: #ffd27a; }
 .r-chip.basis-drawing { color: #9fb0c2; }
 .r-chip-btn { flex: 0 0 auto; padding: 1px 9px; min-height: 0; height: auto; line-height: 18px; font-size: 12px; white-space: nowrap; border-radius: 999px; }
+/* D7(D-084): 표·지도 연동 */
+tr[data-link] { cursor: pointer; }
+tr[data-link]:hover td, tr[data-link]:focus-visible td { background: #1c2836; }
+tr[data-link].r-active td { background: #24364a; box-shadow: inset 0 -1px 0 #ffd54f; }
+svg.focus g[data-rack]:not(.on) { opacity: 0.15; }
+svg.focus text[data-col] { opacity: 0.35; }
+svg.focus g[data-rack].on > polygon:first-child { stroke: #ffffff; stroke-width: 2px; vector-effect: non-scaling-stroke; }
+.r-focus-note { flex-basis: 100%; margin: 0; font-size: 12px; color: #ffd54f; }
 .r-change-tools { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
 .r-change-tools select { width: auto; flex: 0 0 auto; min-width: 160px; }
 .r-change-tools [data-change-count] { white-space: nowrap; }

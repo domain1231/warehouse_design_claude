@@ -194,6 +194,22 @@ export function compareSummary(project, rows = purposeCompare(project)) {
   };
 }
 
+/**
+ * D7(D-084): 비교표 지표 행 → 지도에서 강조할 AFTER 랙 id. 랙으로 나타낼 수 없는 지표(통로 비중·공간 구성·선반 여유·최소 통로 폭)는 null.
+ * 각 지표의 집계 규칙(spaceMetrics)과 같은 조건을 쓴다.
+ */
+export function metricRackIds(project, id, key = 'after') {
+  const m = scenarioSpace(project, key), isEmptyLoc = emptyLocationTest(m.perRack.flatMap((x) => x.rows));
+  const pick = {
+    M3: (x) => x.r !== null && x.r > 0,
+    M4: (x) => x.rows.some((r, i) => !isEmptyLoc(r) && x.q[i] < LOW_LOCATION_RATIO),
+    M8: (x) => x.empty,
+    M9: (x) => x.r !== null && !x.empty && x.r < m.lowRackThreshold,
+    M12: (x) => x.empty,
+  }[id];
+  return pick ? m.perRack.filter(pick).map((x) => x.id) : null;
+}
+
 // ── C1 2단계: 화면 연결용 보조 함수 ──
 
 /**
