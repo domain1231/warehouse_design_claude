@@ -2,10 +2,11 @@
 // 계산·저장은 session/store/backups가 한다. 이 파일은 대화상자와 수동 측정만 담당하며 paint 중에는 아무것도 측정하지 않는다.
 import { esc } from '../cad/scene.js';
 import { packProject } from '../persistence/zip.js';
+import { formatTime, timeHtml } from '../core/format.js';
 
 const bytesOf = (s) => new TextEncoder().encode(String(s)).length;
 const fmtBytes = (n) => (Number.isFinite(n) && n >= 0 ? n.toLocaleString('ko-KR') + ' bytes' : '미확인');
-const fmtTime = (v) => (typeof v === 'string' && Number.isFinite(Date.parse(v)) ? new Date(v).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '미확인');
+const fmtTime = (v) => formatTime(typeof v === 'string' && Number.isFinite(Date.parse(v)) ? v : null);
 const STATE_TEXT = { saved: '저장됨 (SAVED)', unsaved: '저장되지 않음 (UNSAVED)', saving: '저장 중', error: '저장 실패 (UNSAVED · 메모리에 유지)', loading: '불러오는 중' };
 
 export const QUOTA_TEXT = '저장 공간이 부족하여 저장에 성공하지 못했습니다. 현재 작업은 메모리에 남아 있으며 저장되지 않았습니다 (UNSAVED). JSON 백업을 보관하고 브라우저 저장 공간을 확인하세요.';
@@ -140,7 +141,7 @@ export function createStorageDialogs({ session, store, backups, storage, validat
       const last = await store.lastGood().catch(() => null);
       if (last) choices.unshift({ id: 'last-good', reason: '직전 확인 저장', time: last.persistence?.lastSavedAt, name: last.metadata.name, project: last });
       box.innerHTML = choices.length
-        ? choices.map((b, i) => `<div class="version-row" data-testid="backup-row"><b>${esc(b.reason)}</b> · ${esc(b.name)}<br>${esc(b.time || '원래 저장 시각 미기록')} · ${esc(b.target || 'BEFORE + AFTER')} · ${esc(b.project.version)}<br><button type="button" data-dl="${i}" data-testid="backup-download">이 버전 JSON</button><button type="button" data-restore="${i}" data-testid="backup-restore">현재 백업 후 복원</button></div>`).join('')
+        ? choices.map((b, i) => `<div class="version-row" data-testid="backup-row"><b>${esc(b.reason)}</b> · ${esc(b.name)}<br>${timeHtml(b.time, '원래 저장 시각 미기록', esc)} · ${esc(b.target || 'BEFORE + AFTER')} · ${esc(b.project.version)}<br><button type="button" data-dl="${i}" data-testid="backup-download">이 버전 JSON</button><button type="button" data-restore="${i}" data-testid="backup-restore">현재 백업 후 복원</button></div>`).join('')
         : '<p>이전 프로젝트 백업 없음</p>';
     } catch (e) {
       box.textContent = '백업 조회 실패: ' + e.message;

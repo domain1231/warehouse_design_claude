@@ -10,7 +10,10 @@
 - E2E 공용 `tests/e2e/compare-helpers.js`(가상 GT-EMPTY 배치로 비교 화면 열기).
 - 로컬: unit 254, golden 298, build·verify, e2e compare-headline(신규)·compare-basis·compare-purpose·compare-delta·compare-change-list·ui-parity PASS.
 - 다음: D2(Δ 지도 발표 모드) → D3(2단 배치·발표용 내보내기).
-
+### 2026-11-25 백업·가져오기 시각 한국 시각 표시(D-077, #106) · fix/backup-local-time
+- `formatTime`·`timeHtml`(core/format.js), storage-dialogs 백업 목록, scenario-dialogs 가져오기 이력·대상별 백업·복원 확인. 저장 값 불변.
+- 로컬: unit(신규 format-time 3, TZ=America/New_York에서도 PASS) · golden · build · verify, e2e storage2(시각 표시 단언 추가)·scenarios·storage·ui-parity PASS.
+- 미확인: v2.4.1의 같은 화면 표시 방식(기준본 저장소 대조 필요).
 ### 2026-11-25 정밀 입력 전체 취소 칸 표시(D-076, #105) · fix/aisle-input-revert-feedback
 - `revertedFieldMessage`(commands.js), main.js `editField`→`markReverted`, styles `.field-reverted`. 공간 검증(`r.spatial`) 취소일 때만.
 - 로컬: unit(신규 1) · golden · build · verify, e2e edit(D-076 신규·속성 입력·드래그 이동)·ux-improvements·group-panel·details·ui-parity PASS.
