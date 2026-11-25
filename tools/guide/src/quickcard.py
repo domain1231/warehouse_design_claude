@@ -10,7 +10,7 @@ for n,(x,y,w,h) in REG:
     d.ellipse([x+4,y+4,x+44,y+44],fill=(255,200,60)); d.text((x+24,y+24),n,fill=(20,30,45),font=F,anchor='mm')
 im=im.resize((800,round(800*im.height/im.width)),Image.LANCZOS); b=io.BytesIO(); im.save(b,'WEBP',quality=80)
 MAP='data:image/webp;base64,'+base64.b64encode(b.getvalue()).decode()
-H=f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>Warehouse Studio 빠른 카드 · v2.5.0-alpha.13</title><style>.map img{{filter:invert(1) hue-rotate(180deg)}}
+H=f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>Warehouse Studio 빠른 카드 · v2.5.0-alpha.14</title><style>.map img{{filter:invert(1) hue-rotate(180deg)}}
 @page{{size:A4;margin:9mm}}
 *{{box-sizing:border-box}}body{{margin:0;font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#1d2430;font-size:10.2px;line-height:1.38}}
 .top{{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #14202f;padding-bottom:4px;margin-bottom:6px}}
@@ -25,7 +25,7 @@ b.k{{display:inline-block;border:1px solid #9aa3af;border-bottom-width:2px;borde
 table{{width:100%;border-collapse:collapse}}td{{border-top:1px solid #e3e6eb;padding:1px 3px;vertical-align:top}}
 .foot{{margin-top:5px;font-size:9px;color:#5b6573;display:flex;justify-content:space-between}}
 </style></head><body>
-<div class="top"><h1>Warehouse Studio 빠른 카드</h1><span>프로그램 v2.5.0-alpha.13 · 설명서 v2.1 · 자세한 내용은 「사용자 설명서」의 절 번호 참고</span></div>
+<div class="top"><h1>Warehouse Studio 빠른 카드</h1><span>프로그램 v2.5.0-alpha.14 · 설명서 v2.2 · 자세한 내용은 「사용자 설명서」의 절 번호 참고</span></div>
 <div class="g">
  <div class="c map"><h2>화면 지도</h2><img src="{MAP}" alt="화면 지도"></div>
  <div class="c lg"><h2>칸 이름</h2>
@@ -34,7 +34,7 @@ table{{width:100%;border-collapse:collapse}}td{{border-top:1px solid #e3e6eb;pad
  <div class="c"><h2>놓기·고치기</h2><ol><li>⑤ 도구 고르기 → ⑨ 클릭 (<b>클릭점 = 가운데</b>)</li><li>끝나면 「↖ 선택 / 이동」</li><li>⑫ X·Y = <b>왼쪽 위 모서리</b>, 원점 = 창고 왼쪽 위</li><li>방향키 0.01m · <b class="k">Shift</b>+방향키 0.1m</li></ol></div>
  <div class="c"><h2>다듬기</h2><ol><li>빈 곳 끌기 = 여러 개 선택</li><li>⑫ 「위쪽 정렬」·「가로 간격」 → 미리보기 → <b>「그룹 전체에 적용」</b></li><li>「↔ 통로」 → 최소 확보 폭·목표 폭</li><li>④ 「위반 목록」 0건 확인</li></ol></div>
  <div class="c"><h2>Excel 자동 배치 (5칸)</h2><ol><li>대상 <b>AFTER</b> + 「선택한 대상 배치를 확인했습니다.」</li><li>머리글 8행 · <b>20개 필드 중 20개 매핑</b></li><li>창고 치수·북쪽·A열 기준점</li><li>순서 지킴 = 「로케이션 열 고정」 · 축 「자동 추천」</li><li>미리보기 → 「AFTER에 확인 후 적용」</li></ol></div>
- <div class="c"><h2>개선안 비교</h2><ol><li>「BEFORE 보기」 → 「BEFORE 잠금 해제」</li><li><b>치수부터</b> 넣고 현재 랙 입력 → 「BEFORE 잠그기」</li><li>「BEFORE → AFTER 복제」 → 「AFTER · 편집」 확인</li><li>⑧ 「비교」 → 면적 기준 → 목적 지표 → Δ 지도 빨강 빗금 · <b>「비움」은 악화 아님 · 「미확인」은 0 아님</b></li></ol></div>
+ <div class="c"><h2>개선안 비교</h2><ol><li>「BEFORE 보기」 → 「BEFORE 잠금 해제」</li><li><b>치수부터</b> 넣고 현재 랙 입력 → 「BEFORE 잠그기」</li><li>「BEFORE → AFTER 복제」 → 「AFTER · 편집」 확인</li><li>⑧ 「비교」 → 결론 문장·⚠ 주의 → 칩 → 표 ▼ → 지도 빗금 → 「발표용 PDF」 · <b>▲는 개선 표시 · 「비움」은 악화 아님 · 「미확인」은 0 아님</b></li></ol></div>
  <div class="c"><h2>되돌리기 (작은 것부터)</h2><ol><li><b class="k">Ctrl</b>+<b class="k">Z</b> / <b class="k">Ctrl</b>+<b class="k">Y</b></li><li>BEFORE·AFTER 하나만: 하단 「이 상태로 복원」</li><li>전체: ① 「이전 버전·백업」 → 「현재 백업 후 복원」</li><li>파일: ① 「불러오기」</li></ol></div>
  <div class="c"><h2>헷갈리는 지표</h2><table><tr><td><b>면적 사용률</b></td><td>랙 바닥 ÷ 총면적</td></tr><tr><td><b>용적률</b></td><td>자재 높이 ÷ 선반 높이 (=높이 활용률)</td></tr><tr><td><b>평균 용적률</b></td><td>랙 평균의 평균 · 빈 랙 제외</td></tr><tr><td><b>적재율</b></td><td>현재 수량 ÷ 최대 수량</td></tr></table><div style="margin-top:3px">색: 빈 랙 0 · 여유 &lt;50 · 보통 &lt;90 · 적재 주의 ≤100 · 초과 &gt;100</div></div>
  <div class="c w"><h2>이 문장이 뜨면</h2>
@@ -43,8 +43,8 @@ table{{width:100%;border-collapse:collapse}}td{{border-top:1px solid #e3e6eb;pad
   <span class="q">전체 취소: BEFORE 원본 잠금 상태입니다.</span>→ 잠금 해제 후 수정
   <span class="q">Rack 단수와 선반 번호 불일치</span>→ 그 행의 선반 번호로</div>
  <div class="c"><h2>단축키</h2><table><tr><td><b class="k">Ctrl</b>+<b class="k">S</b></td><td>저장(결과 알림)</td></tr><tr><td><b class="k">Delete</b></td><td>삭제(2개 이상 확인)</td></tr><tr><td><b class="k">Enter</b></td><td>숫자 적용</td></tr><tr><td><b class="k">Esc</b></td><td>다각형 그리기 취소</td></tr><tr><td><b class="k">Shift</b>/<b class="k">Ctrl</b>+클릭</td><td>선택 추가 / 토글</td></tr><tr><td>더블클릭</td><td>랙 선반별 자재</td></tr></table></div>
- <div class="c w"><h2>꼭 기억</h2><ul><li>자동 배치는 <b>초기 설계안</b> — 실측·하중·피난 검토 별도</li><li>「경고 후 허용」은 검토 뒤 <b>바로 끄기</b></li><li>HTML만 보내면 작업은 안 감 → JSON을 함께</li><li>백업 시각은 UTC (+9시간)</li></ul></div>
+ <div class="c w"><h2>꼭 기억</h2><ul><li>자동 배치는 <b>초기 설계안</b> — 실측·하중·피난 검토 별도</li><li>「경고 후 허용」은 검토 뒤 <b>바로 끄기</b></li><li>HTML만 보내면 작업은 안 감 → JSON을 함께</li><li>매일 마감에 「JSON 백업」</li></ul></div>
 </div>
-<div class="foot"><span>문의처 [기입] · 사내 한정</span><span>Warehouse Studio 사용자 설명서 v2.1 부록 · 2026-11-25</span></div>
+<div class="foot"><span>문의처 [기입] · 사내 한정</span><span>Warehouse Studio 사용자 설명서 v2.2 부록 · 2026-11-25</span></div>
 </body></html>'''
 open('@@W@@/Warehouse_Studio_빠른카드_v2_0.html','w',encoding='utf-8').write(H); print('ok',len(H)//1024,'KB')

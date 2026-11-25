@@ -86,7 +86,7 @@ with sync_playwright() as p:
         t=pg.evaluate("()=>document.querySelector('#compareDialog').innerText")
         import re
         keep=[l for l in t.split('\n') if re.search(r'(최대 보관 수량|최소 통로 폭|통로 최소 폭 위반|공간 경고|면적 기준|전체 랙 수|배치 변경)',l)]
-        with pg.expect_download() as d: pg.click('#mComparePng')
+        with pg.expect_download() as d: pg.click('#compareDialog [data-testid=compare-present-pdf]')
         n1=d.value.suggested_filename
         pg.evaluate("()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close())")
         with pg.expect_download() as d: pg.click('#jsonOut')

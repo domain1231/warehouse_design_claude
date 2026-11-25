@@ -48,23 +48,48 @@ with sync_playwright() as p:
     pg.click('#vSave'); pg.wait_for_timeout(400)
     with pg.expect_download() as d: pg.click('#jsonOut')
     d.value.save_as(CP+'코스4_비교예시.json')
-    pg.set_viewport_size({'width':1600,'height':2800}); pg.wait_for_timeout(300)
-    pg.click('#compareBtn'); pg.wait_for_timeout(1200)
-    R['compare']=pg.evaluate("()=>document.querySelector('#compareDialog').innerText.slice(0,4000)")
-    pg.locator('#compareDialog').screenshot(path=S+'c4n_compare_full.png')
-    # crops
-    def tag(js,name):
-        ok=pg.evaluate(js.replace('NAME',name)); return ok
-    tag("()=>{const t=[...document.querySelectorAll('#compareDialog table')].find(t=>t.innerText.includes('목적 지표'));if(!t)return false;let p=t;while(p.parentElement&&!p.parentElement.matches('dialog')&&p.parentElement.innerText.length<t.innerText.length+400)p=p.parentElement;p.setAttribute('data-c','NAME');return true}",'goals')
-    tag("()=>{const s=[...document.querySelectorAll('#compareDialog svg')].sort((a,b)=>b.getBoundingClientRect().width*b.getBoundingClientRect().height-a.getBoundingClientRect().width*a.getBoundingClientRect().height)[0];if(!s)return false;s.setAttribute('data-c','NAME');return true}",'map')
-    tag("()=>{const t=[...document.querySelectorAll('#compareDialog table')].find(t=>t.innerText.includes('로케이션 수'));if(!t)return false;let p=t.parentElement;p.setAttribute('data-c','NAME');return true}",'list')
-    for n in ['goals','map','list']:
-        try: pg.locator(f'[data-c={n}]').first.screenshot(path=S+f'c4n_{n}.png'); R['shot_'+n]='ok'
-        except Exception as e: R['shot_'+n]='ERR '+str(e)[:100]
-    # legend near map
-    R['legend']=pg.evaluate("()=>{const t=document.querySelector('#compareDialog').innerText;const i=t.indexOf('+40%p');return t.slice(i,i+220)}")
-    # filters
-    R['filters']=pg.evaluate("()=>[...document.querySelectorAll('#compareDialog button,#compareDialog select,#compareDialog input[type=radio]')].map(e=>[e.tagName,e.id,(e.innerText||e.value||'').trim().slice(0,20)]).slice(0,40)")
+    pg.set_viewport_size({'width':1440,'height':900}); pg.wait_for_timeout(300)
+    pg.click('#compareBtn'); pg.wait_for_timeout(1500)
+    R['compare']=pg.evaluate("()=>document.querySelector('#compareDialog').innerText.slice(0,5000)")
+    pg.screenshot(path=S+'c4n_compare_full.png')
+    UN="""(sel)=>{const es=[...document.querySelectorAll('#compareDialog '+sel)].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0});if(!es.length)return null;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const e of es){const r=e.getBoundingClientRect();x0=Math.min(x0,r.left);y0=Math.min(y0,r.top);x1=Math.max(x1,r.right);y1=Math.max(y1,r.bottom)}return {x:Math.max(0,x0-10),y:Math.max(0,y0-10),width:x1-x0+20,height:y1-y0+20}}"""
+    def mapshot(name):
+        try:
+            pg.evaluate("()=>{const r=document.querySelector('#compareDialog [data-testid=compare-right]');const s=[...r.querySelectorAll('svg')].sort((a,b)=>b.getBoundingClientRect().width*b.getBoundingClientRect().height-a.getBoundingClientRect().width*a.getBoundingClientRect().height)[0];s.setAttribute('data-c','map')}")
+            c=pg.evaluate(UN,'[data-delta-legend], [data-c=map]')
+            pg.screenshot(path=S+f'c4n_{name}.png',clip=c); R['shot_'+name]='ok'
+        except Exception as e: R['shot_'+name]='ERR '+str(e)[:120]
+    mapshot('map')
+    try:
+        pg.locator('#compareDialog [data-testid=compare-present]').check(); pg.wait_for_timeout(600); mapshot('present')
+        pg.locator('#compareDialog [data-testid=compare-present]').uncheck(); pg.wait_for_timeout(400)
+    except Exception as e: R['present']='ERR '+str(e)[:120]
+    try:
+        row=pg.locator('#compareDialog [data-change-table] tr', has_text='7F-B-3').first; row.click(); pg.wait_for_timeout(600)
+        R['focus_note']=pg.evaluate("()=>{const n=document.querySelector('#compareDialog [data-focus-note]');return n?n.innerText:''}")
+        mapshot('linked'); pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+    except Exception as e: R['linked']='ERR '+str(e)[:120]
+    for btn,fn in [('compare-present-pdf','c4n_present.pdf'),('compare-present-png','c4n_present_out.png')]:
+        try:
+            with pg.expect_download(timeout=15000) as d: pg.locator(f'#compareDialog [data-testid={btn}]').click()
+            d.value.save_as('@@W@@/work/cp/'+fn); R[btn]=d.value.suggested_filename
+            if fn.endswith('.pdf'):
+                import subprocess; subprocess.run(['pdftoppm','-r','90','-png','-singlefile','-f','1','-l','1','@@W@@/work/cp/'+fn,S+'c4n_pdf'],check=False)
+        except Exception as e: R[btn]='ERR '+str(e)[:120]
+    pg.set_viewport_size({'width':1440,'height':2400}); pg.wait_for_timeout(600)
+    def clip(sel,name):
+        try:
+            c=pg.evaluate(UN,sel)
+            if not c: R['shot_'+name]='none'; return
+            pg.screenshot(path=S+f'c4n_{name}.png',clip=c); R['shot_'+name]='ok'
+        except Exception as e: R['shot_'+name]='ERR '+str(e)[:120]
+    clip('[data-headline], [data-kpis]','head')
+    clip('[data-sources], [data-purpose]','goals')
+    clip('.r-comp-row, .r-comp-bar, [data-seg]','bars')
+    clip('[data-change-filter], [data-change-sort], [data-change-count], [data-change-table]','list')
+    R['legend']=pg.evaluate("()=>{const t=document.querySelector('#compareDialog').innerText;const i=t.indexOf('+40%p');return t.slice(i,i+260)}")
+    R['filters']=pg.evaluate("()=>[...document.querySelectorAll('#compareDialog button,#compareDialog select,#compareDialog input')].map(e=>[e.tagName,e.dataset.testid||e.id,(e.innerText||e.value||'').trim().slice(0,30)])")
+    json.dump(R,open('@@W@@/work/c4b.json','w'),ensure_ascii=False,indent=1)
     b.close()
 json.dump(R,open('@@W@@/work/c4b.json','w'),ensure_ascii=False,indent=1)
 print(json.dumps({k:v for k,v in R.items() if k!='compare'},ensure_ascii=False)[:3000]); print(R.get('compare','')[:3800])

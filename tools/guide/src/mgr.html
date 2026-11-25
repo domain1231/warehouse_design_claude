@@ -2,7 +2,7 @@
   <table class="plain dct">
     <tbody>
       <tr><td>문서명</td><td>Warehouse Studio 사용자 설명서</td><td>문서 번호</td><td class="fill">[기입]</td></tr>
-      <tr><td>문서 버전</td><td>v2.1 (2026-11-25)</td><td>대상 프로그램</td><td>v2.5.0-alpha.13 · 프로젝트 데이터 2.3.6</td></tr>
+      <tr><td>문서 버전</td><td>v2.2 (2026-11-25)</td><td>대상 프로그램</td><td>v2.5.0-alpha.14 · 프로젝트 데이터 2.3.6</td></tr>
       <tr><td>작성</td><td class="fill">[기입]</td><td>검토 / 승인</td><td class="fill">[기입] / [기입]</td></tr>
       <tr><td>배포 범위</td><td>사내 한정 · 외부 반출 금지</td><td>문의처</td><td class="fill">[기입]</td></tr>
     </tbody>
@@ -10,7 +10,7 @@
   <details class="hist"><summary>변경 이력</summary>
     <table class="plain"><thead><tr><th>버전</th><th>날짜</th><th>대상 프로그램</th><th>주요 변경</th></tr></thead><tbody>
       <tr><td>v1.4</td><td>2026-10-31</td><td>v2.3.6</td><td>기능별 12 PART · 95절, PART 12에 v2.3.6 자동 배치 추가</td></tr>
-      <tr><td>v2.1</td><td>2026-11-25</td><td>v2.5.0-alpha.13</td><td>alpha.13 재촬영·재측정 · 비교 창(목적 지표·Δ 용적률 지도·랙 변화 목록) 새로 씀 · 지표 사전(면적 사용률·평균 용적률) · 저장 위치 설명 정정(브라우저 단위) · 로케이션 열 고정 추천 규칙·통로 최대 폭 · 실기 3·4번 재설계</td></tr><tr><td>v2.0</td><td>2026-11-16</td><td>v2.5.0-alpha.2</td><td>작업 순서 코스로 전면 개편, 실제 화면으로 재촬영, 관리자 편 신설, 코스 6(자재·재고) 추가, 배치 방식 5종 실측 비교, 검색·목차·그림 확대 기능</td></tr>
+      <tr><td>v2.2</td><td>2026-11-25</td><td>v2.5.0-alpha.14</td><td>비교 창 개편(결론 문장·KPI 카드·출처 칩·3열 표·구성 막대 Δ·발표 모드·발표용 PNG/PDF·표↔지도 연동)에 맞춰 4-4·4-5·M-3·M-4 다시 씀 · 백업 시각 한국 시각 표시 반영 · 정밀 입력 취소 칸 표시 안내</td></tr><tr><td>v2.1</td><td>2026-11-25</td><td>v2.5.0-alpha.13</td><td>alpha.13 재촬영·재측정 · 비교 창(목적 지표·Δ 용적률 지도·랙 변화 목록) 새로 씀 · 지표 사전(면적 사용률·평균 용적률) · 저장 위치 설명 정정(브라우저 단위) · 로케이션 열 고정 추천 규칙·통로 최대 폭 · 실기 3·4번 재설계</td></tr><tr><td>v2.0</td><td>2026-11-16</td><td>v2.5.0-alpha.2</td><td>작업 순서 코스로 전면 개편, 실제 화면으로 재촬영, 관리자 편 신설, 코스 6(자재·재고) 추가, 배치 방식 5종 실측 비교, 검색·목차·그림 확대 기능</td></tr>
     </tbody></table>
   </details>
   <details class="hist vscope"><summary>검증 범위 — 무엇을 직접 확인했고 무엇이 남았나</summary>
@@ -138,6 +138,8 @@
       <table class="plain fm kpi">
         <thead><tr><th>목적 지표 (「비교」 창 그대로)</th><th>BEFORE</th><th>AFTER</th><th>차이</th><th>근거 수준</th></tr></thead>
         <tbody>
+          <tr><td>결론 문장 (비교 창 맨 위 그대로 복사)</td><td colspan="3"><i>평균 용적률 +13.4%p, 빈 랙 1대 확보, 보관 가능 공간 +0.8%p</i> · ⚠ 주의 줄: <i>없음</i></td><td><i>앱 자동</i></td></tr>
+          <tr><td>출처 (칩)</td><td colspan="3"><i>BEFORE 자재 목록 · 2026-11-25 / AFTER 자재 목록 · 2026-11-25</i></td><td>—</td></tr>
           <tr><td>면적 기준</td><td colspan="3"><i>도면 전체 (양쪽 모두 Excel 면적 없음)</i></td><td><i>—</i></td></tr>
           <tr><td>평균 용적률</td><td><i>43.7%</i></td><td><i>57.1%</i></td><td><i>+13.4%p</i></td><td><i>Excel</i></td></tr>
           <tr><td>80% 미만 로케이션</td><td><i>66 / 66</i></td><td><i>54 / 66</i></td><td><i>−12</i></td><td><i>Excel</i></td></tr>
@@ -150,11 +152,11 @@
           <tr><td>실측 비율 (실측 랙 / 전체)</td><td><i>0 / 11</i></td><td><i>0 / 12</i></td><td>—</td><td>—</td></tr>
         </tbody>
       </table>
-      <div class="fm-img"><img src="{{c4_cmp_top}}" alt="전후 비교 그림"><div class="small">Δ 용적률 지도 (「비교」 창 화면 캡처) · 좌우 비교 그림이 필요하면 「전후 비교 PNG」</div></div>
+      <div class="fm-img"><img src="{{c4_cmp_top}}" alt="전후 비교 그림"><div class="small">「발표용 PDF」 1장(결론 문장·KPI 카드·표·막대·Δ 지도·출처가 함께 들어감) · 좌우 비교 그림이 필요하면 「전후 비교 PNG」</div></div>
       <table class="plain fm">
         <tbody>
           <tr><td>악화·경고 랙 조치</td><td colspan="3"><i>B03 용적률 −19.2%p — 원인: 자재 높이 축소 입력 확인 중 · C03 충돌 경고 1건 — 위치 조정 예정</i></td></tr><tr><td>요청 사항</td><td colspan="3"><i>AFTER안 기준 현장 실측 및 설비 안전 검토 진행 승인</i></td></tr>
-          <tr><td>첨부</td><td colspan="3">□ 검토 체크리스트(M-2) □ Δ 지도 캡처 또는 전후 비교 PNG □ 비교 요약 CSV □ 랙 변화 목록 CSV □ JSON 원본 경로</td></tr>
+          <tr><td>첨부</td><td colspan="3">□ 검토 체크리스트(M-2) □ 발표용 PDF □ 비교 요약 CSV □ 랙 변화 목록 CSV □ JSON 원본 경로</td></tr>
         </tbody>
       </table>
       <div class="f-note">본 배치안은 사용자 입력 기준의 설계안이며, 설치 승인이 아닙니다. 「미확인」은 0이 아니라 자료 없음입니다. 경로 연결·지게차 회전·피난·하중은 별도 검토 대상입니다.</div>
@@ -202,7 +204,8 @@
         <span><i style="background:#344052"></i>빈 랙 0%</span><span><i style="background:#315780"></i>여유 0~50% 미만</span><span><i style="background:#80b3f1"></i>보통 50~90% 미만</span><span><i style="background:#e5a052"></i>적재 주의 90~100%</span><span><i style="background:#e46775"></i>허용량 초과 100% 초과</span><span><i style="background:#575568"></i>정보 없음</span>
       </div>
     </div>
-    <div class="warnbox"><b>자주 생기는 오해</b> ① "면적 사용률 8.8%니까 창고가 여유롭다" — 바닥만 봅니다. ② "용적률 = 재고가 찬 정도" — 아닙니다. 높이 기준이며 수량은 실제 재고 적재율입니다. ③ "선반 여유 용적이 줄었다 = 나빠졌다" — 위쪽 빈 공간을 더 쓴 것입니다. ④ 같은 개념을 화면 일부는 「높이 활용률」, 비교 창은 「용적률」이라고 부릅니다.</div>
+    <div class="tip"><b>비교 창의 색·화살표 규칙</b> ▲ 초록 = 좋아짐, ▼ 빨강 = 나빠짐(숫자 증감 방향과 무관). 평균 용적률·빈 랙·보관 가능 합계는 클수록, 80% 미만 로케이션·저활용 랙은 작을수록 좋아짐으로 판정합니다. 통로 비중·공간 구성·선반 여유 용적은 좋고 나쁨을 정하지 않아 색이 없습니다. 표의 공간 구성 "랙 x%"는 빈 랙을 포함한 값이고, 막대는 랙(자재 있음)과 빈 랙을 나눠 보여 줍니다.</div>
+    <div class="warnbox"><b>자주 생기는 오해</b> ① "면적 사용률 8.8%니까 창고가 여유롭다" — 바닥만 봅니다. ② "용적률 = 재고가 찬 정도" — 아닙니다. 높이 기준이며 수량은 실제 재고 적재율입니다. ③ "선반 여유 용적이 줄었다 = 나빠졌다" — 위쪽 빈 공간을 더 쓴 것입니다. ⑤ "결론 문장에 악화가 없으니 모든 랙이 좋아졌다" — 결론은 창고 전체 지표만 봅니다. 랙 하나의 악화는 Δ 지도·랙 변화 목록에서 확인합니다. ④ 같은 개념을 화면 일부는 「높이 활용률」, 비교 창은 「용적률」이라고 부릅니다.</div>
   </article>
 
   <!-- M-5 -->
