@@ -8,10 +8,11 @@ const root = path.resolve(import.meta.dirname, '../..');
 const meta = JSON.parse(fs.readFileSync(path.join(root, 'dist/build-metadata.json'), 'utf8'));
 export const fileUrl = pathToFileURL(path.join(root, 'dist', meta.file)).href;
 export const syntheticObjects = () => {
-  const lay = ({ racks }) => racks.map((r, i) => ({ id: `R-${r.col}${r.no}`, kind: 'rack', code: `${r.col}-${r.no}`, x: 0.5 + (i % 10) * 1.9, y: 0.5 + Math.floor(i / 10) * 2.2, width: r.w / 1000, depth: r.d / 1000, rotation: 0, height: 2, excel: { key: `7F-${r.col}-${r.no}`, shelves: [{ level: 1, items: r.rows }] } }));
+  const lay = ({ racks }) => racks.map((r, i) => ({ id: `R-${r.col}${r.no}`, kind: 'rack', code: `${r.col}-${r.no}`, x: 0.5 + (i % 10) * 1.9, y: 0.5 + Math.floor(i / 10) * 2.2, width: r.w / 1000, depth: r.d / 1000, rotation: 0, height: 2, excel: { key: `7F-${r.col}-${r.no}`, building: 'SYN', shelves: r.rows.map((row, i) => ({ level: i + 1, items: [row] })) } }));
   return { before: lay(syntheticEmpty({ before: true })), after: lay(syntheticEmpty()) };
 };
-/** 샘플 도면을 열고 BEFORE/AFTER 랙을 가상 GT-EMPTY 배치로 바꾼 뒤 비교 화면을 연다. */
+/** 검증기 규칙(project.js checkExcelHierarchy)에 맞는 형태: building 필수, 로케이션 선반 번호 = shelves[].level.
+ * 샘플 도면을 열고 BEFORE/AFTER 랙을 가상 GT-EMPTY 배치로 바꾼 뒤 비교 화면을 연다. */
 export async function openSyntheticCompare(page) {
   await page.goto(fileUrl);
   await page.waitForFunction(() => window.__warehouseView && document.querySelector('[data-testid=plan] g[data-id]'));

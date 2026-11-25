@@ -204,6 +204,10 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-trend.better { color: #4fd18b; }
 .r-trend.worse { color: #ff6b6b; }
 .r-trend.same { color: #8d99a6; }
+.r-delta-head { position: sticky; top: -14px; z-index: 2; background: #111821; padding: 6px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.r-delta-tools { display: flex; align-items: center; gap: 10px; }
+.r-delta-tools label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.r-delta-tools select { width: auto; }
 .r-basis button { margin-left: 8px; }
 .seg-empty { background: repeating-linear-gradient(45deg, #4a90d9 0 3px, #1c3b5c 3px 6px); }
 .r-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }

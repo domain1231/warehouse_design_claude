@@ -274,6 +274,7 @@ async function start() {
   const scenarioDialogs = createScenarioDialogs({
     getProject: () => project(), toast: (t) => showToast(t), download, pngBlob, openHistoryPanel: () => pref({ panels: { bottomOpen: true, bottomSections: { ...panelsOf().bottomSections, layout: true }, layoutPreset: 'custom' } }), jsonName: () => `warehouse_project_v${SCHEMA_VERSION.replaceAll('.', '_')}_${today()}.json`, cloneBeforeToAfter, restoreBackup, cloneCommand: CLONE_COMMAND, restoreCommand: RESTORE_COMMAND,
     apply: (label, compute) => historyBlocked() || session.apply(label, compute),
+    setCompareView: (v) => session.setView({ compareView: v }),
   });
   createInfoDialogs({ appVersion: APP_VERSION, schemaVersion: SCHEMA_VERSION });
   const groupDialog = createGroupDialog({

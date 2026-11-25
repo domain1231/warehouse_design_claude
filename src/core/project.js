@@ -370,6 +370,8 @@ export function validateProject(p) {
   finite(st.low, '보통 기준', 1, 98);
   finite(st.high, '주의 기준', st.low + 1, 100);
   for (const k of Object.keys(COLORS_DEFAULT)) if (!isHex(st.colors?.[k])) fail('색상 형식 오류');
+  // D2(D-079) 재구축 확장 필드(없으면 랙 단위·일반 모드, v2.4.1은 무시)
+  if (st.compareView !== undefined && (!st.compareView || typeof st.compareView.presentation !== 'boolean' || !['rack', 'column'].includes(st.compareView.unit))) fail('비교 화면 설정 오류');
   const bg = st.background;
   if (!bg || typeof bg.data !== 'string' || bg.data.length > 9e6 || (bg.data && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(bg.data))) fail('안전한 PNG/JPEG/WebP 배경만 지원합니다.');
   finite(bg.opacity, '투명도', 0, 1);
