@@ -141,12 +141,12 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
       const fs = present ? fitFs(bbox(pts), label, 0.9) : Math.min(Math.min(o.width, o.depth) * 0.35, 0.3), op = r.bin === 'same' ? ' opacity=".35"' : '';
       const bx = bbox(pts), bw = bx.x1 - bx.x0, bh = bx.y1 - bx.y0;
       // D8(D-085): 크게 보기에서 칸이 충분히 크면 Δ 아래에 랙 코드를 함께 보인다(기본은 숨김, 다시 그리지 않고 클래스·위치만 바꿈).
-      const code = col ? '' : String(r.code ?? ''), cfs = code ? Math.min(bh * 0.3, (bw * 0.9) / Math.max(textW(code), 1)) : 0;
+      const code = col ? '' : String(r.code ?? ''), cfs = code ? Math.min(bh * 0.26, (bw * 0.9) / Math.max(textW(code), 1)) : 0;
       s += `<g data-bin="${r.bin}" data-rack="${esc(r.id)}" data-box="${cx.toFixed(3)},${cy.toFixed(3)},${bw.toFixed(3)},${bh.toFixed(3)}"><polygon points="${pp}" fill="${b.color}"${op} stroke="${b.dash ? '#c9d1da' : 'none'}"${b.dash ? ' stroke-dasharray=".08 .06" vector-effect="non-scaling-stroke" style="stroke-width:1px"' : ''}><title>${esc(`${r.code} · BEFORE ${pct(r.rB)} → AFTER ${pct(r.rA)} (${r.bin === 'emptied' ? '비움 · 이전 완료' : r.delta === null ? '—' : (r.delta > 0 ? '+' : r.delta < 0 ? '−' : '') + Math.abs(r.delta).toFixed(1) + '%p'})`)}</title></polygon>`
         + (b.pattern ? `<polygon points="${pp}" fill="url(#rDeltaHatch)" pointer-events="none"/>` : '')
         + (r.types.length ? `<polygon points="${pp}" fill="none" stroke="#ffd54f" stroke-dasharray=".1 .06" vector-effect="non-scaling-stroke" style="stroke-width:2px" data-changed pointer-events="none"/>` : '')
         + (label ? `<text class="r-dl" data-fs="${fs}" x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="${fs}" fill="${b.text}" stroke="${b.halo || b.color}" stroke-width="${(fs * 0.3).toFixed(3)}" paint-order="stroke" pointer-events="none">${label}</text>` : '')
-        + (code ? `<text class="r-code" x="${cx}" y="${(cy + bh * 0.24).toFixed(3)}" text-anchor="middle" dominant-baseline="central" font-size="${cfs.toFixed(3)}" fill="${b.text}" stroke="${b.halo || b.color}" stroke-width="${(cfs * 0.25).toFixed(3)}" paint-order="stroke" pointer-events="none">${esc(code)}</text>` : '') + '</g>';
+        + (code ? `<text class="r-code" x="${cx}" y="${(cy + bh * 0.26).toFixed(3)}" text-anchor="middle" dominant-baseline="central" font-size="${cfs.toFixed(3)}" fill="${b.text}" stroke="${b.halo || b.color}" stroke-width="${(cfs * 0.25).toFixed(3)}" paint-order="stroke" pointer-events="none">${esc(code)}</text>` : '') + '</g>';
     }
     for (const c of cols) { // 열 단위 요약: 열마다 라벨 하나(열 이름 + 열 평균 Δ)
       const bs = c.rackIds.map((id) => bbox(polygon(after.get(id)))), b = { x0: Math.min(...bs.map((x) => x.x0)), y0: Math.min(...bs.map((x) => x.y0)), x1: Math.max(...bs.map((x) => x.x1)), y1: Math.max(...bs.map((x) => x.y1)) };
@@ -185,7 +185,10 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
       g.classList.toggle('big', big);
       const dl = g.querySelector('.r-dl');
       // 크게 보기에서는 Δ 라벨을 칸에 맞춰 키운다(칸 밖으로 나가지 않아 겹침 없음). 코드와 함께면 위쪽 절반만 쓴다.
-      if (dl) { const f0 = Number(dl.dataset.fs), fit = Math.min(h * (big ? 0.4 : 0.7), (w * 0.9) / Math.max(textW(dl.textContent), 1), 0.9); dl.setAttribute('y', big ? cy - h * 0.18 : cy); dl.setAttribute('font-size', zoom ? Math.max(Math.min(f0, h * 0.4), fit) : f0); dl.setAttribute('stroke-width', ((zoom ? Math.max(Math.min(f0, h * 0.4), fit) : f0) * 0.3).toFixed(3)); }
+      if (dl) { // 위 칸: 중심 −0.2h, 글자 ≤ 0.36h / 아래 칸(랙 코드): 중심 +0.26h, 글자 ≤ 0.26h → 두 줄 사이 여유
+        const f0 = Number(dl.dataset.fs), cap = big ? 0.36 : 0.7, fit = Math.min(h * cap, (w * 0.9) / Math.max(textW(dl.textContent), 1), 0.9), f = zoom ? Math.max(Math.min(f0, h * cap), fit) : f0;
+        dl.setAttribute('y', big ? cy - h * 0.2 : cy); dl.setAttribute('font-size', f); dl.setAttribute('stroke-width', (f * 0.3).toFixed(3));
+      }
     }
   };
   const setZoom = (on) => {
