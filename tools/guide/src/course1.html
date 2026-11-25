@@ -1,0 +1,206 @@
+<!-- ================= COURSE 1 ================= -->
+<section class="course" id="c1">
+  <div class="course-head">
+    <div class="badge b1">코스 1</div>
+    <div>
+      <h2>첫 창고 만들기 — 10×6m 창고에 문·기둥·랙 3개</h2>
+      <p class="goal"><b>목표</b> 이 코스를 마치면 ① 화면의 어느 칸이 무슨 일을 하는지 알고 ② 빈 창고를 만들고 ③ 구조물과 랙을 놓은 뒤 ④ 숫자로 위치를 정확히 맞춰 저장할 수 있습니다.</p>
+    </div>
+    <div class="time">약 15분</div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-h">30초 요약 — 왼쪽에서 놓고, 가운데서 보고, 오른쪽에서 고칩니다</div>
+    <ol>
+      <li><b>왼쪽</b> 「02 / 배치 도구」에서 도구를 고르고 도면을 클릭하면 놓입니다. 클릭한 점이 객체의 <b>가운데</b>가 됩니다.</li>
+      <li><b>가운데</b> 도면에서 객체를 클릭해 고르고, 끌어서 옮깁니다.</li>
+      <li><b>오른쪽</b> 선택 정보에서 X·Y·폭·깊이·회전을 숫자로 고칩니다. 좌표는 <b>창고 왼쪽 위가 0</b>, X는 오른쪽 · Y는 아래로 커집니다.</li>
+    </ol>
+  </div>
+
+  <article id="c1-1" class="step">
+    <h3><span class="n">1-1</span> 화면 지도 — 12칸만 알면 됩니다</h3>
+    <p>번호 위에 마우스를 올리면 칸 이름이 보입니다. 처음에는 <b>⑤ 왼쪽 설계 도구 · ⑨ 도면 · ⑫ 오른쪽 선택 정보</b> 세 칸만 쓰면 됩니다.</p>
+    {{MAP}}
+    <table class="plain maplegend">
+      <thead><tr><th>번호</th><th>칸</th><th>여기서 하는 일</th></tr></thead>
+      <tbody>{{MAP_ROWS}}</tbody>
+    </table>
+  </article>
+
+  <article id="c1-2" class="step">
+    <h3><span class="n">1-2</span> 빈 프로젝트 만들기</h3>
+    <ol class="do">
+      <li>⑤ 왼쪽 패널 아래쪽의 「빈 프로젝트」를 누릅니다.</li>
+      <li>저장 안 된 작업이 있으면 「교체 전 현재 작업 보호」 창이 뜹니다. 연습이라면 「현재 프로젝트 저장 후 교체」, 업무 데이터라면 「현재 JSON 다운로드 후 교체」를 누릅니다. (<a href="#c0-5">코스 0-5</a>)</li>
+    </ol>
+    <div class="tip">빈 프로젝트의 기본 크기는 가로 24m × 세로 14m입니다. 다음 단계에서 실제 크기로 바꿉니다.</div>
+  </article>
+
+  <article id="c1-3" class="step">
+    <h3><span class="n">1-3</span> 창고 크기 넣기</h3>
+    <div class="side">
+      <figure><img src="{{c1_room_input}}" alt="프로젝트 공간 입력"><figcaption>「01 / 프로젝트 · 공간」 · 가로 X 10, 세로 Y 6 → 「계산 면적 (㎡)」 60</figcaption></figure>
+      <div>
+        <ol class="do">
+          <li>「가로 X (m)」에 <b>10</b>, 「세로 Y (m)」에 <b>6</b>을 넣습니다.</li>
+          <li>「치수 적용」을 누릅니다.</li>
+          <li>「계산 면적 (㎡)」과 ③ 지표 바의 「전체 창고 면적」이 <b>60㎡</b>인지 확인합니다.</li>
+          <li>⑧ 화면 조작 줄의 「전체 보기」를 누르면 창고가 도면 가운데에 맞춰집니다.</li>
+        </ol>
+        <div class="tip">치수를 바꿔도 이미 놓인 객체의 좌표를 늘리거나 줄이지 않습니다. 창고를 줄여서 벽 밖으로 나간 객체는 경고로 알려 줍니다.</div>
+        <div class="tip">가로를 모르고 면적만 알면 「면적에서 치수 계산」을 펼쳐 면적과 아는 한 변을 넣습니다.</div>
+      </div>
+    </div>
+    <figure><img src="{{c1_s_room}}" alt="10x6 빈 창고"><figcaption>10m × 6m 빈 창고 · 왼쪽 아래 「원점: 좌상단 · X → / Y ↓ · 단위 m」</figcaption></figure>
+  </article>
+
+  <article id="c1-4" class="step">
+    <h3><span class="n">1-4</span> 출입문·기둥 놓기</h3>
+    <ol class="do">
+      <li>「02 / 배치 도구」에서 「◴ 출입문」을 누르고 도면의 오른쪽 아래 근처를 클릭합니다.</li>
+      <li>「▪ 기둥」을 누르고 창고 가운데를 클릭합니다.</li>
+      <li>놓인 직후 ⑫ 오른쪽에 그 객체의 정보가 열립니다. 위치·크기는 거기서 숫자로 고칩니다.</li>
+    </ol>
+    <table class="plain">
+      <thead><tr><th>도구</th><th>처음 놓이는 크기</th></tr></thead>
+      <tbody>
+        <tr><td>「◴ 출입문」</td><td>1.2 × 1.2m</td></tr>
+        <tr><td>「▪ 기둥」</td><td>0.6 × 0.6m</td></tr>
+        <tr><td>「━ 내부 벽」</td><td>3 × 0.2m</td></tr>
+        <tr><td>「↔ 통로」 · 「▧ 보관 불가」 · 「▱ 작업 공간」</td><td>4 × 1.5m · 2 × 2m · 3 × 2m</td></tr>
+      </tbody>
+    </table>
+    <div class="warnbox"><b>벽에 너무 붙여 클릭하면 놓이지 않습니다.</b> 클릭한 점이 가운데가 되기 때문에, 1.2m 문을 벽 0.25m 안쪽에 클릭하면 절반이 창고 밖으로 나갑니다. 이때 화면 아래에 이렇게 뜨고 아무것도 추가되지 않습니다.
+      <div class="quote">전체 취소: 출입문 001 · 창고 경계 이탈 · 빈 곳을 다시 클릭하거나, 겹침을 허용하려면 '공간 위반을 경고 후 허용'을 켜세요.</div>
+      <b>해결</b> 조금 더 안쪽을 클릭해 놓은 뒤, 오른쪽 X·Y 숫자로 벽에 딱 붙입니다. 기본 정책이 「새 공간 위반 차단」이라서 생기는 정상 동작입니다.</div>
+    <figure><img src="{{c1_door_reject}}" alt="배치 거부 안내"><figcaption>배치 거부 안내 · 창고 경계를 벗어나면 추가가 취소됩니다</figcaption></figure>
+  </article>
+
+  <article id="c1-5" class="step">
+    <h3><span class="n">1-5</span> 랙 3개 놓기</h3>
+    <div class="side">
+      <figure><img src="{{c1_tools}}" alt="배치 도구"><figcaption>「▤ 랙 추가」가 켜진 상태 · 폭 1.2 / 깊이 0.5 / 높이 2</figcaption></figure>
+      <div>
+        <ol class="do">
+          <li>「추가 랙 종류」(중량랙 등)를 고르고 「폭 (m)」 <b>1.2</b>, 「깊이 (m)」 <b>0.5</b>, 「높이 (m)」 <b>2</b>를 넣습니다.</li>
+          <li>「▤ 랙 추가」를 누르고 도면에서 서로 떨어진 세 곳을 클릭합니다. 랙 번호는 R-001, R-002, R-003처럼 자동으로 붙습니다(도면에는 R-01처럼 짧게 표시).</li>
+          <li>다 놓았으면 「↖ 선택 / 이동」을 눌러 추가 모드를 끕니다. 안 끄면 클릭할 때마다 랙이 생깁니다.</li>
+        </ol>
+        <div class="tip">마우스로 놓기 어렵다면 「▤ 이 랙을 도면으로 드래그」 카드를 도면으로 끌어다 놓아도 됩니다.</div>
+        <div class="tip">④ 상태 줄에 「전체 3랙 · 경계 내부 3」, 「랙 충돌 0건」이 보이면 정상입니다.</div>
+      </div>
+    </div>
+    <figure><img src="{{c1_s_racks}}" alt="랙 3개와 문 기둥"><figcaption>랙 3개 · 기둥 001 · 출입문 001이 놓인 상태</figcaption></figure>
+  </article>
+
+  <article id="c1-6" class="step">
+    <h3><span class="n">1-6</span> 숫자로 위치 맞추기</h3>
+    {{COORD}}
+    <div class="side">
+      <figure><img src="{{c1_s_right}}" alt="선택 정보"><figcaption>⑫ 「선택 객체 1」 · 번호 / 이름, 랙 종류, X·Y, 폭·깊이·높이, 회전</figcaption></figure>
+      <div>
+        <ol class="do">
+          <li>「↖ 선택 / 이동」 상태에서 R-02를 클릭합니다. 오른쪽에 「선택 객체 1」이 열립니다.</li>
+          <li>「X (m)」에 <b>3</b>, 「Y (m)」에 <b>1</b>을 넣고 Enter를 누릅니다.</li>
+          <li>R-02의 <b>왼쪽 위 모서리</b>가 창고 왼쪽 위에서 오른쪽 3m, 아래 1m에 놓입니다.</li>
+        </ol>
+        <div class="tip">숫자 입력은 <b>0.001m(1mm)</b>까지 받고, 스냅(격자 맞춤)의 영향을 받지 않습니다. 비워 두고 Enter를 누르면 「X 값을 입력하세요 · 0.001m 단위. 기존 위치·규격을 유지합니다.」라고 알려 주고 위치는 그대로 둡니다.</div>
+        <div class="tip">회전한 랙도 좌표는 <b>회전하기 전</b> 왼쪽 위 기준입니다(오른쪽 패널 「좌표는 회전 전 좌상단 기준입니다.」).</div>
+      </div>
+    </div>
+    <figure><img src="{{c1_s_xy}}" alt="좌표 입력 결과"><figcaption>X 3 / Y 1 적용 · 선택한 랙에서 가까운 객체까지의 거리(0.9m, 1.3m, 2.386m)가 함께 표시됩니다</figcaption></figure>
+  </article>
+
+  <article id="c1-7" class="step">
+    <h3><span class="n">1-7</span> 마우스로 옮기기·되돌리기</h3>
+    <ol class="do">
+      <li>R-03을 눌러 잡은 채 오른쪽으로 끌었다 놓습니다. 끄는 동안 주변 객체까지의 거리가 실시간으로 보입니다.</li>
+      <li>잘못 옮겼으면 「↶ 취소」(Ctrl+Z), 다시 하려면 「↷ 다시」(Ctrl+Y)를 누릅니다.</li>
+      <li>미세 조정은 방향키(기본 0.01m), 크게 옮길 때는 Shift+방향키(기본 0.1m)를 씁니다. 간격은 왼쪽 「정밀 배치 설정」에서 바꿉니다.</li>
+    </ol>
+    <figure><img src="{{c1_s_dragging}}" alt="드래그 이동"><figcaption>R-03을 끌어 옮긴 상태 · 기둥 001까지 0.727m, 출입문 001까지 0.938m</figcaption></figure>
+    <table class="plain">
+      <thead><tr><th>하고 싶은 일</th><th>누를 것 (⑪ 아래 줄)</th></tr></thead>
+      <tbody>
+        <tr><td>90도 돌리기</td><td>「↻ 90°」 (임의 각도는 오른쪽 「회전 (°)」)</td></tr>
+        <tr><td>같은 랙 하나 더</td><td>「복제」</td></tr>
+        <tr><td>지우기</td><td>「삭제」 또는 Delete 키 · 2개 이상이면 확인 창이 한 번 더 뜹니다</td></tr>
+        <tr><td>여러 개 고르기</td><td>Shift+클릭, 또는 빈 곳에서 끌어 상자로 고르기</td></tr>
+      </tbody>
+    </table>
+  </article>
+
+  <article id="c1-8" class="step">
+    <h3><span class="n">1-8</span> 저장 확인</h3>
+    <p>편집할 때마다 자동으로 저장되므로, 마지막에 <b>확인만</b> 하면 됩니다. Ctrl+S를 누르면 이미 저장된 경우 「변경 없음 · 이미 저장됨 (SAVED)」이라고 알려 줍니다.</p>
+    <figure><img src="{{c1_s_header}}" alt="저장 확인"><figcaption>「● 모든 변경사항 저장됨 · SAVED」와 「마지막 확인 저장」 시각</figcaption></figure>
+    <div class="tip">오늘 만든 창고를 다른 PC에서 쓰거나 남에게 보내려면 「JSON 백업」으로 파일을 받으세요. HTML 파일만 보내면 작업은 따라가지 않습니다.</div>
+  </article>
+
+  <article id="c1-9" class="step">
+    <h3><span class="n">1-9</span> 참고 도면 깔고 축척 맞추기</h3>
+    <p>종이 도면이나 CAD 캡처가 있으면 배경으로 깔고 그 위에 따라 그리면 훨씬 빠릅니다.</p>
+    <ol class="do">
+      <li>⑤ 「04 / 참고 도면 배경」을 펼치고 「이미지 불러오기」로 PNG·JPG·WEBP를 고릅니다. 처음에는 <b>창고 전체 크기에 맞춰 늘려</b> 깔립니다.</li>
+      <li>「투명도」를 올려 잘 보이게 합니다.</li>
+      <li>도면에 길이를 아는 선(예: 5m 눈금)이 있으면 「보정할 두 점 사이 실측 거리 (m)」에 <b>5</b>를 넣고 「도면 위 두 점으로 축척 보정」을 누른 뒤, 그 선의 양 끝을 차례로 클릭합니다.
+        <div class="quote light">배경 축척을 보정했습니다. 위치는 별도로 조정할 수 있습니다.</div></li>
+      <li>위치가 어긋나면 「배경 X (m)」·「배경 Y (m)」로 옮깁니다. 다 쓰면 「배경 제거」.</li>
+    </ol>
+    <div class="two">
+      <figure><img src="{{c1_bg_before}}" alt="보정 전"><figcaption>보정 전 · 1100px 도면이 10m 창고에 억지로 맞춰짐</figcaption></figure>
+      <figure><img src="{{c1_bg_after}}" alt="보정 후"><figcaption>5m 눈금으로 보정 후 · 배경 폭이 11m로 바로잡힘 (도면 100px = 1m)</figcaption></figure>
+    </div>
+    <figure><img src="{{c1_bg_panel}}" alt="참고 도면 패널"><figcaption>「04 / 참고 도면 배경」 패널</figcaption></figure>
+    <div class="tip">보정은 <b>가로·세로 같은 비율</b>로만 맞춥니다. 찌그러진 스캔 도면은 먼저 바로잡아 오세요. 배경은 그림일 뿐이라 벽·기둥으로 인식되지 않습니다. 구조물은 따로 놓아야 검사에 들어갑니다.</div>
+  </article>
+
+  <article id="c1-10" class="step">
+    <h3><span class="n">1-10</span> 구역 표시와 거리 재기</h3>
+    <table class="plain">
+      <thead><tr><th>도구</th><th>쓰는 곳</th><th>검사</th></tr></thead>
+      <tbody>
+        <tr><td>「▧ 보관 불가」 (처음 2×2m)</td><td>소화전 앞, 배전반, 바닥 파손 구역</td><td>랙을 겹치면 막힘</td></tr>
+        <tr><td>「▱ 작업 공간」 (처음 3×2m)</td><td>포장대, 검수 구역, 대기 공간</td><td>면적 지표에 포함</td></tr>
+        <tr><td>「⌁ 거리 측정」</td><td>두 점 사이 거리 확인</td><td>배치에 영향 없음</td></tr>
+      </tbody>
+    </table>
+    <figure><img src="{{c1_zones}}" alt="구역"><figcaption>보관 불가 001(왼쪽 아래)과 작업 공간 001(오른쪽 아래)</figcaption></figure>
+    <div class="warnbox">보관 불가 구역 위에 랙을 놓으려 하면 막힙니다.
+      <div class="quote">전체 취소: 보관 불가 001 ↔ R-002 · 객체 충돌 · 빈 곳을 다시 클릭하거나, 겹침을 허용하려면 '공간 위반을 경고 후 허용'을 켜세요.</div></div>
+    <p>「⌁ 거리 측정」을 누르고 두 점을 클릭하면 하단 「공간검토」 칸에 <b>「두 점 거리 8 m · ΔX 8 m · ΔY 0 m」</b>처럼 거리와 가로·세로 차이가 나옵니다.</p>
+    <div class="tip">오른쪽 ⑫ 「공간 지표」의 「보관 불가 / 문 안전 구역」, 「통로 / 작업 구역」, 「중복 제외 잔여 면적」이 이 구역들을 반영합니다. 겹친 구역은 잔여 면적에서 한 번만 뺍니다.</div>
+  </article>
+
+  <article id="c1-11" class="step">
+    <h3><span class="n">1-11</span> 그림으로 내보내기·인쇄</h3>
+    <table class="plain">
+      <thead><tr><th>⑪ 버튼</th><th>받는 파일</th><th>쓰는 곳</th></tr></thead>
+      <tbody>
+        <tr><td>「SVG」</td><td><code>warehouse_layout.svg</code></td><td>확대해도 깨지지 않음 · 도면 편집 프로그램</td></tr>
+        <tr><td>「PNG」</td><td><code>warehouse_layout.png</code></td><td>메일·보고서·메신저에 바로 붙이기</td></tr>
+        <tr><td>「인쇄」</td><td>브라우저 인쇄 창</td><td>종이 배포 · PDF로 저장</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">내보낸 그림에는 지금 보고 있는 상태의 도면 전체·제목·치수·지표·범례가 들어갑니다. 검색 필터로 흐리게 보이던 객체도 그림에는 모두 나옵니다. 같은 날 여러 번 받으면 파일 이름이 같으니, 받은 뒤 날짜를 붙여 이름을 바꿔 두세요.</div>
+  </article>
+
+  <div class="check" id="c1-x">
+    <div class="check-h">코스 1 확인 포인트</div>
+    <label><input type="checkbox"> 화면 지도에서 ⑤ 설계 도구 · ⑨ 도면 · ⑫ 선택 정보 위치를 안다</label>
+    <label><input type="checkbox"> 「전체 창고 면적」이 60㎡로 보인다</label>
+    <label><input type="checkbox"> 출입문·기둥·랙 3개가 있고 상태 줄이 「랙 충돌 0건」이다</label>
+    <label><input type="checkbox"> R-02의 X·Y가 3 / 1이다</label>
+    <label><input type="checkbox"> 상단이 「● 모든 변경사항 저장됨 · SAVED」이다</label>
+  </div>
+  <table class="mistake">
+    <thead><tr><th>흔한 실수</th><th>왜 생기나</th><th>바로잡기</th></tr></thead>
+    <tbody>
+      <tr><td>도면을 누를 때마다 랙이 계속 생김</td><td>「▤ 랙 추가」가 켜진 채로 있음</td><td>「↖ 선택 / 이동」을 눌러 끄기, 늘어난 랙은 「↶ 취소」</td></tr>
+      <tr><td>벽 옆에 문을 놓으려는데 안 놓임</td><td>클릭점이 가운데라 문 절반이 창고 밖으로 나감</td><td>안쪽에 놓고 X·Y 숫자로 붙이기</td></tr>
+      <tr><td>X를 3으로 넣었는데 랙 가운데가 3m가 아님</td><td>좌표는 가운데가 아니라 왼쪽 위 모서리</td><td>가운데를 맞추려면 X = 원하는 가운데 − 폭/2</td></tr>
+      <tr><td>마우스로 놓은 위치가 0.01m 단위로 끊김</td><td>배치 스냅이 켜져 있음(기본 0.01m)</td><td>정확한 값은 숫자 입력(스냅 제외), 또는 「정밀 배치 설정」에서 스냅 간격 변경</td></tr>
+    </tbody>
+  </table>
+</section>

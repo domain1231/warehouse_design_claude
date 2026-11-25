@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.13 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 사용자 설명서 촬영·빌드 파이프라인 이관(#107) · docs/guide-pipeline
+- `tools/guide/run.py --work <폴더> --app dist/…html`: 촬영(capture) → 빌드 → 검증(문구 대조·기능·실습 파일 불러오기) → PDF·사용자용 판. 경로는 토큰(@@W@@·@@CHROME@@)으로 두고 실행 시 치환. 교육용 가상 Excel은 `fixtures/guide/`.
+- 앱 소스·검사 변경 없음. 설명서 관련 이슈: #105(통로 숫자 입력 순서에 따른 전체 취소), #106(백업 시각 UTC 표시).
+- 다음: alpha가 바뀌면 run.py 재실행 → `out/log_*.txt`의 ERR 확인 → 바뀐 절만 본문 수정. 확정판은 v2.5.0 기능 동결 이후.
+
 ### 2026-11-24 Track C C9 BE/AF 면적 기준 통일(D-075) · feature/c9-area-basis (C8 위에 쌓음)
 - `compareBasis`·`compareBasisText`·`compareSpace`(space.js), `setReferenceArea`(scenarios.js), 검증기 `scenarioMeta[k].referenceArea`. purposeCompare·scenarioDelta가 비교 기준 사용.
 - 로컬: unit 249, golden 298, build·verify, e2e compare-basis(신규)·compare-purpose·compare-delta·compare-change-list·ui-parity·excel-summary-compare·scenarios PASS.

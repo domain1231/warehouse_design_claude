@@ -1,0 +1,38 @@
+<section class="course page" id="ins">
+  <div class="course-head">
+    <div class="badge bm">강사용</div>
+    <div>
+      <h2>정답지 — 퀴즈·실기 평가 (교육 담당자만 보관)</h2>
+      <p class="goal">이 쪽은 강사용 인쇄본에만 들어 있습니다. 수강생용 설명서·전체본에는 들어 있지 않습니다.</p>
+    </div>
+  </div>
+  <article class="step">
+    <h3><span class="n">정답 1</span> 수료 퀴즈 (A-5)</h3>
+    <table class="plain">
+      <thead><tr><th>#</th><th>정답</th><th>근거</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>「프로젝트 저장」(Ctrl+S) 후 「● 모든 변경사항 저장됨 · SAVED」 확인</td><td>0-2</td></tr>
+        <tr><td>2</td><td>선반 번호 (7F=층, C=열, 5=랙 번호, 1=자재 위치)</td><td>2-0</td></tr>
+        <tr><td>3</td><td>랙의 왼쪽 위 모서리(회전 전)</td><td>1-6</td></tr>
+        <tr><td>4</td><td>치수가 BEFORE·AFTER에 따로 저장돼 비교 기준이 달라짐</td><td>4-1</td></tr>
+        <tr><td>5</td><td>직접 받아 둔 JSON 백업 파일</td><td>5-1</td></tr>
+      </tbody>
+    </table>
+  </article>
+  <article class="step">
+    <h3><span class="n">정답 2</span> 실기 평가 (A-7) — 강사가 직접 풀어 본 결과</h3>
+    <figure><img src="{{exam_answer}}" alt="실기 정답 예시"><figcaption>정답 예시 AFTER · A열과 B열 사이 보호 통로(X 0.7 · Y 0.1 · 폭 1.5 · 깊이 6.6m) · A01~A03 적재율 50% / 95% / 110%</figcaption></figure>
+    <table class="plain">
+      <thead><tr><th>#</th><th>확인할 화면 값</th><th>자주 틀리는 곳 (감점 포인트)</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>「전체 11랙 · 경계 내부 11」 · 「BEFORE · 조회 / 원본 잠금」</td><td>창고 치수를 AFTER에서 넣음 / 잠금 해제 상태로 끝냄 (-10)</td></tr>
+        <tr><td>2</td><td>「AFTER · 편집」</td><td>복제 전에 AFTER에서 작업을 시작함</td></tr>
+        <tr><td>3</td><td>「설정한 단면 폭 기준 통과」 · 현재 1.5m / 최소 1.2m / 목표 1.5m · 부족 0</td><td>통로를 빈 줄에 바로 클릭하면 랙과 겹쳐 안 생김 → <b>빈 곳에 놓고 Y·깊이·폭을 먼저, X를 마지막에</b> 입력해야 함. 순서가 틀리면 「전체 취소: … 창고 경계 이탈」 등이 뜨고 값이 되돌아감(통로가 엉뚱한 곳에 남은 채 「통과」만 보고 끝내면 0점) / 폭을 1.3m로 줄이면 「목표 폭 미달」(-10)</td></tr>
+        <tr><td>4</td><td>도면 라벨 A01 50% · A02 95% · A03 110% · 비교 창 「최대 보관 수량 BOX 180 (3/3랙 확인)」 (합계 153 ÷ 180 = 85%)</td><td>적재 단위를 비워 「미설정」으로 들어감 (-10)</td></tr>
+        <tr><td>5</td><td>비교 창: 전체 랙 수 11 → 11, 「최대 보관 수량 BOX」 미확인 → 180 (3/3랙 확인)</td><td>PNG만 받고 JSON을 안 받음 (0점 · 필수 항목)</td></tr>
+        <tr><td>6</td><td>"BEFORE가 「미확인」이라 비교 불가"</td><td>"180 늘었다"고 답함 (0점)</td></tr>
+      </tbody>
+    </table>
+    <div class="startbox"><b>정답 파일</b><span>{{DL_ANSWER}}</span><em>「불러오기」로 열면 위 정답 예시 상태가 됩니다</em></div>
+  </article>
+</section>

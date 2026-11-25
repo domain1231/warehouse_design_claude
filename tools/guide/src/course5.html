@@ -1,0 +1,215 @@
+<!-- ================= COURSE 5 ================= -->
+<section class="course" id="c5">
+  <div class="course-head">
+    <div class="badge b5">코스 5</div>
+    <div>
+      <h2>지키기·문제 해결 — 되돌리는 4가지 방법과 증상별 처방</h2>
+      <p class="goal"><b>목표</b> 이 코스를 마치면 ① 내 작업이 어디에 몇 겹으로 보관되는지 알고 ② 실수의 크기에 맞는 방법으로 되돌리고 ③ 자주 생기는 문제를 스스로 해결할 수 있습니다.</p>
+    </div>
+    <div class="time">약 15분 · 참조용</div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-h">30초 요약</div>
+    {{SVG_LAYERS}}
+    <p>①과 ②는 <b>이 PC·이 브라우저 안</b>에만 있습니다. 브라우저 기록을 지우거나 PC를 바꾸면 남는 것은 <b>③ JSON 파일</b>뿐입니다.</p>
+  </div>
+
+  <article id="c5-1" class="step">
+    <h3><span class="n">5-1</span> JSON 백업 — 유일하게 밖으로 나가는 사본</h3>
+    <ol class="do">
+      <li>① 줄의 「JSON 백업」을 누르면 <code>warehouse_project_v2_3_6_2026-11-16.json</code>처럼 <b>날짜가 붙은 파일</b>이 다운로드됩니다.</li>
+      <li>다운로드 폴더에 파일이 실제로 있는지 확인하고, 사내 드라이브 등 다른 곳에 한 부 더 둡니다.</li>
+      <li>되살릴 때는 「불러오기」로 그 파일을 고릅니다. <b>프로젝트 전체가 바뀌므로</b> 저장 안 된 작업이 있으면 「교체 전 현재 작업 보호」 창이 먼저 뜹니다(코스 0-5).</li>
+    </ol>
+    <table class="plain">
+      <thead><tr><th>이럴 때는 꼭 JSON 백업</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>하루 작업 마감</td><td>브라우저 정리·PC 고장에 대비</td></tr>
+        <tr><td>Excel 전체 교체, BEFORE 잠금 해제 전</td><td>큰 변경 전 기준점</td></tr>
+        <tr><td>다른 PC·다른 사람에게 넘길 때</td><td>HTML 파일에는 작업이 들어 있지 않음</td></tr>
+        <tr><td>브라우저나 PC를 바꿀 때</td><td>저장 공간이 브라우저·PC마다 다름(코스 0-3)</td></tr>
+      </tbody>
+    </table>
+  </article>
+
+  <article id="c5-2" class="step">
+    <h3><span class="n">5-2</span> 얼마나 되돌려야 하나요? — 작은 것부터</h3>
+    {{SVG_UNDO}}
+    <table class="plain">
+      <thead><tr><th>방법</th><th>범위</th><th>어디서</th></tr></thead>
+      <tbody>
+        <tr><td>① 「↶ 취소」 / 「↷ 다시」</td><td>방금 한 편집 한 단계씩</td><td>Ctrl+Z / Ctrl+Y</td></tr>
+        <tr><td>② 대상별 백업 「이 상태로 복원」</td><td>BEFORE 또는 AFTER <b>하나만</b> (다른 쪽은 그대로)</td><td>하단 「Excel 가져오기·자동 백업 이력」</td></tr>
+        <tr><td>③ 「현재 백업 후 복원」</td><td>프로젝트 <b>전체</b>(BEFORE + AFTER)</td><td>① 줄 「이전 버전·백업」</td></tr>
+        <tr><td>④ 「불러오기」</td><td>프로젝트 전체를 파일 내용으로</td><td>① 줄 「불러오기」</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">어느 복원이든 <b>현재 상태를 먼저 백업한 뒤</b> 복원합니다. 잘못 복원해도 한 번 더 되돌릴 수 있습니다.</div>
+  </article>
+
+  <article id="c5-3" class="step">
+    <h3><span class="n">5-3</span> 실습 — 2개 지우고 되돌리기</h3>
+    <ol class="do">
+      <li>랙 5개 중 2개를 상자로 골라 「삭제」를 누릅니다. 확인 창이 뜹니다.
+        <div class="quote light">랙 2개를 삭제합니다. 자동 백업 후 삭제되며 ↶로 되돌릴 수 있습니다.</div></li>
+      <li>확인하면 상태 줄이 「전체 3랙」이 됩니다. Ctrl+Z → 「전체 5랙」, Ctrl+Y → 다시 「전체 3랙」.</li>
+      <li>「이전 버전·백업」을 열면 「대량 객체 삭제 전」 백업이 생겨 있습니다.</li>
+    </ol>
+    <figure><img src="{{c5_versions}}" alt="이전 버전 백업 목록"><figcaption>「프로젝트 이전 버전·백업」 · 이유(직전 확인 저장 / 대량 객체 삭제 전 / 빈 창고 프로젝트 적용 전)와 시각 · 「이 버전 JSON」, 「현재 백업 후 복원」</figcaption></figure>
+    <p>「현재 백업 후 복원」을 누르면 확인 창이 한 번 뜹니다.</p>
+    <div class="quote light">선택한 이전 버전으로 복원하면 현재 작업이 변경됩니다. 현재 상태를 먼저 백업하고 복원합니까?</div>
+    <div class="tip">「이 버전 JSON」은 복원하지 않고 그 시점 내용을 <b>파일로만</b> 받습니다. 복원하기 전에 내용을 확인하고 싶을 때 쓰세요.</div>
+    <div class="tip">시각은 <code>2026-11-16T11:28:04Z</code>처럼 <b>세계 표준시(UTC)</b>로 표시됩니다. 한국 시각은 +9시간입니다(11:28Z → 20:28).</div>
+  </article>
+
+  <article id="c5-4" class="step">
+    <h3><span class="n">5-4</span> 실습 — 복제로 바뀐 AFTER만 되살리기</h3>
+    <p>코스 4에서 「BEFORE → AFTER 복제」를 다시 하면 작업하던 AFTER가 BEFORE 복사본으로 바뀝니다(기본 처리). 교육용 예시에서는 7랙이던 AFTER가 3랙이 되었습니다.</p>
+    <ol class="do">
+      <li>⑧ 줄의 「하단 전체 펼치기」를 누릅니다.</li>
+      <li>「Excel 가져오기·자동 백업 이력」을 펼치면 「보관 중인 대상별 백업」에 시각·대상(AFTER)·방식(BEFORE→AFTER 복제)이 나옵니다.</li>
+      <li>되살릴 시점의 「이 상태로 복원」을 누르고 확인합니다.
+        <div class="quote light">AFTER의 2026-11-16T11:28:42.498Z 이전 상태를 복원합니까? 현재 대상 상태도 다시 백업합니다.</div></li>
+      <li>상태 줄이 「전체 7랙」으로 돌아오고, BEFORE는 그대로입니다.</li>
+    </ol>
+    <figure><img src="{{c5_target_backups}}" alt="대상별 백업"><figcaption>하단 「Excel 가져오기·자동 백업 이력」 · 대상별 백업은 최신 6개 / 3.2MB까지 순환 보관</figcaption></figure>
+  </article>
+
+  <article id="c5-5" class="step">
+    <h3><span class="n">5-5</span> 증상별 처방</h3>
+    <p>증상을 찾아 오른쪽 칸을 따라 하세요. 링크는 자세한 설명이 있는 곳입니다.</p>
+    <table class="diag">
+      <thead><tr><th>증상</th><th>가장 흔한 원인</th><th>처방</th></tr></thead>
+      <tbody>
+        <tr><td colspan="3" class="grp">저장·데이터</td></tr>
+        <tr><td>예전 작업이 안 보임</td><td>다른 브라우저(또는 다른 PC·프로필)로 열었음</td><td>원래 브라우저에서 열어 JSON 백업 → 지금 브라우저에서 「불러오기」 <a href="#c0-3">0-3</a></td></tr>
+        <tr><td>상단이 계속 UNSAVED</td><td>처음 열었거나 예전 버전 데이터를 보는 중</td><td>「프로젝트 저장」 → SAVED 확인 <a href="#c0-2">0-2</a></td></tr>
+        <tr><td>저장 실패 안내가 뜸</td><td>브라우저 저장 공간 문제</td><td>창 닫지 말고 「저장소 관리」 → 「현재 메모리 JSON 다운로드」 <a href="#c0-4">0-4</a></td></tr>
+        <tr><td>복원한 뒤 더 나빠짐</td><td>다른 시점을 고름</td><td>복원 직전 상태가 자동 백업돼 있으니 그 항목으로 다시 복원 <a href="#c5-2">5-2</a></td></tr>
+        <tr><td colspan="3" class="grp">놓기·옮기기</td></tr>
+        <tr><td>클릭해도 문·랙이 안 놓임</td><td>절반이 창고 밖 · 「전체 취소: … 창고 경계 이탈」</td><td>더 안쪽에 놓고 X·Y 숫자로 맞추기 <a href="#c1-4">1-4</a></td></tr>
+        <tr><td>클릭할 때마다 랙이 생김</td><td>「▤ 랙 추가」가 켜져 있음</td><td>「↖ 선택 / 이동」 <a href="#c1-5">1-5</a></td></tr>
+        <tr><td>랙이 통로 쪽으로 안 옮겨짐</td><td>보호 통로 침범 차단(정상)</td><td>통로 위치·폭 조정 <a href="#c3-5">3-5</a></td></tr>
+        <tr><td>방향키가 안 먹음</td><td>입력칸에 커서가 있음</td><td>도면 한 번 클릭 후 방향키 <a href="#c3-3">3-3</a></td></tr>
+        <tr><td>정렬 버튼을 눌러도 그대로</td><td>미리보기 창만 열림</td><td>「그룹 전체에 적용」 <a href="#c3-2">3-2</a></td></tr>
+        <tr><td>통로를 좁힐 수 없음</td><td>최소 확보 폭보다 좁아짐</td><td>「최소 확보 폭 (m)」을 먼저 낮추기 <a href="#c3-4">3-4</a></td></tr>
+        <tr><td colspan="3" class="grp">Excel·자동 배치</td></tr>
+        <tr><td>「Rack 단수와 선반 번호 불일치」 경고가 많음</td><td>Rack 단수에 총 단 수를 입력</td><td>그 행의 선반 번호로 고치기 <a href="#c2-0">2-0</a></td></tr>
+        <tr><td>매핑이 20개가 안 됨</td><td>열 이름이 다르거나 머리글 행이 다름</td><td>「머리글 행」 확인 → 「20개 필드 / 수동 열 매핑」 <a href="#c2-2">2-2</a></td></tr>
+        <tr><td>「AFTER에 확인 후 적용」이 안 눌림</td><td>대상 확인 체크 안 함</td><td>「선택한 대상 배치를 확인했습니다.」 체크 <a href="#c2-1">2-1</a></td></tr>
+        <tr><td>로케이션 열 고정인데 랙이 안 들어감</td><td>공간 부족 시 옮기지 않는 방식</td><td>부족 길이 안내 보고 치수·간격·통로 방식 조정 <a href="#c2-5">2-5</a></td></tr>
+        <tr><td colspan="3" class="grp">BEFORE/AFTER</td></tr>
+        <tr><td>BEFORE에 아무것도 안 놓임</td><td>BEFORE 잠금(기본)</td><td>「BEFORE 잠금 해제」 <a href="#c4-1">4-1</a></td></tr>
+        <tr><td>비교 면적이 이상함</td><td>창고 치수가 BEFORE·AFTER에서 다름</td><td>BEFORE 치수를 맞춘 뒤 복제 <a href="#c4-1">4-1</a></td></tr>
+        <tr><td>복제했더니 AFTER가 사라짐</td><td>기본 처리 "백업 후 교체"</td><td>대상별 백업 「이 상태로 복원」 <a href="#c5-4">5-4</a></td></tr>
+        <tr><td>보관 능력 비교가 「미확인」</td><td>최대 수량을 넣지 않음</td><td>랙별 「최대 수량」·「적재 단위」 입력 <a href="#c4-5">4-5</a></td></tr>
+      </tbody>
+    </table>
+  </article>
+
+  <div class="check" id="c5-x">
+    <div class="check-h">코스 5 확인 포인트</div>
+    <label><input type="checkbox"> 「JSON 백업」 파일을 받아 다운로드 폴더 밖(사내 드라이브 등)에 한 부 더 두었다</label>
+    <label><input type="checkbox"> 2개를 지우고 Ctrl+Z / Ctrl+Y로 되돌려 봤다</label>
+    <label><input type="checkbox"> 「이전 버전·백업」에서 「대량 객체 삭제 전」 백업을 찾았다</label>
+    <label><input type="checkbox"> 하단 「보관 중인 대상별 백업」에서 「이 상태로 복원」 위치를 안다</label>
+    <label><input type="checkbox"> 5-5 증상표에서 내 상황과 비슷한 줄을 하나 찾아 링크를 따라가 봤다</label>
+  </div>
+  <table class="mistake">
+    <thead><tr><th>흔한 실수</th><th>왜 생기나</th><th>바로잡기</th></tr></thead>
+    <tbody>
+      <tr><td>자동 백업이 있으니 JSON 백업은 안 받음</td><td>자동 백업도 브라우저 안에 있음</td><td>하루 마감에 「JSON 백업」 · 브라우저 정리 전 필수</td></tr>
+      <tr><td>AFTER만 되돌리려다 프로젝트 전체를 복원</td><td>「이전 버전·백업」은 BEFORE+AFTER 전체</td><td>한쪽만이면 하단 대상별 백업 「이 상태로 복원」</td></tr>
+      <tr><td>백업 시각이 9시간 어긋나 보임</td><td>시각이 세계 표준시(UTC)로 표시</td><td>한국 시각 = 표시 시각 + 9시간</td></tr>
+      <tr><td>「이 버전 JSON」을 눌렀는데 화면이 그대로</td><td>복원이 아니라 파일 받기 버튼</td><td>되살리려면 「현재 백업 후 복원」</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================= APPENDIX ================= -->
+<section class="course" id="ax">
+  <div class="course-head">
+    <div class="badge b6">부록</div>
+    <div>
+      <h2>용어 · 단축키 · 버튼 색인 · 한 장 요약</h2>
+      <p class="goal">찾아보는 용도입니다. 위치 번호 ①~⑫는 <a href="#c1-1">화면 지도(1-1)</a>와 같습니다.</p>
+    </div>
+  </div>
+
+  <article id="ax-1" class="step">
+    <h3><span class="n">A-1</span> 용어</h3>
+    <table class="plain">
+      <tbody>
+        <tr><td>BEFORE · 현재안</td><td>지금 창고 그대로의 기준 배치. 기본으로 잠겨 있음</td></tr>
+        <tr><td>AFTER · 개선안</td><td>BEFORE를 복사해 바꿔 보는 배치</td></tr>
+        <tr><td>깊은 복사</td><td>복사본을 바꿔도 원본이 바뀌지 않는 완전히 따로인 복사</td></tr>
+        <tr><td>로케이션</td><td>자재가 놓인 주소. 7F-C-5-3-1 = 층-열-랙 번호-선반-자재 위치</td></tr>
+        <tr><td>랙 코드</td><td>로케이션의 앞 세 칸(7F-C-5). 도면의 랙 하나</td></tr>
+        <tr><td>ZONE</td><td>도면에 표시되는 열·구역 이름. 바꿔도 원본 로케이션은 그대로</td></tr>
+        <tr><td>원점</td><td>창고 왼쪽 위(0, 0). X는 오른쪽, Y는 아래로 증가</td></tr>
+        <tr><td>스냅</td><td>마우스로 놓을 때 정한 간격(기본 0.01m)에 맞춰 붙는 기능. 숫자 입력에는 적용 안 됨</td></tr>
+        <tr><td>회전 외곽 경계</td><td>돌린 상태의 바깥 테두리. 정렬·간격·경계 검사의 기준</td></tr>
+        <tr><td>보호 통로</td><td>랙이 들어오지 못하게 지키는 통로 영역</td></tr>
+        <tr><td>유효 통로 폭</td><td>통로를 가로로 자른 단면마다 비어 있는 폭 중 가장 좁은 값</td></tr>
+        <tr><td>최소 확보 폭 / 목표 폭</td><td>이보다 좁으면 위반(차단) / 이보다 좁으면 "목표 미달" 안내</td></tr>
+        <tr><td>공간 위반</td><td>창고 경계 이탈, 객체 충돌, 통로 침범, 간격 부족</td></tr>
+        <tr><td>대기 영역</td><td>자동 배치에서 창고 안에 못 들어간 랙을 보존해 두는 창고 밖 자리</td></tr>
+        <tr><td>실제 재고 적재율 / 용적률(높이 활용률)</td><td>현재 수량 ÷ 최대 수량 / 자재 높이 ÷ 선반 단 높이. 서로 다른 지표. 용적률과 높이 활용률은 같은 개념의 두 이름</td></tr><tr><td>면적 사용률</td><td>랙 바닥 면적 ÷ 총면적 (예전 이름: 랙 면적 점유율)</td></tr><tr><td>평균 용적률</td><td>랙별 평균 용적률(R)을 다시 평균 · 빈 랙 제외 (Excel Summary F4 방식)</td></tr><tr><td>빈 랙 / 저활용 랙</td><td>자재 높이가 모두 0인 랙 / 용적률 50% 미만인 랙</td></tr><tr><td>보관 가능 합계 / 선반 여유 용적</td><td>새로 쓸 수 있는 바닥(빈 랙+빈 바닥) / 선반 위쪽에 남은 공간(m³)</td></tr><tr><td>Δ 용적률 · 비움(이전 완료)</td><td>AFTER − BEFORE 용적률(%p) · 자재를 모두 옮겨 비운 랙(악화 아님)</td></tr><tr><td>면적 기준</td><td>비교 때 면적 지표의 분모. 양쪽 Excel 총면적이 없거나 한쪽만 있으면 도면 전체</td></tr>
+        <tr><td>SAVED / UNSAVED</td><td>저장 후 읽기 확인까지 끝남 / 아직 확정 저장 안 됨</td></tr>
+        <tr><td>대상별 백업</td><td>BEFORE 또는 AFTER 하나만의 백업(Excel 적용·복제·복원 직전)</td></tr>
+        <tr><td>미확인 / 미판정</td><td>자료가 없어 계산하지 않음. 0이 아님</td></tr>
+      </tbody>
+    </table>
+  </article>
+
+  <article id="ax-2" class="step">
+    <h3><span class="n">A-2</span> 단축키·마우스 (이 버전에서 확인한 것)</h3>
+    <div class="two">
+      <table class="plain">
+        <thead><tr><th>키</th><th>동작</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>저장 (결과 알림)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>되돌리기 / 다시</td></tr>
+          <tr><td><kbd>Delete</kbd></td><td>선택 삭제 (2개 이상이면 확인)</td></tr>
+          <tr><td>방향키</td><td>선택한 객체 이동 (기본 0.01m) · <b>아무것도 선택 안 했으면 화면 이동</b></td></tr>
+          <tr><td><kbd>Shift</kbd>+방향키</td><td>빠른 이동 (기본 0.1m) · 선택 없으면 화면 3배 빠르게 이동</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>숫자 입력 적용</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>다각형 통로 그리기 취소</td></tr>
+        </tbody>
+      </table>
+      <table class="plain">
+        <thead><tr><th>마우스</th><th>동작</th></tr></thead>
+        <tbody>
+          <tr><td>클릭</td><td>선택 / 도구가 켜져 있으면 그 자리에 추가</td></tr>
+          <tr><td>끌기 (객체 위)</td><td>이동 · 여러 개 선택 시 함께 이동</td></tr>
+          <tr><td>끌기 (빈 곳)</td><td>상자로 여러 개 선택</td></tr>
+          <tr><td><kbd>Shift</kbd>+클릭</td><td>선택에 추가</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+클릭</td><td>선택 토글</td></tr>
+          <tr><td>휠</td><td>확대·축소 (감도는 「마우스 휠 확대 감도」)</td></tr>
+          <tr><td>8개 핸들 끌기</td><td>폭·깊이 변경</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article id="ax-3" class="step">
+    <h3><span class="n">A-3</span> "그 버튼 어디 있어요?" 색인</h3>
+    <table class="plain idx">
+      <thead><tr><th>버튼·항목</th><th>위치</th><th>설명</th></tr></thead>
+      <tbody>{{IDX_ROWS}}</tbody>
+    </table>
+  </article>
+
+  <article id="ax-4" class="step a4">
+    <h3><span class="n">A-4</span> 한 장 요약 (인쇄용)</h3>
+    <div class="a4grid">
+      <div class="a4c"><h4>시작 전</h4><ul><li>「프로그램 정보」로 버전 확인</li><li>상단 「● 모든 변경사항 저장됨 · SAVED」 확인</li><li>예전 작업 = JSON 백업 → 「불러오기」</li></ul></div>
+      <div class="a4c"><h4>놓기</h4><ul><li>왼쪽 도구 → 도면 클릭 (클릭점 = 가운데)</li><li>끝나면 「↖ 선택 / 이동」</li><li>정확한 위치 = 오른쪽 X·Y (왼쪽 위 기준)</li></ul></div>
+      <div class="a4c"><h4>다듬기</h4><ul><li>빈 곳 끌기 = 여러 개 선택</li><li>정렬·간격 → 미리보기 → 「그룹 전체에 적용」</li><li>방향키 0.01m · Shift 0.1m</li></ul></div>
+      <div class="a4c"><h4>Excel</h4><ul><li>머리글 8행 · 20개 매핑 확인</li><li>대상 AFTER · 확인 체크</li><li>순서 지킴 = 로케이션 열 고정 · 자동 추천</li></ul></div>
+      <div class="a4c"><h4>개선안</h4><ul><li>BEFORE: 잠금 해제 → 치수·랙 → 잠그기</li><li>「BEFORE → AFTER 복제」 → AFTER 편집</li><li>「비교」 · 「미확인」은 0이 아님</li></ul></div>
+      <div class="a4c"><h4>지키기</h4><ul><li>하루 마감·큰 작업 전 「JSON 백업」</li><li>되돌리기: Ctrl+Z → 대상별 백업 → 이전 버전 → 불러오기</li><li>설치 전 실측·안전 검토 별도</li></ul></div>
+    </div>
+  </article>
+</section>

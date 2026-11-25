@@ -1,0 +1,44 @@
+  <article id="ax-5" class="step">
+    <h3><span class="n">A-5</span> 교육 운영안</h3>
+    <table class="plain">
+      <thead><tr><th>대상</th><th>형식 · 시간</th><th>범위</th><th>끝나면 할 수 있는 것</th></tr></thead>
+      <tbody>
+        <tr><td>실무자</td><td>실습 · 2시간 (6명 이하 권장)</td><td>코스 0~5 + 교육용 Excel</td><td>배치안 작성, 비교, JSON 보관</td></tr>
+        <tr><td>그룹장</td><td>시연 · 20분</td><td>아래 시연 시나리오 + M-2·M-4</td><td>검토 체크리스트로 결재</td></tr>
+        <tr><td>본부장</td><td>보고 · 5분</td><td>M-1 한 장 요약 + 실제 보고서(M-3) 1건</td><td>결과의 신뢰 수준과 위험 판단</td></tr>
+      </tbody>
+    </table>
+    <h4>준비물</h4>
+    <ul>
+      <li>프로그램 HTML(v2.5.0-alpha.13), 이 설명서, 교육용 Excel(<code>교육용_창고데이터.xlsx</code> · 가상 3열 11랙)</li>
+      <li>Chrome 또는 Edge가 설치된 PC, 실습 전 각자 JSON 백업 1회</li>
+    </ul>
+    <h4>그룹장 시연 시나리오 (20분)</h4>
+    <table class="plain">
+      <thead><tr><th>시간</th><th>시연</th><th>강조할 한마디</th><th>설명서</th></tr></thead>
+      <tbody>
+        <tr><td>0~3분</td><td>화면 지도 · 저장 상태 신호등</td><td>"초록 SAVED만 보면 됩니다. 자료는 이 PC 안에 있습니다."</td><td><a href="#c1-1">1-1</a> <a href="#c0-2">0-2</a></td></tr>
+        <tr><td>3~9분</td><td>교육용 Excel → 「로케이션 열 고정」 → 자동 추천 → AFTER 적용</td><td>"적용 버튼 전까지는 아무것도 바뀌지 않습니다."</td><td><a href="#c2-4">2-4</a> <a href="#c2-7">2-7</a></td></tr>
+        <tr><td>9~13분</td><td>랙을 통로로 끌기 → 차단 → 위반 목록</td><td>"규칙을 어기는 배치는 처음부터 막힙니다."</td><td><a href="#c3-5">3-5</a></td></tr>
+        <tr><td>13~18분</td><td>「비교」 창 → 지표 · 「미확인」</td><td>"「미확인」은 0이 아니라 모른다는 뜻입니다."</td><td><a href="#c4-4">4-4</a></td></tr>
+        <tr><td>18~20분</td><td>검토 체크리스트 · 보고서 양식</td><td>"아니오가 하나라도 있으면 돌려보내 주세요."</td><td><a href="#m2">M-2</a> <a href="#m3">M-3</a></td></tr>
+      </tbody>
+    </table>
+    <h4>수료 확인 퀴즈 (답은 눌러서 확인)</h4>
+    <div class="quiz">
+      <details><summary>1. 상단이 「○ 저장되지 않은 변경사항 · UNSAVED」입니다. 가장 먼저 할 일은?</summary><p>「프로젝트 저장」(또는 Ctrl+S)을 누르고 「● 모든 변경사항 저장됨 · SAVED」로 바뀌는지 확인합니다. → <a href="#c0-2">0-2</a></p></details>
+      <details><summary>2. 로케이션 7F-C-5-3-1에서 "3"은 무엇인가요?</summary><p>선반 번호입니다. 7F=층, C=열, 5=랙 번호, 1=자재 위치. → <a href="#c2-0">2-0</a></p></details>
+      <details><summary>3. 랙의 X에 3을 넣으면 랙의 어느 지점이 3m에 놓이나요?</summary><p>랙의 왼쪽 위 모서리(회전 전 기준)입니다. 가운데가 아닙니다. → <a href="#c1-6">1-6</a></p></details>
+      <details><summary>4. AFTER에서만 창고 치수를 바꾸면 어떤 문제가 생기나요?</summary><p>창고 치수는 BEFORE·AFTER에 따로 저장되므로 비교 면적과 면적 사용률이 서로 다른 기준이 됩니다. BEFORE에서 치수를 정한 뒤 복제합니다. → <a href="#c4-1">4-1</a></p></details>
+      <details><summary>5. 브라우저 기록을 지운 뒤에도 남는 사본은 무엇인가요?</summary><p>직접 받아 둔 JSON 백업 파일뿐입니다. 자동 저장과 자동 백업은 브라우저 안에 있습니다. → <a href="#c5-1">5-1</a></p></details>
+    </div>
+  </article>
+
+  <article id="ax-6" class="step">
+    <h3><span class="n">A-6</span> 화면 문구 색인 — "이 문장이 떴어요"</h3>
+    <p>화면에 뜬 문장을 그대로 찾을 수 있게 모았습니다. 검색창(<kbd>/</kbd>)에 문장 앞부분을 넣어도 됩니다. <b>거부</b>는 아무것도 바뀌지 않았다는 뜻이고, <b>확인 창</b>은 누르기 전까지 바뀌지 않습니다.</p>
+    <table class="plain eidx">
+      <thead><tr><th>종류</th><th>화면 문구</th><th>뜻</th><th>할 일</th></tr></thead>
+      <tbody><tr><td><span class="ek ek-r">거부</span></td><td class="em">전체 취소: 출입문 001 · 창고 경계 이탈 · 빈 곳을 다시 클릭하거나, 겹침을 허용하려면 '공간 위반을 경고 후 허용'을 켜세요.</td><td>놓으려는 객체 일부가 창고 밖으로 나감. 아무것도 추가되지 않음</td><td>더 안쪽에 놓고 X·Y로 맞추기 <a href="#c1-4">1-4</a></td></tr><tr><td><span class="ek ek-r">거부</span></td><td class="em">전체 취소: 보관 불가 001 ↔ R-002 · 객체 충돌 · …</td><td>다른 객체(구역·랙·기둥)와 겹침</td><td>빈 곳에 놓기 · 구역 위치 확인 <a href="#c1-10">1-10</a></td></tr><tr><td><span class="ek ek-r">거부</span></td><td class="em">전체 취소: 통로 001 · 통로 폭 부족 0.9m / 최소 1m · 부족 0.1m</td><td>보호 통로가 최소 폭보다 좁아짐(통로를 줄이거나 랙이 침범)</td><td>「최소 확보 폭 (m)」 조정 또는 랙을 통로 밖으로 <a href="#c3-4">3-4</a></td></tr><tr><td><span class="ek ek-r">거부</span></td><td class="em">전체 취소: BEFORE 원본 잠금 상태입니다. 잠금 해제 후 수정하세요.</td><td>잠긴 BEFORE를 고치려 함</td><td>「BEFORE 잠금 해제」 후 수정, 끝나면 「BEFORE 잠그기」 <a href="#c4-1">4-1</a></td></tr><tr><td><span class="ek ek-i">입력</span></td><td class="em">X 값을 입력하세요 · 0.001m 단위. 기존 위치·규격을 유지합니다.</td><td>숫자칸을 비우고 Enter</td><td>숫자 입력 (0.001m까지) <a href="#c1-6">1-6</a></td></tr><tr><td><span class="ek ek-x">Excel</span></td><td class="em">Rack 단수와 선반 번호 불일치 · 로케이션 번호를 사용</td><td>「Rack 단수」 열 값이 로케이션 넷째 숫자(선반)와 다름</td><td>Excel에서 그 행의 선반 번호로 고친 뒤 「데이터 재분석」 <a href="#c2-0">2-0</a></td></tr><tr><td><span class="ek ek-c">확인 창</span></td><td class="em">AFTER · merge · 신규 11 / 갱신 0 / 제거 0랙·구조물 0 … 적용할까요?</td><td>Excel 결과를 배치에 넣기 직전 마지막 확인</td><td>대상과 신규·갱신·제거 수를 보고 확인 <a href="#c2-7">2-7</a></td></tr><tr><td><span class="ek ek-c">확인 창</span></td><td class="em">개선 전 배치를 수정하면 개선 효과 분석의 기준 데이터가 변경됩니다. BEFORE 잠금을 해제합니까?</td><td>기준안(BEFORE) 잠금을 풀기 직전</td><td>정말 현재안을 고쳐야 할 때만 확인 <a href="#c4-1">4-1</a></td></tr><tr><td><span class="ek ek-c">확인 창</span></td><td class="em">기존 AFTER를 백업한 뒤 BEFORE의 독립 복사본으로 교체합니까? …</td><td>복제로 지금 AFTER가 바뀌기 직전</td><td>AFTER를 지키려면 취소하고 「새 개선안 버전 생성」 선택 <a href="#c4-2">4-2</a></td></tr><tr><td><span class="ek ek-c">확인 창</span></td><td class="em">랙 2개를 삭제합니다. 자동 백업 후 삭제되며 ↶로 되돌릴 수 있습니다.</td><td>2개 이상 한꺼번에 지울 때</td><td>개수 확인 · 잘못이면 Ctrl+Z <a href="#c5-3">5-3</a></td></tr><tr><td><span class="ek ek-c">확인 창</span></td><td class="em">선택한 이전 버전으로 복원하면 현재 작업이 변경됩니다. 현재 상태를 먼저 백업하고 복원합니까?</td><td>프로젝트 전체 복원 직전</td><td>시각·이유를 다시 보고 확인 <a href="#c5-3">5-3</a></td></tr><tr><td><span class="ek ek-c">확인 창</span></td><td class="em">AFTER의 (시각) 이전 상태를 복원합니까? 현재 대상 상태도 다시 백업합니다.</td><td>AFTER(또는 BEFORE) 하나만 되돌리기 직전</td><td>시각은 UTC · 한국 시각 +9시간 <a href="#c5-4">5-4</a></td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">변경 없음 · 이미 저장됨 (SAVED)</td><td>Ctrl+S를 눌렀지만 이미 자동 저장됨</td><td>할 일 없음 <a href="#c1-8">1-8</a></td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">JSON (파일 이름) 복원 완료 · 저장 후 읽기 확인</td><td>JSON 불러오기가 끝나고 저장 확인까지 됨</td><td>랙 수·면적이 예전과 같은지 대조 <a href="#c0-3">0-3</a></td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">통로 꼭짓점을 순서대로 클릭한 뒤 다각형 완성을 누르세요. Esc 취소.</td><td>다각형 통로 그리기 중</td><td>모서리를 차례로 클릭 → 「다각형 완성」 <a href="#c3-4">3-4</a></td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">통로 002 · 유효 폭 1.1m / 목표 1.2m 미달</td><td>최소는 넘었지만 목표 폭보다 좁음 (막지는 않음)</td><td>가능하면 넓히기 · 보고서에 표시 <a href="#c3-4">3-4</a></td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">배경 축척을 보정했습니다. 위치는 별도로 조정할 수 있습니다.</td><td>참고 도면 축척 보정 완료</td><td>「배경 X·Y」로 위치 맞추기 <a href="#c1-9">1-9</a></td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">(날짜) 기록을 저장했습니다. 미입력 재고는 미확인으로 유지됩니다.</td><td>날짜별 재고 기록 저장 완료</td><td>수량 안 넣은 랙은 「미확인」으로 남음 <a href="#c6-6">6-6</a></td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">(날짜) · 읽기 전용 · 기록 없음 · 해당 날짜 저장 배치</td><td>지난 날짜 조회 중 (편집 불가)</td><td>「현재 편집으로」 <a href="#c6-6">6-6</a></td></tr><tr><td><span class="ek ek-r">거부</span></td><td class="em">전체 취소: 통로 001 · 창고 경계 이탈</td><td>통로 숫자를 바꾸는 도중 통로가 창고 밖으로 나가 그 입력이 되돌아감</td><td>빈 곳에서 Y·깊이·폭을 먼저, X를 마지막에 입력(3-x · A-7 3번)</td></tr><tr><td><span class="ek ek-r">거부</span></td><td class="em">전체 취소: 통로 001 · 통로 폭 부족 … / 최소 1.2m</td><td>옮긴 자리에서 통로가 랙과 겹쳐 최소 폭이 안 나와 되돌아감</td><td>폭을 먼저 맞추고 위치를 옮김 · 도면에서 실제 위치 확인</td></tr><tr><td><span class="ek ek-c">경고</span></td><td class="em">통로 001 · 유효 폭 1.3m / 목표 1.5m 미달</td><td>최소 폭은 넘지만 목표 폭에 못 미침 (「목표 폭 미달」)</td><td>폭을 목표까지 넓히거나 목표 폭 설정을 다시 확인</td></tr><tr><td><span class="ek ek-c">경고</span></td><td class="em">⚠ 기준 미달 1개 · 북측 통로 기준 1.2m(주통로)</td><td>상단 「최소 통로 폭」 칸 · 가장 좁은 보호 통로가 기준보다 좁음</td><td>「위반 목록」 → 해당 통로 폭 조정</td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">통로 최대 폭 1.50m 적용: 계산상 …m까지 넓힐 수 있지만 상한을 넘는 남는 공간은 끝 벽 쪽 여유로 둡니다.</td><td>로케이션 열 고정에서 통로를 1.5m보다 넓히지 않음</td><td>그대로 두면 됨 · 넓히려면 「통로 최대 폭(m)」 변경(2-5)</td></tr><tr><td><span class="ek ek-n">안내</span></td><td class="em">면적 기준: 도면 전체 (양쪽 모두 Excel 면적 없음)</td><td>비교 창의 면적 지표 분모가 양쪽 모두 도면 전체</td><td>정상 · 한쪽만 Excel 면적이 있으면 나오는 「적용」 버튼으로 맞춤(4-4)</td></tr></tbody>
+    </table>
+  </article>
