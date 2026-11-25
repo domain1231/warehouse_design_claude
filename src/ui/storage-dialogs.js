@@ -3,6 +3,8 @@
 import { esc } from '../cad/scene.js';
 import { packProject } from '../persistence/zip.js';
 import { projectFile, readProjectFile, jsonFormatOf } from '../persistence/project-file.js';
+import { historySizes, planCleanup, DEFAULT_KEEP, CLEANUP_COMMAND } from '../warehouse/history-cleanup.js';
+import { sizeText } from '../core/file-size.js';
 import { formatTime, timeHtml } from '../core/format.js';
 
 const bytesOf = (s) => new TextEncoder().encode(String(s)).length;
@@ -36,7 +38,7 @@ const dlg = (cls, testid, html, id) => {
 };
 
 /** @param {{ session, store, backups, storage: Storage, validate: Function, schemaVersion: string, today: () => string, toast: (t: string) => void, download: Function }} deps */
-export function createStorageDialogs({ session, store, backups, storage, validate, schemaVersion, today, toast, download }) {
+export function createStorageDialogs({ session, store, backups, storage, validate, schemaVersion, today, toast, download, apply = null }) {
   const prefix = store.keys.pointer.replace(/:pointer$/, '');
   let quotaObserved = false;
   let lastFailure = null;
@@ -169,7 +171,7 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   }
 
   // ── 저장소 관리(수동 측정) ──
-  const sd = dlg('storage-dialog', 'storage-dialog', `<button type="button" class="close" id="vStorageClose" data-close data-testid="storage-close">닫기 ×</button><h2>저장소 관리</h2><p id="vStorageState" data-state role="status" data-testid="storage-state"></p><p>현재 메모리와 디스크 저장 값을 구분한 수동 측정입니다. 숫자는 UTF8 bytes이며 UTF16은 문자열 기준 근삿값입니다. origin 합계는 모든 localStorage 키+값, application 합계는 앱 KEY 접두사 키+값입니다. 읽기 실패·불완전·알 수 없는 값은 미확인으로 표시하며 상세 진단에는 null 또는 errorType을 남깁니다. 아래 후보 크기는 저장 성공이나 실제 남은 용량을 보장하지 않습니다. 이력·규격·이미지는 프로젝트에 포함된 부분 크기로 서로 중복될 수 있어 합산하지 않습니다. UTF16과 API estimate는 추정치이며 localStorage 한도나 실제 남은 용량이 아닙니다.</p><p>전체 프로젝트 백업은 최신 최대 3개 / 압축 합계 3.2MB, 대상별 백업은 최신 최대 6개 / JSON 합계 3.2MB로 순환 보관합니다. 정상 저장·검증 성공 시에만 한도에 맞춰 오래된 백업부터 교체합니다. 단일 백업도 한도를 넘거나 저장·검증에 실패하면 작업을 취소하고 기존 백업과 저장 바이트를 보존합니다. 날짜별 적용 스냅샷·재고 이력에는 이 순환 한도를 적용하지 않습니다. 현재 작업 및 적용 전 복구 JSON을 보관하세요.</p><div class="row"><button type="button" id="vStorageRefresh" data-refresh data-testid="storage-refresh">측정 새로고침</button><button type="button" id="vStorageDownload" data-download data-testid="storage-download">현재 메모리 JSON 다운로드</button><button type="button" id="vStorageRecovery" data-recovery data-testid="storage-recovery">적용 전 복구 JSON 다운로드</button><button type="button" id="vStorageRetry" data-retry data-testid="storage-retry">현재 프로젝트 다시 저장</button></div><p class="row"><label>JSON 저장 형식 <select id="vJsonFormat" data-format data-testid="json-format" aria-label="JSON 저장 형식"><option value="pretty">읽기 쉬운 JSON(들여쓰기)</option><option value="compact">작은 JSON(들여쓰기 없음)</option><option value="legacy">기준본 호환 JSON(v2.4.1·이전 시험판용)</option></select></label> <span class="muted">내용은 같고 공백만 다릅니다. 작은 JSON이 약 절반 크기입니다. 기준본 호환 JSON은 백업 안 이력을 줄이지 않고 펼쳐 저장합니다(v2.4.1·이전 시험판에서 백업 복원까지 쓸 때). JSON 백업·이전 버전 JSON·비교 중 JSON 저장에 적용됩니다.</span></p><p id="vStorageEstimate" data-estimate data-testid="storage-estimate"></p><div id="vStorageSummary" class="records-table" data-summary data-testid="storage-summary"></div><details><summary>상세 진단 JSON</summary><pre id="vStorageMetrics" data-metrics data-testid="storage-metrics" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>`, 'vStorageDialog');
+  const sd = dlg('storage-dialog', 'storage-dialog', `<button type="button" class="close" id="vStorageClose" data-close data-testid="storage-close">닫기 ×</button><h2>저장소 관리</h2><p id="vStorageState" data-state role="status" data-testid="storage-state"></p><p>현재 메모리와 디스크 저장 값을 구분한 수동 측정입니다. 숫자는 UTF8 bytes이며 UTF16은 문자열 기준 근삿값입니다. origin 합계는 모든 localStorage 키+값, application 합계는 앱 KEY 접두사 키+값입니다. 읽기 실패·불완전·알 수 없는 값은 미확인으로 표시하며 상세 진단에는 null 또는 errorType을 남깁니다. 아래 후보 크기는 저장 성공이나 실제 남은 용량을 보장하지 않습니다. 이력·규격·이미지는 프로젝트에 포함된 부분 크기로 서로 중복될 수 있어 합산하지 않습니다. UTF16과 API estimate는 추정치이며 localStorage 한도나 실제 남은 용량이 아닙니다.</p><p>전체 프로젝트 백업은 최신 최대 3개 / 압축 합계 3.2MB, 대상별 백업은 최신 최대 6개 / JSON 합계 3.2MB로 순환 보관합니다. 정상 저장·검증 성공 시에만 한도에 맞춰 오래된 백업부터 교체합니다. 단일 백업도 한도를 넘거나 저장·검증에 실패하면 작업을 취소하고 기존 백업과 저장 바이트를 보존합니다. 날짜별 적용 스냅샷·재고 이력에는 이 순환 한도를 적용하지 않습니다. 현재 작업 및 적용 전 복구 JSON을 보관하세요.</p><div class="row"><button type="button" id="vStorageRefresh" data-refresh data-testid="storage-refresh">측정 새로고침</button><button type="button" id="vStorageDownload" data-download data-testid="storage-download">현재 메모리 JSON 다운로드</button><button type="button" id="vStorageRecovery" data-recovery data-testid="storage-recovery">적용 전 복구 JSON 다운로드</button><button type="button" id="vStorageRetry" data-retry data-testid="storage-retry">현재 프로젝트 다시 저장</button></div><p class="row"><label>JSON 저장 형식 <select id="vJsonFormat" data-format data-testid="json-format" aria-label="JSON 저장 형식"><option value="pretty">읽기 쉬운 JSON(들여쓰기)</option><option value="compact">작은 JSON(들여쓰기 없음)</option><option value="legacy">기준본 호환 JSON(v2.4.1·이전 시험판용)</option></select></label> <span class="muted">내용은 같고 공백만 다릅니다. 작은 JSON이 약 절반 크기입니다. 기준본 호환 JSON은 백업 안 이력을 줄이지 않고 펼쳐 저장합니다(v2.4.1·이전 시험판에서 백업 복원까지 쓸 때). JSON 백업·이전 버전 JSON·비교 중 JSON 저장에 적용됩니다.</span></p><h3>이력 정리</h3><p class="muted">배치별 최근 기준일만 남기고 오래된 배치 스냅샷·Excel 스냅샷(배치 백업 안 복사본 포함)과 자동 배치 이력을 지웁니다. 현재 BEFORE·AFTER 배치, 각 배치의 최신 Excel 기준일, 재고 이력, 가져오기 기록은 지우지 않습니다. 정리 전 프로젝트 백업을 만들며 실행 취소(Ctrl+Z) 또는 이전 버전·백업에서 되돌릴 수 있습니다.</p><div class="row"><label>보존 개수(배치별 최근 기준일) <input type="number" id="vCleanKeep" data-keep data-testid="cleanup-keep" min="1" max="1000" step="1" value="${DEFAULT_KEEP}"></label> <label class="check"><input type="checkbox" id="vCleanCommands" data-clear-commands data-testid="cleanup-commands"> 명령 이력 비우기</label> <button type="button" id="vCleanPreview" data-clean-preview data-testid="cleanup-preview">정리 미리보기</button> <button type="button" id="vCleanRun" data-clean-run data-testid="cleanup-run" disabled>정리 실행</button></div><div id="vCleanTable" class="records-table" data-clean-table data-testid="cleanup-table"></div><p id="vStorageEstimate" data-estimate data-testid="storage-estimate"></p><div id="vStorageSummary" class="records-table" data-summary data-testid="storage-summary"></div><details><summary>상세 진단 JSON</summary><pre id="vStorageMetrics" data-metrics data-testid="storage-metrics" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>`, 'vStorageDialog');
   const q = (s) => sd.querySelector(s);
   let request = 0;
 
@@ -277,6 +279,58 @@ export function createStorageDialogs({ session, store, backups, storage, validat
       if (mine === request) est.textContent = 'origin API estimate 조회 실패: ' + (e?.name || 'Error') + ' · 실제 localStorage 남은 용량은 알 수 없습니다.';
     }
   }
+  // ── E4(D-091): 이력 정리 ──
+  const cleanOpts = () => ({ keep: Number(q('[data-keep]').value), clearCommands: q('[data-clear-commands]').checked });
+  function renderCleanup(plan = null) {
+    const now = historySizes(session.state.project), after = plan ? historySizes(plan.project) : null;
+    const table = document.createElement('table');
+    const head = document.createElement('tr');
+    for (const t of ['항목', '개수', '저장 크기', ...(after ? ['정리 후 개수', '정리 후 크기'] : [])]) { const th = document.createElement('th'); th.textContent = t; head.append(th); }
+    table.append(head);
+    const line = (label, cells) => { const tr = document.createElement('tr'); for (const [i, v] of [label, ...cells].entries()) { const c = document.createElement(i ? 'td' : 'th'); if (!i) c.scope = 'row'; c.textContent = v; tr.append(c); } table.append(tr); };
+    now.rows.forEach((r, i) => line(r.label, [String(r.count), sizeText(r.bytes), ...(after ? [String(after.rows[i].count), sizeText(after.rows[i].bytes)] : [])]));
+    line('프로젝트 전체(작은 JSON)', ['', sizeText(now.total), ...(after ? ['', sizeText(after.total)] : [])]);
+    q('[data-clean-table]').replaceChildren(table);
+    return { now, after };
+  }
+  function previewCleanup() {
+    try {
+      const plan = planCleanup(session.state.project, cleanOpts());
+      renderCleanup(plan);
+      q('[data-clean-run]').disabled = !plan.changed || !apply;
+      if (!plan.changed) toast('정리할 이력이 없습니다.');
+      return plan;
+    } catch (e) {
+      q('[data-clean-run]').disabled = true;
+      toast('이력 정리 미리보기 실패: ' + e.message);
+      return null;
+    }
+  }
+  async function runCleanup() {
+    const opts = cleanOpts();
+    let plan;
+    try { plan = planCleanup(session.state.project, opts); } catch (e) { toast('이력 정리 실패: ' + e.message); return false; }
+    if (!plan.changed) { toast('정리할 이력이 없습니다.'); return false; }
+    const before = historySizes(session.state.project).total;
+    try {
+      await backups.checkpoint(session.state.project, CLEANUP_COMMAND + ' 전');
+    } catch (e) {
+      toast('정리 전 프로젝트 백업 실패로 정리하지 않았습니다: ' + e.message + ' · JSON 백업을 먼저 보관하세요.');
+      return false;
+    }
+    const r = await apply(CLEANUP_COMMAND, (cur) => ({ ok: true, project: planCleanup(cur, opts).project }));
+    if (r && r.ok === false) { toast('이력 정리 취소: ' + (r.reason || '실패')); return false; }
+    const d = plan.removed;
+    toast(`이력 정리 완료 · 배치 스냅샷 ${d.layoutSnapshots}·Excel 스냅샷 ${d.excelSnapshots}·백업 안 스냅샷 ${d.backupSnapshots}·자동 배치 이력 ${d.autoPlacementHistory}·명령 이력 ${d.commandHistory}개 삭제 · 저장 크기 ${sizeText(before)} → ${sizeText(historySizes(session.state.project).total)} · 실행 취소(Ctrl+Z)로 되돌릴 수 있습니다.`);
+    q('[data-clean-run]').disabled = true;
+    renderCleanup();
+    refresh();
+    return true;
+  }
+  q('[data-clean-preview]').addEventListener('click', previewCleanup);
+  q('[data-clean-run]').addEventListener('click', runCleanup);
+  for (const sel of ['[data-keep]', '[data-clear-commands]']) q(sel).addEventListener('change', () => { q('[data-clean-run]').disabled = true; });
+
   const fmtSel = q('[data-format]');
   fmtSel.value = jsonFormat();
   fmtSel.addEventListener('change', () => setJsonFormat(fmtSel.value));
@@ -286,12 +340,14 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   q('[data-retry]').addEventListener('click', () => session.save().then(refresh));
   async function openStorage() {
     fmtSel.value = jsonFormat();
+    q('[data-clean-run]').disabled = true;
     sd.showModal();
+    try { renderCleanup(); } catch { /* 표 측정 실패는 무시(저장소 측정과 별개) */ }
     await refresh();
   }
 
   const hasProtectedRaw = () => { try { return storage.getItem(store.keys.protected) !== null; } catch { return false; } };
-  return { observe, riskText, hasProtectedRaw, downloadProject, jsonFormat, setJsonFormat, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
+  return { observe, riskText, hasProtectedRaw, downloadProject, jsonFormat, setJsonFormat, previewCleanup, runCleanup, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
 }
 
 /**
