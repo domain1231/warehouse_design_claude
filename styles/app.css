@@ -270,6 +270,8 @@ svg[data-delta] g.big .r-code { display: inline; }
 .compare-dialog.r-max > .close, .compare-dialog.r-max > h2, .compare-dialog.r-max .r-compare-tools, .compare-dialog.r-max [data-headline], .compare-dialog.r-max [data-kpis], .compare-dialog.r-max .r-cmp-left { display: none; }
 .compare-dialog.r-max .r-cmp-grid { display: block; }
 .compare-dialog.r-max .r-cmp-right { position: static; }
-.compare-dialog.r-max .r-delta-head { position: static; padding: 0 0 4px; gap: 4px 12px; }
-.compare-dialog.r-max .r-delta-head .r-legend { font-size: 12px; }
+.compare-dialog.r-max .r-delta-head { position: static; padding: 0 0 4px; gap: 4px 12px; flex-wrap: nowrap; overflow: hidden; }
+.compare-dialog.r-max .r-delta-tools { flex: 0 0 auto; }
+.compare-dialog.r-max .r-delta-head .r-legend { font-size: 12px; flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.compare-dialog.r-max .r-focus-note { flex: 0 0 auto; flex-basis: auto; white-space: nowrap; }
 .compare-dialog.r-max svg[data-delta] { display: block; width: 100%; height: calc(100vh - 12px - var(--r-head, 64px)); min-height: 200px; }
