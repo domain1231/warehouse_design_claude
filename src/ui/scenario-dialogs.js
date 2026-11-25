@@ -5,6 +5,7 @@ import { csvEncode } from '../warehouse/rackinfo.js';
 import { purposeCompare, scenarioSpace, compareBasis, compareBasisText } from '../metrics/space.js';
 import { rackDeltaMap, rackChangeList, changeListCsvRows, CHANGE_TYPE_NAMES, DELTA_BINS } from '../metrics/delta.js';
 import { legend } from '../warehouse/racklist.js';
+import { formatTime, timeHtml } from '../core/format.js';
 import { rackDiff, diffRows, compareRows, layoutChangeSummary, setReferenceArea, DIFF_CSV_HEADER } from '../warehouse/scenarios.js';
 
 const racksOf = (l) => l.objects.filter((o) => o.kind === 'rack');
@@ -174,8 +175,8 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   const drawHistory = () => {
     if (!hd.open) return;
     const p = getProject();
-    q(hd, '[data-hrows]').innerHTML = '<table><tr><th>가져오기 시각 / 기준일</th><th>파일 / 시트</th><th>대상 / 방식</th><th>추가·수정·삭제 / 오류·경고</th><th>이전 상태</th></tr>' + p.importHistory.slice(-50).reverse().map((h) => `<tr><td>${esc(h.importedAt || '시각 미기록')}<br>${esc(h.date)}</td><td>${esc(h.file)} / ${esc(h.sheet)}</td><td>${esc(h.scenario)} / ${esc(h.mode)}</td><td>${h.changes?.added ?? '—'} / ${h.changes?.updated ?? '—'} / ${h.changes?.deleted ?? '미기록'} · ${h.errorCount ?? '미기록'} / ${h.warningCount ?? '미기록'}</td><td><button type="button" data-restore="${esc(h.backupId || '')}" ${p.layoutBackups.some((b) => b.id === h.backupId) ? '' : 'disabled'}>이전 상태 복원</button></td></tr>`).join('') + '</table>';
-    q(hd, '[data-brows]').innerHTML = '<table>' + p.layoutBackups.slice().reverse().map((b) => `<tr><td>${esc(b.time)}</td><td>${b.target.toUpperCase()}</td><td>${esc(b.reason)} / ${esc(b.meta.versionId)}</td><td><button type="button" data-restore="${esc(b.id)}">이 상태로 복원</button></td></tr>`).join('') + '</table>';
+    q(hd, '[data-hrows]').innerHTML = '<table><tr><th>가져오기 시각 / 기준일</th><th>파일 / 시트</th><th>대상 / 방식</th><th>추가·수정·삭제 / 오류·경고</th><th>이전 상태</th></tr>' + p.importHistory.slice(-50).reverse().map((h) => `<tr><td>${timeHtml(h.importedAt, '시각 미기록', esc)}<br>${esc(h.date)}</td><td>${esc(h.file)} / ${esc(h.sheet)}</td><td>${esc(h.scenario)} / ${esc(h.mode)}</td><td>${h.changes?.added ?? '—'} / ${h.changes?.updated ?? '—'} / ${h.changes?.deleted ?? '미기록'} · ${h.errorCount ?? '미기록'} / ${h.warningCount ?? '미기록'}</td><td><button type="button" data-restore="${esc(h.backupId || '')}" ${p.layoutBackups.some((b) => b.id === h.backupId) ? '' : 'disabled'}>이전 상태 복원</button></td></tr>`).join('') + '</table>';
+    q(hd, '[data-brows]').innerHTML = '<table>' + p.layoutBackups.slice().reverse().map((b) => `<tr><td>${timeHtml(b.time, '시각 미기록', esc)}</td><td>${b.target.toUpperCase()}</td><td>${esc(b.reason)} / ${esc(b.meta.versionId)}</td><td><button type="button" data-restore="${esc(b.id)}">이 상태로 복원</button></td></tr>`).join('') + '</table>';
   };
   hd.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-restore]');
@@ -183,7 +184,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     const p = getProject(), backup = p.layoutBackups.find((x) => x.id === b.dataset.restore);
     if (!backup) return toast('백업이 만료되었거나 없습니다.');
     if (backup.target === 'before' && p.scenarioMeta.before.locked && !confirm('잠긴 BEFORE를 백업으로 복원합니까? AFTER는 유지됩니다.')) return;
-    if (!confirm(`${backup.target.toUpperCase()}의 ${backup.time} 이전 상태를 복원합니까? 현재 대상 상태도 다시 백업합니다.`)) return;
+    if (!confirm(`${backup.target.toUpperCase()}의 ${formatTime(backup.time, '시각 미기록')} 이전 상태를 복원합니까? 현재 대상 상태도 다시 백업합니다.`)) return;
     const r = await apply(restoreCommand, (pr, o) => restoreBackup(pr, backup.id, o));
     if (r?.ok) drawHistory(); else failed(r);
   });
