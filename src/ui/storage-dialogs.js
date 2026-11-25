@@ -2,6 +2,7 @@
 // 계산·저장은 session/store/backups가 한다. 이 파일은 대화상자와 수동 측정만 담당하며 paint 중에는 아무것도 측정하지 않는다.
 import { esc } from '../cad/scene.js';
 import { packProject } from '../persistence/zip.js';
+import { projectFile, readProjectFile } from '../persistence/project-file.js';
 import { formatTime, timeHtml } from '../core/format.js';
 
 const bytesOf = (s) => new TextEncoder().encode(String(s)).length;
@@ -48,10 +49,17 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   }
   const riskText = () => 'localStorage의 실제 남은 용량은 알 수 없습니다. 적용·교체 전 JSON 백업을 권장하며 저장 성공을 보장하지 않습니다.' + (quotaObserved ? ' 이전 저장에서 QuotaExceededError가 관측되었습니다.' : '');
 
+  /** 프로젝트 JSON 내려받기(E1): 크기가 상한의 50%를 넘으면 경고, 상한을 넘으면 다시 열 수 없음을 알린다. 내려받기는 막지 않는다. */
+  function downloadProject(name, project) {
+    const file = projectFile(project);
+    download(name, file.text, 'application/json');
+    if (file.notice) toast(file.notice);
+    return file;
+  }
   function exportCurrent() {
     try {
       const p = validate(structuredClone(session.state.project));
-      download(`warehouse_project_v${schemaVersion.replaceAll('.', '_')}_${today()}.json`, JSON.stringify(p, null, 2), 'application/json');
+      downloadProject(`warehouse_project_v${schemaVersion.replaceAll('.', '_')}_${today()}.json`, p);
       return true;
     } catch (e) {
       toast('현재 메모리 JSON 검증 실패: ' + e.message);
@@ -117,10 +125,8 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   async function importFile(f) {
     let stage = '읽기';
     try {
-      if (f.size > 12e6) throw new Error('12MB 이하 파일만 지원합니다.');
-      const text = await readFileText(f);
-      stage = '해석';
-      const parsed = parseJsonText(text);
+      // E1: 프로젝트 JSON · 압축 백업 JSON · ZIP(project.json)을 받는다. 크기 상한은 PROJECT_MAX_BYTES 하나.
+      const parsed = await readProjectFile(f, { readText: readFileText, readBytes: readFileBytes, parse: parseJsonText, stage: (s) => { stage = s; } });
       stage = '검증';
       const data = validate(parsed);
       const label = 'JSON ' + f.name;
@@ -146,7 +152,7 @@ export function createStorageDialogs({ session, store, backups, storage, validat
     } catch (e) {
       box.textContent = '백업 조회 실패: ' + e.message;
     }
-    for (const b of box.querySelectorAll('[data-dl]')) b.onclick = () => download('warehouse_previous_' + b.dataset.dl + '.json', JSON.stringify(choices[Number(b.dataset.dl)].project, null, 2), 'application/json');
+    for (const b of box.querySelectorAll('[data-dl]')) b.onclick = () => downloadProject('warehouse_previous_' + b.dataset.dl + '.json', choices[Number(b.dataset.dl)].project);
     for (const b of box.querySelectorAll('[data-restore]')) {
       b.onclick = async () => {
         const chosen = structuredClone(choices[Number(b.dataset.restore)].project);
@@ -277,7 +283,7 @@ export function createStorageDialogs({ session, store, backups, storage, validat
   }
 
   const hasProtectedRaw = () => { try { return storage.getItem(store.keys.protected) !== null; } catch { return false; } };
-  return { observe, riskText, hasProtectedRaw, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
+  return { observe, riskText, hasProtectedRaw, downloadProject, exportCurrent, exportRecovery, exportProtectedRaw, importFile, confirmReplace, install, openBackups, openStorage };
 }
 
 /**
@@ -295,6 +301,22 @@ export async function readFileText(f) {
       r.onerror = () => reject(r.error || e);
       r.onabort = () => reject(r.error || e);
       r.readAsText(f);
+    });
+  }
+}
+
+/** 파일 내용을 바이트로 읽는다(ZIP 불러오기). 읽기 중단 시 FileReader로 한 번 더 시도한다(readFileText와 같은 규칙). */
+export async function readFileBytes(f) {
+  try {
+    return new Uint8Array(await f.arrayBuffer());
+  } catch (e) {
+    if (e?.name !== 'AbortError' && e?.name !== 'NotReadableError') throw e;
+    return await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(new Uint8Array(r.result));
+      r.onerror = () => reject(r.error || e);
+      r.onabort = () => reject(r.error || e);
+      r.readAsArrayBuffer(f);
     });
   }
 }

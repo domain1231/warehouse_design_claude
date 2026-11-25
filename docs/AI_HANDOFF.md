@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.15 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track E E1 프로젝트 크기 상한 단일화·ZIP 불러오기(D-086) · feature/e1-project-size-limit
+- `src/persistence/project-file.js`(신규: `PROJECT_WARN_BYTES`·`projectJsonText`·`projectSizeNotice`·`projectFile`·`readProjectFile`), zip.js `PROJECT_MAX_BYTES`·`unpackPacked`·`unzipProject`·`isZipBytes`. storage-dialogs `downloadProject`·`readFileBytes`, scenario-dialogs `downloadProject` 주입. `#jsonIn` accept에 ZIP.
+- 합성 크기 프로젝트 생성기 `tests/unit/size-fixture.js`(`sizedProject(bytes)` — 정확한 바이트, 배치 검사 결과 포함).
+- 로컬: unit 271(신규 project-size-limit 7), golden 298, build·verify, e2e project-size(신규)·storage·storage2·json-import-abort·ux-improvements·ui-parity·compare-present PASS.
+- 다음: E2 작은 JSON 저장(`projectJsonText`에 형식 인자 추가).
+
 ### 2026-11-25 Track D D8 Δ 지도 크게 보기·전체 화면(D-085) · feature/d8-delta-zoom
 - scenario-dialogs `zoom`·`setZoom`·`applyZoom`·`applyBig`·`fitHead`·`enterFull`(document.documentElement 전체 화면), 대화상자 cancel에서 전체 화면 → 최대화 → 강조 순 복귀. 랙 그룹 `data-box`, `.r-dl`(data-fs)·`.r-code`. CSS `.compare-dialog.r-max`.
 - 로컬: unit 264, golden 298, build·verify, e2e compare-zoom(신규 3)·compare-*(전체)·scenarios·ui-parity(고정 목록 +2) PASS.

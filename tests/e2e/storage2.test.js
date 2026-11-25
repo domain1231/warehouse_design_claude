@@ -142,8 +142,8 @@ test('JSON 불러오기: 내보낸 파일로 교체하고 적용 전 백업을 �
   await page.locator('[data-testid=versions-open]').click();
   await page.locator('[data-testid=backup-row]', { hasText: 'JSON saved.json 적용 전' }).waitFor();
   await page.locator('[data-testid=backup-close]').click();
-  await page.locator('[data-testid=import-file]').setInputFiles({ name: 'big.json', mimeType: 'application/json', buffer: Buffer.alloc(12e6 + 1, 32) });
-  await page.waitForFunction(() => document.querySelector('[data-testid=toast]').textContent === '파일 처리 실패: 12MB 이하 파일만 지원합니다.');
+  await page.locator('[data-testid=import-file]').setInputFiles({ name: 'big.json', mimeType: 'application/json', buffer: Buffer.alloc(24e6 + 1, 32) }); // E1(D-086): 프로젝트 크기 상한 24MB 하나
+  await page.waitForFunction(() => document.querySelector('[data-testid=toast]').textContent === '파일 처리 실패: 24MB 이하 파일만 지원합니다.');
   await page.locator('[data-testid=import-file]').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{not json') });
   await page.waitForFunction(() => document.querySelector('[data-testid=toast]').textContent.startsWith('파일 처리 실패: '));
   assert.equal(await rackCount(page), 45);
