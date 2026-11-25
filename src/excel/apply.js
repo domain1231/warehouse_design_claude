@@ -3,6 +3,7 @@
 // 어느 단계에서든 실패하면 입력 프로젝트를 그대로 돌려준다(전체 취소). 저장·실행취소 기록은 세션이 맡는다.
 import { validateProject, assertIndependent } from '../core/project.js';
 import { scanLayout } from '../warehouse/constraints.js';
+import { packBackupRefs } from '../core/backup-refs.js';
 
 export const EXCEL_APPLY_COMMAND = 'Excel 가져오기';
 const clone = (v) => (v === undefined ? undefined : structuredClone(v));
@@ -38,7 +39,10 @@ export function backupTarget(p, target, reason, { nextId, now }) {
   }
   const b = { id: nextId(), target, time: now(), reason, ...capture };
   const rows = p.layoutBackups.concat(b);
-  while (rows.length > BACKUP_LIMIT || bytes(JSON.stringify(rows)) > BACKUP_BYTES) {
+  // D-092: 합계 3.2MB는 실제로 저장되는 크기(백업 안 스냅샷을 참조로 줄인 상태, D-089)로 잰다.
+  // 펼친 크기로 재면 이력이 쌓일수록 백업 1개가 한도를 넘어 Excel 가져오기·복제·복원이 '백업 용량 한도 초과'로 막힌다.
+  const stored = () => bytes(JSON.stringify(packBackupRefs({ ...p, layoutBackups: rows }).layoutBackups));
+  while (rows.length > BACKUP_LIMIT || stored() > BACKUP_BYTES) {
     if (rows.length === 1) throw new Error('백업 용량 한도 초과: 배치 백업 6개(BEFORE·AFTER 합계) / 합계 3.2MB');
     rows.shift();
   }
