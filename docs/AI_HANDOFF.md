@@ -5,6 +5,11 @@
 - 앱 2.5.0-alpha.16 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track E E6 자동 배치 이력 배치 참조(D-090) · feature/e6-history-refs
+- backup-refs.js에 `packHistoryRefs`·`expandHistoryRefs`·`packProjectRefs`·`expandProjectRefs`·`countHistoryRefs`, 저장·읽기 지점은 E5와 같은 곳(이름만 project 단위로). size-fixture `historyProject`가 apply.js처럼 자동 배치 이력도 남김.
+- 로컬: unit 289(신규 history-refs 5), golden 298, build·verify, e2e excel·excel-gates·scenarios·backup-refs·storage2·project-size PASS. v2.4.1 빌드에서 참조 파일 열림 확인(로컬 스크립트).
+- 다음: E4 이력 정리 도구(기본 보존 최근 10개, 사용자 확정 2026-11-25) → E7.
+
 ### 2026-11-25 Track E E5 배치 백업 안 스냅샷 참조(D-089) · feature/e5-backup-dedup (E3 위에 쌓음)
 - `src/core/backup-refs.js`(신규: `packBackupRefs`·`expandBackupRefs`·`countBackupRefs`·`isBackupRef`). project.js validateProject 맨 앞 `expandBackupRefs`. project-file `JSON_FORMATS`에 'legacy', storage.js 슬롯·backups.js 링 저장에 `packBackupRefs`.
 - 테스트 도우미 `historyProject()`(size-fixture.js). v2.4.1 되돌림 확인 스크립트는 저장소 밖(로컬)에서 실행, 결과는 D-089.

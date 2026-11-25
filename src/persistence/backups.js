@@ -3,7 +3,7 @@
 // 저장은 압축(warehouse-backup-zip-v1) → 쓰기 → 다시 읽어 풀어서 비교 → 실패 시 이전 원문으로 되돌린다.
 // 키는 재구축 접두사를 쓴다(D-006: 기준본 키에 쓰지 않음).
 import { packProject, unpackStored } from './zip.js';
-import { packBackupRefs } from '../core/backup-refs.js';
+import { packProjectRefs } from '../core/backup-refs.js';
 import { StoreError, DEFAULT_PREFIX } from './storage.js';
 
 export const BACKUP_LIMIT = 3;
@@ -31,7 +31,7 @@ export function checkpointReason(before, after, command = '') {
  * @param {{ storage: Storage, prefix?: string, validate: (p) => object, fingerprint: (p) => string, nextId: () => string, now?: () => string, maxBytes?: number }} opts (maxBytes는 검사용)
  */
 // E5(D-089): 링 안 프로젝트도 백업 안 스냅샷을 참조로 줄여 쓴다(읽을 때 validate가 펼침).
-const ringText = (rows) => JSON.stringify(rows.map((r) => (r?.project ? { ...r, project: packBackupRefs(r.project) } : r)));
+const ringText = (rows) => JSON.stringify(rows.map((r) => (r?.project ? { ...r, project: packProjectRefs(r.project) } : r)));
 
 export function createBackupRing({ storage, prefix = DEFAULT_PREFIX, validate, fingerprint, nextId, now = () => new Date().toISOString(), maxBytes = BACKUP_BYTES }) {
   const key = `${prefix}:project-backups`;

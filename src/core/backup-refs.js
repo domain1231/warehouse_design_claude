@@ -74,5 +74,54 @@ export function expandBackupRefs(p) {
   return p;
 }
 
+// ── E6(D-090): 자동 배치 확인 이력(autoPlacement.history)의 배치 ──
+// 이력 항목의 layout은 적용 직후 대상 배치 전체 복사본이고, 같은 가져오기의 배치 스냅샷(layoutSnapshots[].layout)과 같다(apply.js).
+// 기준본·이전 앱 검증기는 이력마다 layout을 요구하고 validateLayout으로 검사하므로, 참조는 '객체를 비운 유효한 배치 + 표시'로 쓴다:
+//   layout: { ...원래 배치(객체 제외), objects: [], "$layoutSnapshot": "<스냅샷 ID>" }
+// 기준본은 이 항목을 객체 없는 배치로 읽는다(이력 화면이 없어 영향 없음). 읽을 때 같은 ID 스냅샷 배치로 되돌린다.
+// 스냅샷이 없어졌으면(이전 앱에서 지우고 저장한 경우) 객체 없는 배치로 남긴다 — 이력은 기록용이고 화면·계산에 쓰이지 않음.
+export const LAYOUT_REF_KEY = '$layoutSnapshot';
+const isLayoutRef = (l) => !!l && typeof l === 'object' && typeof l[LAYOUT_REF_KEY] === 'string';
+
+/** 저장용 사본: 이력 배치가 같은 ID·같은 내용의 배치 스냅샷과 같으면 객체를 비운 참조 배치로. 입력은 바꾸지 않는다. */
+export function packHistoryRefs(project) {
+  const history = project?.autoPlacement?.history;
+  if (!Array.isArray(history) || !history.length) return project;
+  const text = new Map();
+  for (const s of Array.isArray(project.layoutSnapshots) ? project.layoutSnapshots : []) if (typeof s?.id === 'string') text.set(s.id, text.has(s.id) ? null : s);
+  const byLayout = new Map();
+  for (const [id, s] of text) if (s?.layout) { const t = JSON.stringify(s.layout); if (!byLayout.has(t)) byLayout.set(t, id); }
+  let changed = false;
+  const next = history.map((h) => {
+    if (!h?.layout || isLayoutRef(h.layout)) return h;
+    const id = byLayout.get(JSON.stringify(h.layout));
+    if (id === undefined) return h;
+    changed = true;
+    return { ...h, layout: { ...h.layout, objects: [], [LAYOUT_REF_KEY]: id } };
+  });
+  return changed ? { ...project, autoPlacement: { ...project.autoPlacement, history: next } } : project;
+}
+
+/** 읽기: 참조 배치를 같은 ID 스냅샷 배치 복사본으로 되돌린다(입력 객체를 고친다). 스냅샷이 없으면 그대로 둔다. */
+export function expandHistoryRefs(p) {
+  const history = p?.autoPlacement?.history;
+  if (!Array.isArray(history) || !history.some((h) => isLayoutRef(h?.layout))) return p;
+  const snaps = new Map();
+  for (const s of Array.isArray(p.layoutSnapshots) ? p.layoutSnapshots : []) if (typeof s?.id === 'string') snaps.set(s.id, snaps.has(s.id) ? null : s);
+  for (const h of history) {
+    if (!isLayoutRef(h?.layout)) continue;
+    const s = snaps.get(h.layout[LAYOUT_REF_KEY]);
+    if (s?.layout) h.layout = structuredClone(s.layout);
+  }
+  return p;
+}
+
+/** 저장할 때 쓰는 참조 전체(백업 안 스냅샷 + 자동 배치 이력 배치). */
+export const packProjectRefs = (project) => packHistoryRefs(packBackupRefs(project));
+/** 읽을 때 펼침(자동 배치 이력 배치 + 백업 안 스냅샷). */
+export const expandProjectRefs = (p) => expandBackupRefs(expandHistoryRefs(p));
+/** 펼치지 못하고 남은 이력 참조 개수(스냅샷이 사라진 경우). */
+export const countHistoryRefs = (p) => (p?.autoPlacement?.history ?? []).filter((h) => isLayoutRef(h?.layout)).length;
+
 /** 프로젝트 안 참조 개수(진단·검사용). */
 export const countBackupRefs = (p) => (p?.layoutBackups ?? []).reduce((n, b) => n + REF_KINDS.reduce((m, k) => m + (Array.isArray(b?.[k]) ? b[k].filter(isBackupRef).length : 0), 0), 0);

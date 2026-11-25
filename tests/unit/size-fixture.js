@@ -2,6 +2,7 @@
 // 앱 저장본과 같은 구성: BEFORE 배치 1개(합성 랙 N개)를 날짜별 배치 이력으로 복제하고, 마지막 이력 이름 길이로 앱이 내려받는 JSON 크기를 목표 바이트에 정확히 맞춘다.
 import { createProject, createObject } from '../../src/core/project.js';
 import { backupTarget } from '../../src/excel/apply.js';
+import { scanLayout } from '../../src/warehouse/constraints.js';
 import { createIdGenerator } from '../../src/core/ids.js';
 import { projectValidator, storeScanResults } from '../../src/core/session.js';
 import { projectJsonText } from '../../src/persistence/project-file.js';
@@ -57,6 +58,8 @@ export function historyProject({ racks = 300, imports = 4, seed = 'e5' } = {}) {
     p.scenarios.before.objects[i].x += 0.001; // 가져오기마다 배치가 조금씩 바뀜
     p.layoutSnapshots.push({ id: nextId(), name: `배치 ${`2026-10-${String(10 + i).padStart(2, '0')}`}`, date: `2026-10-${String(10 + i).padStart(2, '0')}`, scenario: 'before', recordedAt: '2026-11-25T00:00:00.000Z', source: 'Excel', layout: structuredClone(p.scenarios.before) });
     p.excelSnapshots.push({ id: nextId(), date: `2026-10-${String(10 + i).padStart(2, '0')}`, scenario: 'before', source: '가상 시험 파일', data: p.scenarios.before.objects.map((o) => ({ id: o.id, excel: structuredClone(o.excel) })) });
+    // apply.js와 같이 적용 직후 배치를 자동 배치 확인 이력에도 남긴다(E6).
+    p.autoPlacement.history.push({ id: nextId(), scenario: 'before', time: '2026-11-25T00:00:00.000Z', acknowledged: true, fingerprint: scanLayout(p.scenarios.before, p, { now: () => '2026-11-25T00:00:00.000Z' }).fingerprint, candidate: '기존 배치 규칙', backupId: p.layoutBackups.at(-1)?.id ?? null, layout: structuredClone(p.scenarios.before) });
     p = projectValidator(p);
   }
   return { p, nextId };
