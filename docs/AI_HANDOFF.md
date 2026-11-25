@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.16 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 Track E E7 크기 예산 검사(D-093) · test/e7-size-budget-2 (fix/backup-cap-stored-size 위에 쌓음)
+- `tests/unit/helpers/usage-scenario.js`(가상 사용 시나리오), `tests/unit/size-budget.test.js`(`sizeReport`·`checkBudget`, 보고서 test-results/size-budget.json), ci.yml에 보고서 업로드.
+- 결과: 작은 JSON 23.56MB(스냅샷 21.76 + 그 밖 1.80), 정리(10) 후 11.60MB. 전체 8MB는 todo.
+- 로컬: unit 299(todo 1), golden 298, build·verify PASS.
+- 다음(제안): 스냅샷 차분 저장 — 전체 8MB 예산 통과용.
+
 ### 2026-11-25 배치 백업 한도 저장 크기 계산(D-092) · fix/backup-cap-stored-size
 - apply.js backupTarget: 합계 3.2MB를 `packBackupRefs` 적용 크기로 계산. 신규 unit backup-cap(수정 전 2건 실패 → 수정 후 통과 확인).
 - 로컬: unit 296, golden 298, build·verify, e2e excel·excel-gates·scenarios·backup-refs·history-cleanup PASS.
