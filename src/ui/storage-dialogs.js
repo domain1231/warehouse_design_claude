@@ -359,7 +359,10 @@ export function createStorageDialogs({ session, store, backups, storage, validat
     fmtSel.value = jsonFormat();
     q('[data-clean-run]').disabled = true;
     sd.showModal();
-    try { renderCleanup(); } catch { /* 표 측정 실패는 무시(저장소 측정과 별개) */ }
+    // 성능(D-096): 큰 프로젝트는 크기 표 계산에 시간이 걸리므로 대화상자를 먼저 보이고 다음 틈에 계산한다.
+    const tbl = q('[data-clean-table]');
+    tbl.textContent = '항목별 크기 계산 중…';
+    setTimeout(() => { try { if (sd.open) renderCleanup(); } catch { tbl.textContent = ''; } }, 30);
     await refresh();
   }
 

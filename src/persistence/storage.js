@@ -28,10 +28,14 @@ export class StoreError extends Error {
 
 const isQuota = (e) => e?.name === 'QuotaExceededError' || e?.code === 22 || e?.code === 1014;
 
-function canonical(project) {
+// 변경 여부 비교용 문자열. 성능(D-096): 저장 형식(참조·차분으로 줄인 상태)으로 만든다 — 줄임은 되돌림이 가능한(손실 없는) 결정적 변환이라
+// 원래 프로젝트끼리 같은지와 줄인 문자열끼리 같은지가 일치한다. 펼친 전체(큰 이력이면 수십 MB)를 두 번 문자열로 바꾸지 않는다.
+function packedParts(project) {
   const { persistence, ...rest } = project;
-  return JSON.stringify(rest);
+  const packed = packProjectRefs(rest);
+  return { packed, canonical: JSON.stringify(packed) };
 }
+const canonical = (project) => packedParts(project).canonical;
 
 function parsePointer(raw) {
   const p = JSON.parse(raw);
@@ -157,14 +161,16 @@ export function createProjectStore({ storage, prefix = DEFAULT_PREFIX, legacyKey
       }
     })();
 
-    if (ptr && cache?.pointerRaw === current && cache.canonical === canonical(candidate)) {
+    const parts = packedParts(candidate);
+    if (ptr && cache?.pointerRaw === current && cache.canonical === parts.canonical) {
       base = current;
       return { state: 'UNCHANGED', revision: ptr.revision, persistence: cache.persistence };
     }
 
     const revision = Math.max(ptr?.revision ?? 0, candidate.persistence?.revision ?? 0) + 1;
     candidate.persistence = { lastSavedAt: now(), revision };
-    const text = JSON.stringify(packProjectRefs(candidate)); // E5·E6(D-089·D-090): 백업 안 스냅샷·자동 배치 이력 배치는 참조로(읽을 때 validate가 펼침)
+    // E5·E6·D-094: 백업 안 스냅샷·자동 배치 이력 배치는 참조로, 기준일 스냅샷은 차분으로(읽을 때 validate가 펼침). 비교용으로 만든 줄인 값을 다시 쓴다.
+    const text = JSON.stringify({ ...parts.packed, persistence: candidate.persistence });
     let packed;
     try {
       packed = await packProject(text);
@@ -199,7 +205,7 @@ export function createProjectStore({ storage, prefix = DEFAULT_PREFIX, legacyKey
 
     base = pointerRaw;
     corrupt = false;
-    cache = { pointerRaw, canonical: canonical(candidate), persistence: candidate.persistence };
+    cache = { pointerRaw, canonical: parts.canonical, persistence: candidate.persistence };
     return { state: 'SAVED', revision, persistence: candidate.persistence, slot: target };
   }
 
