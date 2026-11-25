@@ -7,6 +7,9 @@
 // 되돌림: 기준본·이전 시험판은 차분 스냅샷(layout/data 없음)을 검증에서 거부해 파일을 열지 않는다(데이터를 잘못 보여주지 않음).
 //         이전 앱에서 열 파일은 '기준본 호환 JSON'(차분·참조를 모두 펼침)으로 저장한다.
 
+import { deepSame } from './json-equal.js';
+
+export { deepSame };
 export const DELTA_KEY = '$delta';
 export const KEYFRAME_EVERY = 10;
 const BODY = { layoutSnapshots: 'layout', excelSnapshots: 'data' };
@@ -22,22 +25,6 @@ const keyed = (arr) => {
   }
   return m;
 };
-
-/** JSON으로 썼을 때 같은 값인지(키 순서 포함). 문자열로 바꾸지 않고 비교한다. */
-export function deepSame(a, b) {
-  if (a === b) return true;
-  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return typeof a === 'number' && typeof b === 'number' && Number.isNaN(a) && Number.isNaN(b);
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
-  if (Array.isArray(a)) {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) if (!deepSame(a[i], b[i])) return false;
-    return true;
-  }
-  const ka = Object.keys(a).filter((k) => a[k] !== undefined), kb = Object.keys(b).filter((k) => b[k] !== undefined);
-  if (ka.length !== kb.length) return false;
-  for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i] || !deepSame(a[ka[i]], b[kb[i]])) return false;
-  return true;
-}
 
 const sameKeys = (x, y) => x.length === y.length && x.every((v, i) => v === y[i]);
 
@@ -172,7 +159,12 @@ export function packSnapshotDeltas(project) {
           enc = encodeOne(cur, body, base.id, d);
           if (!deepSame(decodeOne(enc, body, base, true), cur)) continue; // 안전장치: 되돌린 결과가 키 순서까지 같을 때만
         } catch { continue; }
-        if (d !== undefined && JSON.stringify(d).length * 2 > JSON.stringify(cur[body]).length) continue; // 줄어드는 양이 작으면 전체로
+        // 줄어드는 양이 작으면(패치가 본문의 절반 초과) 전체로. 성능(D-096): 객체가 많은 큰 본문은 패치가 64KB를 넘을 때만 본문 길이를 잰다.
+        if (d !== undefined) {
+          const dl = JSON.stringify(d).length, items = cur[body]?.objects ?? cur[body];
+          const big = Array.isArray(items) && items.length > 50;
+          if ((!big || dl > 65536) && dl * 2 > JSON.stringify(cur[body]).length) continue;
+        }
         next ??= list.slice();
         next[chain[n]] = enc;
       }

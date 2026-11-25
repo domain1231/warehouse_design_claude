@@ -6,7 +6,7 @@
 // 되돌림: 기준본·이전 앱은 백업 안 배열 형식만 검사하므로 파일은 열리고, 참조가 든 백업 복원만 검증 실패로 전체 취소된다.
 //         완전 호환 파일은 JSON 저장 형식 '기준본 호환 JSON'(참조를 펼친 들여쓰기 JSON)으로 저장한다.
 
-import { packSnapshotDeltas, expandSnapshotDeltas } from './snapshot-delta.js';
+import { packSnapshotDeltas, expandSnapshotDeltas, deepSame } from './snapshot-delta.js';
 
 export const REF_KEY = '$ref';
 export const REF_KINDS = Object.freeze(['excelSnapshots', 'layoutSnapshots']);
@@ -29,11 +29,8 @@ function idMap(list) {
  */
 export function packBackupRefs(project) {
   if (!Array.isArray(project?.layoutBackups) || !project.layoutBackups.length) return project;
-  const text = {};
-  for (const k of REF_KINDS) {
-    text[k] = new Map();
-    for (const [id, s] of idMap(project[k])) if (s) text[k].set(id, JSON.stringify(s));
-  }
+  // 성능(D-096): 최상위 전체를 문자열로 바꾸지 않고, 같은 ID 짝만 구조 비교(deepSame — JSON 문자열 일치와 같은 판정)한다.
+  const top = Object.fromEntries(REF_KINDS.map((k) => [k, idMap(project[k])]));
   let changed = false;
   const layoutBackups = project.layoutBackups.map((b) => {
     if (!b || typeof b !== 'object') return b;
@@ -42,8 +39,8 @@ export function packBackupRefs(project) {
       if (!Array.isArray(b[k])) continue;
       const list = b[k].map((s) => {
         if (isBackupRef(s) || typeof s?.id !== 'string') return s;
-        const t = text[k].get(s.id);
-        return t !== undefined && t === JSON.stringify(s) ? { [REF_KEY]: s.id } : s;
+        const t = top[k].get(s.id);
+        return t && (t === s || deepSame(t, s)) ? { [REF_KEY]: s.id } : s;
       });
       if (list.some((s, i) => s !== b[k][i])) {
         if (out === b) out = { ...b };
@@ -89,17 +86,23 @@ const isLayoutRef = (l) => !!l && typeof l === 'object' && typeof l[LAYOUT_REF_K
 export function packHistoryRefs(project) {
   const history = project?.autoPlacement?.history;
   if (!Array.isArray(history) || !history.length) return project;
-  const text = new Map();
-  for (const s of Array.isArray(project.layoutSnapshots) ? project.layoutSnapshots : []) if (typeof s?.id === 'string') text.set(s.id, text.has(s.id) ? null : s);
-  const byLayout = new Map();
-  for (const [id, s] of text) if (s?.layout) { const t = JSON.stringify(s.layout); if (!byLayout.has(t)) byLayout.set(t, id); }
+  const unique = new Map();
+  for (const s of Array.isArray(project.layoutSnapshots) ? project.layoutSnapshots : []) if (typeof s?.id === 'string') unique.set(s.id, unique.has(s.id) ? null : s);
+  // 성능(D-096): 배치 문자열 대신 객체 수로 후보를 좁힌 뒤 구조 비교. 같은 배치가 여럿이면 배열 순서상 첫 스냅샷(이전과 같음).
+  const byCount = new Map();
+  for (const [id, s] of unique) {
+    if (!s?.layout || !Array.isArray(s.layout.objects)) continue;
+    const n = s.layout.objects.length;
+    if (!byCount.has(n)) byCount.set(n, []);
+    byCount.get(n).push([id, s.layout]);
+  }
   let changed = false;
   const next = history.map((h) => {
-    if (!h?.layout || isLayoutRef(h.layout)) return h;
-    const id = byLayout.get(JSON.stringify(h.layout));
-    if (id === undefined) return h;
+    if (!h?.layout || isLayoutRef(h.layout) || !Array.isArray(h.layout.objects)) return h;
+    const hit = (byCount.get(h.layout.objects.length) ?? []).find(([, l]) => l === h.layout || deepSame(l, h.layout));
+    if (!hit) return h;
     changed = true;
-    return { ...h, layout: { ...h.layout, objects: [], [LAYOUT_REF_KEY]: id } };
+    return { ...h, layout: { ...h.layout, objects: [], [LAYOUT_REF_KEY]: hit[0] } };
   });
   return changed ? { ...project, autoPlacement: { ...project.autoPlacement, history: next } } : project;
 }

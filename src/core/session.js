@@ -8,6 +8,7 @@
 //   saving   저장 진행 중
 //   error    저장 실패. 메모리의 편집은 유지된다. error.code: QUOTA | CONFLICT | CORRUPT | VERIFY | VALIDATION | STORAGE
 // 편집은 검증에 실패하면 적용하지 않는다(프로젝트·이력 불변).
+import { deepSame } from './json-equal.js';
 import { checkpointReason } from '../persistence/backups.js';
 import { createProject, validateProject, assertIndependent } from './project.js';
 import { createHistory } from './history.js';
@@ -117,8 +118,17 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
   // 저장은 한 번에 하나씩 순서대로 실행한다(편집 자동 저장과 화면 상태 저장이 겹쳐 스스로 충돌로 보이지 않게).
   let chain = Promise.resolve();
   let viewTimer = null;
+  // D-096: 아직 시작하지 않은 일반 저장이 이미 대기 중이면 하나로 합친다. 대기 저장은 시작할 때의 최신 프로젝트를 저장하므로
+  // 결과는 같고(마지막 상태가 저장됨), 큰 프로젝트에서 편집마다 저장이 줄지어 화면이 멈추는 것을 막는다. 강제·손상 교체 저장은 합치지 않는다.
+  let queued = null;
   function save(opts) {
-    const run = chain.then(() => saveNow(opts));
+    const plain = !opts?.force && !opts?.replaceCorrupt;
+    if (plain && queued) return queued;
+    const run = chain.then(() => {
+      if (queued === run) queued = null;
+      return saveNow(opts);
+    });
+    if (plain) queued = run;
     chain = run.catch(() => {});
     return run;
   }
@@ -264,7 +274,7 @@ export function createSession({ store, nextId, today, now = () => new Date().toI
       let receipt = null;
       if (r.ok) {
         let next = projectValidator(r.project);
-        if (JSON.stringify(next) === JSON.stringify(before)) return { r: { ...r, changed: false }, save: false };
+        if (deepSame(next, before)) return { r: { ...r, changed: false }, save: false }; // D-096: 전체 문자열 두 번 대신 구조 비교(같은 판정)
         try {
           receipt = await checkpointFor(before, next, label);
         } catch (e) {

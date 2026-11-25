@@ -5,6 +5,12 @@
 - 앱 2.5.0-alpha.18 / 스키마 2.3.6.
 - 검사: 단위 108 + Golden 286(todo 2: G3·G4) + 빌드 + 오프라인 검증 + E2E 65. Linux, Node 24, Chrome 153에서 PASS.
 
+### 2026-11-25 저장 경로 성능 개선(D-096) · perf/save-path
+- main dda4f42 `pnpm check` 전체 재현 PASS(unit 307·golden 298·E2E 142).
+- `src/core/json-equal.js`(신규 `deepSame`), session apply 변경 확인·저장 합치기, storage 줄인 형식 비교, backup-refs 구조 비교, snapshot-delta 크기 비교 조건, storage-dialogs 크기 표 지연 계산.
+- 로컬: unit 312(신규 save-path-perf 5), golden 298, build·verify, e2e 49(storage·project-size·backup-refs·history-cleanup·share-export·excel·scenarios·json-import·ux-improvements·ui-parity·commands 등) PASS.
+- 다음: alpha.19.
+
 ### 2026-11-25 Track E E8 공유용 JSON(D-095) · feature/e8-share-export
 - 사용자: alpha.18 확인 '문제 없음'(2026-11-25).
 - `src/warehouse/share-export.js`(신규: `shareProject`·`SHARE_DROPS`), storage-dialogs `exportShare`·`#vShareJson`.
