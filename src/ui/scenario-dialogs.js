@@ -75,11 +75,16 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
   const DROP = ['신규 랙', '제거 랙', '이동 랙', '회전 랙', '설계 규격 변경 랙', '데이터 기준일'];
   const detailRows = (p) => compareRows(p).filter((r, i) => !i || (!DROP.includes(r[0]) && !(String(r[0]).startsWith('최대 보관 수량') && r[1] === '미확인' && r[2] === '미확인')));
   const SEG = [['rack', 'seg-rack', '랙'], ['emptyRack', 'seg-rack seg-empty', '빈 랙'], ['unavailable', 'seg-blocked', '보관 불가'], ['aisle', 'seg-aisle', '통로'], ['remaining', 'seg-remain', '잔여']];
-  const compBar = (p, k) => {
-    const l = p.scenarios[k];
-    if (!l.objects.length) return `<div class="r-comp-row"><span>${k.toUpperCase()}</span><div class="r-comp-bar">배치 없음</div></div>`;
-    const c = scenarioSpace(p, k).composition;
-    return `<div class="r-comp-row"><span>${k.toUpperCase()}</span><div class="r-comp-bar">${SEG.map(([n, cls, t]) => `<i class="seg ${cls}" style="width:${(c[n].share * 100).toFixed(2)}%" title="${t} ${(c[n].share * 100).toFixed(1)}% · ${c[n].area.toFixed(2)}㎡"></i>`).join('')}</div></div>`;
+  // D5(D-082): 구간 비율이 4% 이상이면 막대 안에 숫자, 두 막대 사이에 구간별 Δ(%p), AFTER에서 바뀐 구간만 노란 외곽선(바뀌지 않은 Δ는 흐림).
+  const ppText = (d) => (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d).toFixed(1) + '%p';
+  const compHtml = (p) => {
+    const comp = (k) => (p.scenarios[k].objects.length ? scenarioSpace(p, k).composition : null);
+    const cb = comp('before'), ca = comp('after');
+    const dpp = (n) => (cb && ca ? Math.round((ca[n].share - cb[n].share) * 1000) / 10 : null);
+    const bar = (k, c) => (!c ? `<div class="r-comp-row" data-bar="${k}"><span>${k.toUpperCase()}</span><div class="r-comp-bar">배치 없음</div></div>`
+      : `<div class="r-comp-row" data-bar="${k}"><span>${k.toUpperCase()}</span><div class="r-comp-bar">${SEG.map(([n, cls, t]) => { const sh = c[n].share, ch = k === 'after' && dpp(n) !== null && dpp(n) !== 0; return `<i class="seg ${cls}${ch ? ' changed' : ''}" data-seg="${n}" style="width:${(sh * 100).toFixed(2)}%" title="${t} ${(sh * 100).toFixed(1)}% · ${c[n].area.toFixed(2)}㎡">${sh >= 0.04 ? `<b>${(sh * 100).toFixed(1)}%</b>` : ''}</i>`; }).join('')}</div></div>`);
+    const delta = cb && ca ? `<div class="r-comp-delta" data-testid="compare-composition-delta"><span class="r-comp-dl">Δ</span>${SEG.map(([n, , t]) => { const d = dpp(n); return `<span data-seg="${n}" class="${d === 0 ? 'zero' : 'changed'}">${t} ${ppText(d)}</span>`; }).join('')}</div>` : '';
+    return bar('before', cb) + delta + bar('after', ca);
   };
   // D1(D-078): 좋아지는 방향에 따라 개선 ▲(초록)·악화 ▼(빨강)·변화 없음 —(회색). 색만 쓰지 않고 화살표·문구를 함께 둔다.
   const TREND = { better: ['▲', '개선'], worse: ['▼', '악화'], same: ['—', '변화 없음'] };
@@ -89,7 +94,7 @@ export function createScenarioDialogs({ getProject, toast, apply, download, pngB
     const sum = layoutChangeSummary(d);
     // D4(D-081): BEFORE → AFTER를 한 칸에 붙여 쓰고 차이를 바로 옆에. 변화 0 행은 흐리게. 긴 원문은 툴팁.
     return '<table class="r-purpose"><tr>' + ['목적 지표', 'BEFORE → AFTER', '차이'].map((h) => `<th>${h}</th>`).join('') + '</tr>' + rows.map((r) => `<tr data-metric="${r.id}" data-trend="${r.trend}"${r.num === 0 ? ' class="r-zero"' : ''} title="${esc(`${r.label}: BEFORE ${r.before} → AFTER ${r.after}\n${r.tip}`)}"><td>${esc(r.label)}</td><td class="r-ba">${esc(r.short.before)} <span class="r-to">→</span> ${esc(r.short.after)}</td><td>${trendHtml(r)}</td></tr>`).join('') + '</table>'
-      + `<div class="r-comp" data-testid="compare-composition">${compBar(p, 'before')}${compBar(p, 'after')}<div class="r-legend">${SEG.map(([, cls, t]) => `<span><i class="seg ${cls}"></i>${t === '잔여' ? '보관 가능 잔여' : t}</span>`).join('')}</div></div>`
+      + `<div class="r-comp" data-testid="compare-composition">${compHtml(p)}<div class="r-legend">${SEG.map(([, cls, t]) => `<span><i class="seg ${cls}"></i>${t === '잔여' ? '보관 가능 잔여' : t}</span>`).join('')}</div></div>`
       + (sum ? `<p class="r-changes" data-testid="compare-changes">배치 변경: ${esc(sum)}</p>` : '');
   };
   const BIN = Object.fromEntries(DELTA_BINS.map((b) => [b.id, b]));

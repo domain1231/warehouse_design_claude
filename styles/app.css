@@ -223,7 +223,16 @@ body.top-collapsed #sampleBanner, body.top-collapsed #topStats, body.top-collaps
 .r-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }
 .r-legend[hidden] { display: none; }
 .r-legend .seg { display: inline-block; width: 10px; height: 10px; margin-right: 4px; border-radius: 2px; }
-.r-comp-bar .seg { height: 100%; display: block; }
+.r-comp-bar .seg { height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; }
+/* D5(D-082) */
+.r-comp-bar { height: 20px; }
+.r-comp-bar .seg b { font-size: 11px; font-weight: 600; color: #0b1118; white-space: nowrap; }
+.r-comp-bar .seg-empty b { background: rgba(255, 255, 255, 0.8); padding: 0 3px; border-radius: 2px; }
+.r-comp-bar .seg.changed { outline: 2px solid #ffd54f; outline-offset: -2px; }
+.r-comp-delta { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 2px 0 2px 64px; font-size: 12px; }
+.r-comp-delta .r-comp-dl { color: #8d99a6; }
+.r-comp-delta .zero { opacity: 0.45; }
+.r-comp-delta .changed { font-weight: 600; color: #ffd54f; }
 .r-change-tools { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
 .r-change-tools select { width: auto; flex: 0 0 auto; min-width: 160px; }
 .r-change-tools [data-change-count] { white-space: nowrap; }
